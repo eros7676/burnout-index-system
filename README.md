@@ -56,7 +56,7 @@ La aplicación estará disponible en http://localhost:3000.
 ## Estructura del proyecto
 
 ```text
-nexus-workload-monitor/
+nexus-project/
 ├── src/
 │   ├── app/
 │   │   ├── api/
