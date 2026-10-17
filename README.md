@@ -108,7 +108,7 @@ nexus-project/
 - **Base de datos:** MySQL.
 - **ORM:** Prisma o Drizzle ORM.
 - **Procesamiento de archivos:** CSV y XLSX.
-- **Notificaciones:** correo electrónico mediante un servicio externo.
+- **Notificaciones:** correo electrónico mediante un servicio externo. (Podríamos usar mailto)
 
 ## Flujo de Trabajo (GitFlow)
 
