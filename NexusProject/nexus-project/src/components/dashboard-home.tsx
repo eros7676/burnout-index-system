@@ -260,11 +260,6 @@ export default function DashboardHomeView() {
           </nav>
         </div>
 
-        <div className="sidebar-footer">
-          <strong><Icon>sync_alt</Icon> Fase 1: Ingesta manual CSV/XLSX</strong>
-          <span>Motor v1.4.2 activo · 50 colaboradores</span>
-          <span>Nexus Digital · Córdoba, AR</span>
-        </div>
       </aside>
 
       <div className="app-content">
