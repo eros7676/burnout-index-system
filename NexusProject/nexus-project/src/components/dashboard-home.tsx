@@ -224,7 +224,7 @@ function Icon({
 export default function DashboardHomeView() {
   return (
     <div className="dashboard">
-      <aside className="sidebar" aria-label="Navegación principal">
+      <aside className="sidebar" aria-label="Navegación principal" tabIndex={0}>
         <div>
           <div className="sidebar-top">
             <div className="brand-mark"><Icon>monitor_heart</Icon></div>

@@ -1089,6 +1089,80 @@ select {
   }
 }
 
+/* Expand the desktop rail on hover or keyboard focus without shifting content. */
+@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
+  .sidebar {
+    width: 72px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: width 200ms ease, box-shadow 200ms ease;
+  }
+
+  .sidebar:is(:hover, :has(:focus-visible), :focus-visible) {
+    width: 252px;
+  }
+
+  .sidebar-top {
+    justify-content: flex-start;
+    width: 252px;
+    padding: 14px 16px;
+  }
+
+  .sidebar-top > div:last-child {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .role-badge {
+    display: flex;
+    width: 224px;
+  }
+
+  .sidebar-footer {
+    display: grid;
+    width: 224px;
+  }
+
+  .nav-list {
+    align-items: stretch;
+    padding: 9px 12px;
+  }
+
+  .nav-item {
+    width: 228px;
+    justify-content: space-between;
+    padding: 8px 11px;
+  }
+
+  .nav-item-label {
+    justify-content: flex-start;
+    white-space: nowrap;
+  }
+
+  .nav-item > .nav-counter,
+  .nav-item-label > span:last-child {
+    display: inline;
+  }
+
+  .sidebar:not(:hover, :has(:focus-visible), :focus-visible) :is(.sidebar-top > div:last-child, .role-badge, .nav-counter, .nav-item-label > span:last-child, .sidebar-footer) {
+    visibility: hidden;
+  }
+
+  .sidebar:not(:hover, :has(:focus-visible), :focus-visible) .nav-item {
+    width: 48px;
+  }
+
+  .app-content {
+    margin-left: 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+}
+
 /* A warmer editorial identity for the operational dashboard. */
 :root {
   --background: #f4f1e9;
