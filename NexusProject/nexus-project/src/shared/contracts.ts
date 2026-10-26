@@ -169,4 +169,12 @@ export type ApiError = {
   error: { codigo: string; mensaje: string;
     detalles: ErrorCampo[] };
 };
+
+export type ResultadoCancelacion = { importId: string; status: 'CANCELADA' };
+/** Único caso HTTP con vista previa además del error común (422). */
+export type ErrorValidacionImportacion = { vistaPrevia: VistaPrevia; error: ApiError['error'] };
+export type FiltrosComunes = { employeeId?: string; teamId?: string; periodStart?: FechaISO };
+export type Paginacion = { page?: number; pageSize?: number };
+export type FiltrosEvaluaciones = FiltrosComunes & Paginacion & { nivel?: Nivel };
+export type FiltrosAlertas = FiltrosComunes & Paginacion;
 // FilaTablero usa indice/nivel null solo cuando no hay evaluación; Evaluacion siempre tiene índice numérico. processingState describe ese par, no todos los pares del job: uno ya completado sigue COMPLETADO aunque falle otro. actualizado compara datos, antecedente, reglas y engineVersion esperados con el snapshot vigente. Si es false, señalar pendiente/fallo y no presentar el nivel anterior como actualizado; el detalle histórico sí puede conservarlo identificado.

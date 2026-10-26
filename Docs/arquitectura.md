@@ -7,12 +7,16 @@ La raíz ejecutable de Next.js es NexusProject/nexus-project. Se conserva para a
 | src/app/(dashboard)/ | Pantallas; las carpetas sin page.tsx son reservas. |
 | src/app/api/ | Route Handlers; sin lógica matemática ni consultas Prisma directas. |
 | src/shared/contracts.ts | Tipos compartidos de DOCUMENTACION. |
+| src/shared/services.ts | Firmas obligatorias de los servicios. |
+| src/shared/api.ts | Métodos, rutas y tipos de peticiones/respuestas P0. |
+| src/shared/errors.ts | Error de dominio común y códigos de fila. |
+| src/shared/mocks.ts | Respuestas ficticias tipadas para consumidores. |
 | src/server/services/ | CU01, CU02 y CU03; CU02 puro separado de la orquestación. |
 | src/server/repositories/ | Prisma, consultas y transacciones. |
 | src/components/ | Componentes React; dashboard-home es una maqueta. |
 | prisma/ | Esquema, futuras migraciones y seed de T02. |
 | templates/ | Encabezado CSV y ejemplo contractual. |
-| tests/ | Pruebas por implementar. |
+| tests/ | Pruebas base T01; pruebas funcionales pendientes. |
 
 ## API acordada
 
@@ -39,3 +43,5 @@ No existe autenticación implementada por usar un grupo de rutas llamado (dashbo
 ## Contratos
 
 [Contratos y pruebas](contratos-prototipo.md) contiene tipos, entradas/salidas, estados y ejemplo. CU02 y sus fórmulas se rigen por DOCUMENTACION. Si cambia la fuente, sincronizar el repositorio antes de integrar. La entrega PDF y Docs/DashboardCode.md son antecedentes, no sustituyen el contrato vigente.
+
+[Guía T01](t01-base.md): imports compartidos, ejemplos de mocks y comandos de verificación. Las adiciones HTTP describen el contrato existente; no agregan nuevas operaciones de negocio.
