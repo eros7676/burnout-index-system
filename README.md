@@ -1,124 +1,60 @@
-# Sistema de Monitoreo de Indicadores y Gestión del Riesgo de Sobrecarga Laboral
+# Burnout Index System
 
-Aplicación web diseñada para detectar a tiempo el riesgo de sobrecarga laboral en los empleados a partir de sus datos laborales, alertando al responsable para prevenirlo[cite: 3].
+Prototipo para identificar indicadores de posible sobrecarga laboral. Next.js + TypeScript + Prisma + MySQL. Los parámetros v1 son demostrativos; el sistema no diagnostica burnout.
 
-Este proyecto constituye el prototipo funcional (Fase 1) para la organización Nexus Digital S.R.L.[cite: 6, 12].
+## Estado y referencias
 
-## Stack Tecnológico
+Existe una base de Next.js y una **maqueta visual con datos fijos**, disponible en / y /home. Todavía faltan los módulos funcionales, modelos de datos, migraciones y seed. No confundir carpetas reservadas con funcionalidades terminadas.
 
-- **Frontend / Backend:** Next.js (React + API Routes)
-- **Base de Datos:** MySQL
-- **Contenedores:** Docker (para base de datos local) --> IMPORTANTE PARA PORTABILIDAD.
+- [DOCUMENTACION: alcance, casos de uso y reglas](https://docs.google.com/document/d/1aYIW8zZtLqwAlr5YQnljINkdmViz5vhH7_XVnLjOpXs/edit)
+- [Tareas P0 con casillas](https://github.com/eros7676/burnout-index-system/issues/2)
+- [Contratos y pruebas de referencia](Docs/contratos-prototipo.md)
+- [Mapa de carpetas y API](Docs/arquitectura.md)
 
-## Requisitos Previos
+## Alcance
 
-- Node.js (v18 o superior)
-- Docker y Docker Compose (para levantar MySQL local)
-- Git
+| Etapa | Incluye |
+| --- | --- |
+| P0 | Demo local con datos ficticios; CSV semanal; validación y confirmación atómica; historial; índice/ranking; informes; alertas internas; tablero simple. |
+| P1 | Correo simulado, permisos de demostración y auditoría ampliada. |
+| Sistema final | XLSX, exportaciones, correo real, CRUD completo, vista del empleado y editor web de reglas. |
 
-## Instalación y Ejecución Local
+Una primera semana válida conserva su índice y produce INCOMPLETO por falta de historial. Una falla técnica pertenece al trabajo de procesamiento, no al nivel de riesgo. CU02 se ejecuta en servidor tras confirmar la importación.
 
-1. Clonar el repositorio
-   git clone <Uhttps://github.com/eros7676/burnout-index-system.git>
-   cd nexus-workload-monitor
+## Instalación de la base actual
 
-2. Instalar dependencias
-   npm install
+Requisitos: Node.js >=20.9 (se recomienda Node 22), npm, Git y Docker Compose para MySQL.
 
-3. Configuración de Variables de Entorno
-   Crea un archivo llamado .env en la raíz del proyecto basándote en el archivo de ejemplo proporcionado:
-   cp .env.example .env
+Desde la carpeta donde quieras clonar:
 
-Completa las variables dentro del .env con tus credenciales de desarrollo locales:
-
-- DATABASE_URL: Cadena de conexión a MySQL.
-- SMTP_HOST / SMTP_USER / SMTP_PASS: Credenciales del servidor de correo.
-
-4. Levantar la Base de Datos (Docker)
-   Inicia el contenedor de MySQL en segundo plano:
-   docker-compose up -d
-
-5. Ejecutar migraciones
-   Sincroniza la estructura de la base de datos (tablas de empleados, evaluaciones, alertas, etc.)[cite: 22]:
-   npm run db:migrate
-
-6. Iniciar el servidor de desarrollo
-   npm run dev
-
-La aplicación estará disponible en http://localhost:3000.
-
----
-
-## Estructura del Proyecto (Fase 1)
-
-# Nexus Workload Monitor
-
-## Estructura del proyecto
-
-```text
-nexus-project/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── auth/             # CU07: Autenticación y gestión de sesiones
-│   │   │   ├── data-ingestion/   # CU01: Procesamiento de archivos CSV/XLSX
-│   │   │   ├── risk-engine/      # CU02: Cálculo de índices y evaluación de reglas
-│   │   │   ├── alerts/           # CU03: Generación de alertas y notificaciones por correo
-│   │   │   └── reports/          # CU06: Endpoints para exportación de datos
-│   │   │
-│   │   ├── (dashboard)/
-│   │   │   ├── home/             # CU05: Tablero general y semáforos por célula
-│   │   │   ├── ingestion/        # CU01: Interfaz para subir archivos laborales
-│   │   │   ├── rules-config/     # CU04: Configuración de pesos y umbrales
-│   │   │   ├── employees/        # CU07: Gestión de usuarios, empleados y células
-│   │   │   ├── audit/            # CU08: Registro de operaciones relevantes
-│   │   │   └── my-data/          # CU09: Vista de solo lectura para empleados
-│   │   │
-│   │   └── login/                # Pantalla de inicio de sesión
-│   │
-│   ├── components/               # Componentes React reutilizables
-│   │                               # Tablas, gráficos, formularios, etc.
-│   │
-│   ├── lib/                      # Lógica compartida y servicios auxiliares
-│   │   ├── db.ts                 # Conexión a MySQL mediante Prisma o Drizzle ORM
-│   │   ├── mail.ts               # Cliente para el servidor de correo externo
-│   │   └── validations.ts        # Validaciones de archivos y formularios
-│   │
-│   └── prisma/                   # Esquemas ORM y migraciones de MySQL (opcional)
-│
-├── .env.example                  # Ejemplo de variables de entorno
-├── next.config.mjs               # Configuración de Next.js
-├── package.json                  # Dependencias y scripts del proyecto
-└── README.md                     # Documentación general del proyecto
+```bash
+git clone https://github.com/eros7676/burnout-index-system.git
+cd burnout-index-system
+cp .env.example .env
+docker compose up -d
+cd NexusProject/nexus-project
+cp .env.example .env
+npm ci
+npm run dev
 ```
 
-## Descripción de los directorios
+Abrir http://localhost:3000. Docker toma DB_NAME/DB_USER/DB_PASSWORD del .env de la raíz. Prisma toma DATABASE_URL del .env de la aplicación; ambas configuraciones deben coincidir. No subir archivos .env.
 
-- **`src/app/`**: contiene las rutas de la aplicación, tanto las interfaces de usuario como los endpoints de la API.
-- **`src/app/api/`**: centraliza los endpoints para autenticación, ingesta de datos, cálculo de riesgos, alertas y generación de reportes.
-- **`src/app/(dashboard)/`**: agrupa las vistas del panel de control que requieren autenticación.
-- **`src/components/`**: contiene los componentes de interfaz reutilizables.
-- **`src/lib/`**: reúne las utilidades, conexiones a servicios externos y lógica compartida.
-- **`src/prisma/`**: contempla los esquemas y las migraciones de la base de datos, si se utiliza Prisma.
+## Comprobaciones y base de datos
 
-## Tecnologías previstas
+Ejecutar desde NexusProject/nexus-project:
 
-- **Frontend:** Next.js, React y TypeScript.
-- **Backend:** Route Handlers de Next.js.
-- **Base de datos:** MySQL.
-- **ORM:** Prisma o Drizzle ORM.
-- **Procesamiento de archivos:** CSV y XLSX.
-- **Notificaciones:** correo electrónico mediante un servicio externo. (Podríamos usar mailto)
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run db:validate
+```
 
-## Flujo de Trabajo (GitFlow)
+Los scripts db:generate y db:migrate están preparados para T02. **El esquema aún no tiene modelos**: no hay tablas funcionales, migraciones ni seed. T02 debe agregar modelos/migraciones/seed y documentar el comando de carga antes de poder reproducir el circuito completo. No hay aún suite de pruebas del producto; T07/T08/T16 deben incorporarla.
 
-Para mantener la integridad del código, el equipo opera bajo un flujo estricto de control de versiones:
+## Trabajo en equipo
 
-1. Ramas Principales:
-   - main: Código estable y listo para producción. Bloqueada para push directo.
-   - develop: Rama de integración de características.
-2. Desarrollo de Funcionalidades:
-   - Crear una rama desde develop con el formato feature/CUXX-nombre-tarea (ej. feature/CU01-ingesta-csv).
-3. Integración:
-   - Subir la rama y abrir un Pull Request (PR) hacia develop.
-   - El código debe ser revisado y aprobado por al menos un integrante del equipo antes de fusionarse.
+Crear ramas feature/TXX-descripcion desde main y abrir PR a main para revisión. No se presupone una rama develop ni protección configurada. Una tarea se completa con contrato respetado, pruebas relevantes y revisión; compilar la maqueta no completa P0.
+
+Los cambios de contratos deben actualizar documentación, tipos, consumidores y pruebas juntos. Los responsables se gestionan fuera de esta guía; las tareas no dependen de nombres fijos.
