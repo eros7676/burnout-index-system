@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Nexo Laboral | Resumen",
   description:
-    "Panel de diagnóstico operativo y prevención de sobrecarga laboral.",
+    "Maqueta del sistema de indicadores de posible sobrecarga laboral.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -24,7 +24,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <aside role="status" style={{ padding: "12px 20px", background: "#fff3cd", color: "#4d3800", fontWeight: 600 }}>
+          Maqueta visual · datos ficticios fijos. El cálculo, la importación y las
+          notificaciones todavía no están conectados.
+        </aside>
+        {children}
+      </body>
     </html>
   );
 }

@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "db:validate": "prisma validate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -30,5 +34,8 @@
   },
   "overrides": {
     "deepmerge-ts": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }

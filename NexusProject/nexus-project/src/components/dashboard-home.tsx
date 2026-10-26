@@ -38,7 +38,7 @@ const metrics = [
     caption: "Seguimiento quincenal",
   },
   {
-    label: "Incompletas / pendientes",
+    label: "Historial insuficiente",
     value: "2",
     detail: "personas (4.0%)",
     tag: "Sin imputar a riesgo bajo",
@@ -119,8 +119,8 @@ const cases = [
     score: "—",
     level: "Incompleto",
     tone: "incomplete",
-    factors: ["Fichajes de entrada vacíos", "Faltan marcas semana 42"],
-    recommendation: "Requiere validación manual en RRHH",
+    factors: ["Sin semana anterior", "Índice conservado, historial insuficiente"],
+    recommendation: "Cargar la semana anterior",
   },
 ];
 
@@ -131,16 +131,16 @@ const alerts = [
     message:
       "M. Benítez acumuló 12 jornadas sin descanso semanal ininterrumpido.",
     notified: "Notificado: J. Romero (Lead Alfa)",
-    status: "Enviado",
+    status: "Interna (maqueta)",
     tone: "",
   },
   {
     type: "Crítica · Célula Alfa",
     time: "09:32 hs",
     message:
-      "G. Morales superó el límite legal de 30 horas suplementarias mensuales.",
+      "G. Morales presenta horas extra por revisar según las reglas configuradas.",
     notified: "Notificado: M. Rossi (RRHH)",
-    status: "Enviado",
+    status: "Interna (maqueta)",
     tone: "",
   },
   {
@@ -149,7 +149,7 @@ const alerts = [
     message:
       "L. Fernández tiene 14 tareas concurrentes en sprint de release crítico.",
     notified: "Notificado: Dir. Operaciones",
-    status: "Enviado",
+    status: "Interna (maqueta)",
     tone: "warning",
   },
   {
