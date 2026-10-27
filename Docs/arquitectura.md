@@ -14,9 +14,9 @@ La raíz ejecutable de Next.js es NexusProject/nexus-project. Se conserva para a
 | src/server/services/ | CU01, CU02 y CU03; CU02 puro separado de la orquestación. |
 | src/server/repositories/ | Prisma, consultas y transacciones. |
 | src/components/ | Componentes React; dashboard-home es una maqueta. |
-| prisma/ | Esquema, futuras migraciones y seed de T02. |
+| prisma/ | Esquema, migración inicial y seed T02. |
 | templates/ | Encabezado CSV y ejemplo contractual. |
-| tests/ | Pruebas base T01; pruebas funcionales pendientes. |
+| tests/ | Contratos T01, catálogo/fechas T02 y pruebas MySQL separadas; circuito completo pendiente. |
 
 ## API acordada
 
@@ -45,3 +45,5 @@ No existe autenticación implementada por usar un grupo de rutas llamado (dashbo
 [Contratos y pruebas](contratos-prototipo.md) contiene tipos, entradas/salidas, estados y ejemplo. CU02 y sus fórmulas se rigen por DOCUMENTACION. Si cambia la fuente, sincronizar el repositorio antes de integrar. La entrega PDF y Docs/DashboardCode.md son antecedentes, no sustituyen el contrato vigente.
 
 [Guía T01](t01-base.md): imports compartidos, ejemplos de mocks y comandos de verificación. Las adiciones HTTP describen el contrato existente; no agregan nuevas operaciones de negocio.
+
+[Guía T02](t02-persistencia.md): modelos, vigencia por período, migraciones, catálogo ficticio y pruebas MySQL preparadas. Los servicios funcionales siguen pendientes.

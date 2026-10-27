@@ -6,3 +6,298 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+enum TipoEmpleado {
+  TECNICO
+  TEAM_LEAD
+  GERENCIA
+}
+
+enum EstadoImportacion {
+  VALIDADA
+  RECHAZADA
+  CANCELADA
+  CONFIRMADA
+}
+
+enum EstadoJob {
+  PENDIENTE
+  PROCESANDO
+  COMPLETADO
+  FALLIDO
+}
+
+enum OrigenJob {
+  IMPORTACION
+  CAMBIO_REGLAS
+}
+
+enum Nivel {
+  BAJO
+  MEDIO
+  ALTO
+  INCOMPLETO
+}
+
+enum VigenciaAlerta {
+  ACTIVA
+  SUPERADA
+}
+
+enum MotivoDestinatario {
+  OK
+  SIN_DESTINATARIO
+}
+
+enum CanalAlerta {
+  INTERNO
+  SIMULADO
+}
+
+enum EstadoEnvio {
+  NO_APLICA
+  PENDIENTE
+  ENVIADO
+  FALLIDO
+  SIN_DESTINATARIO
+}
+
+model Equipo {
+  teamId    String     @id @db.VarChar(64)
+  nombre    String     @db.VarChar(160)
+  activo    Boolean    @default(true)
+  empleados Empleado[]
+}
+
+// Gerencia es destinatario del seed; no es un empleado evaluable en el contrato P0.
+model Empleado {
+  employeeId       String            @id @db.VarChar(64)
+  nombre           String            @db.VarChar(160)
+  tipo             TipoEmpleado
+  activo           Boolean           @default(true)
+  enCobertura      Boolean           @default(true)
+  teamId           String?           @db.VarChar(64)
+  responsableId    String?           @db.VarChar(64)
+  equipo           Equipo?           @relation(fields: [teamId], references: [teamId], onDelete: Restrict, onUpdate: Restrict)
+  responsable      Empleado?         @relation("Responsables", fields: [responsableId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
+  subordinados     Empleado[]        @relation("Responsables")
+  periodos         PeriodoEmpleado[]
+  alertas          Alerta[]          @relation("EmpleadoAlertado")
+  alertasRecibidas Alerta[]          @relation("DestinatarioAlerta")
+
+  @@index([teamId, activo, enCobertura])
+  @@index([responsableId])
+}
+
+model Importacion {
+  importId              String               @id @default(cuid()) @db.VarChar(36)
+  sourceName            String               @db.VarChar(255)
+  sourceHash            String               @db.Char(64)
+  schemaVersion         String               @default("indicadores-v1") @db.VarChar(32)
+  uploadedAt            DateTime             @default(now()) @db.DateTime(3)
+  uploadedBy            String               @db.VarChar(64)
+  status                EstadoImportacion
+  expiresAt             DateTime             @db.DateTime(3)
+  confirmedAt           DateTime?            @db.DateTime(3)
+  confirmedBy           String?              @db.VarChar(64)
+  cancelledAt           DateTime?            @db.DateTime(3)
+  cancelledBy           String?              @db.VarChar(64)
+  totalFilas            Int
+  nuevas                Int
+  omitidas              Int
+  errores               Json
+  warnings              Json
+  // Respuesta conservada para devolver la misma confirmación sin reinsertar.
+  resultadoConfirmacion Json?
+  temporal              ImportacionTemporal?
+  registros             RegistroLaboral[]
+  job                   ProcessingJob?
+
+  @@index([status, expiresAt])
+  @@index([sourceHash])
+}
+
+// Solo contiene filas normalizadas y muestra: se elimina al cancelar/confirmar/vencer.
+// Los metadatos de Importacion permanecen. No representa registros confirmados.
+model ImportacionTemporal {
+  importId    String      @id @db.VarChar(36)
+  datos       Json
+  muestra     Json
+  importacion Importacion @relation(fields: [importId], references: [importId], onDelete: Cascade, onUpdate: Restrict)
+}
+
+// La clave lógica existe una sola vez. Los dos punteros son la fuente de vigencia;
+// no usar un booleano único (impediría conservar varias versiones históricas).
+model PeriodoEmpleado {
+  periodoId           String             @id @default(cuid()) @db.VarChar(36)
+  employeeId          String             @db.VarChar(64)
+  periodStart         DateTime           @db.Date
+  periodEnd           DateTime           @db.Date
+  registroVigenteId   String?            @db.VarChar(36)
+  evaluacionVigenteId String?            @db.VarChar(36)
+  empleado            Empleado           @relation(fields: [employeeId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
+  registros           RegistroLaboral[]  @relation("RegistrosPeriodo")
+  evaluaciones        Evaluacion[]       @relation("EvaluacionesPeriodo")
+  // FKs compuestas impiden apuntar a una versión perteneciente a otra semana/persona.
+  registroVigente     RegistroLaboral?   @relation("RegistroVigente", fields: [registroVigenteId, periodoId], references: [recordId, periodoId], onDelete: Restrict, onUpdate: Restrict)
+  evaluacionVigente   Evaluacion?        @relation("EvaluacionVigente", fields: [evaluacionVigenteId, periodoId], references: [evaluationId, periodoId], onDelete: Restrict, onUpdate: Restrict)
+  trabajos            ProcessingJobPar[]
+
+  @@unique([employeeId, periodStart, periodEnd], map: "periodo_empleado_semana_key")
+  @@unique([periodoId, employeeId])
+  @@index([periodStart, employeeId])
+  @@index([registroVigenteId, periodoId])
+  @@index([evaluacionVigenteId, periodoId])
+}
+
+model RegistroLaboral {
+  recordId                    String            @id @default(cuid()) @db.VarChar(36)
+  periodoId                   String            @db.VarChar(36)
+  employeeId                  String            @db.VarChar(64)
+  sourceImportId              String            @db.VarChar(36)
+  dataVersion                 Int               @default(1)
+  fingerprint                 String            @db.Char(64)
+  supersedesRecordId          String?           @db.VarChar(36)
+  // Double conserva la precisión de los number del contrato; no redondear horas.
+  horasExtra                  Float             @db.Double
+  diasConsecutivosSinDescanso Int
+  tareasActivas               Int
+  tareasPendientes            Int
+  tareasVencidas              Int
+  vacacionesPendientesDias    Int
+  horasTrabajadas             Float?            @db.Double
+  diasDesdeUltimasVacaciones  Int?
+  createdAt                   DateTime          @default(now()) @db.DateTime(3)
+  periodo                     PeriodoEmpleado   @relation("RegistrosPeriodo", fields: [periodoId, employeeId], references: [periodoId, employeeId], onDelete: Restrict, onUpdate: Restrict)
+  importacion                 Importacion       @relation(fields: [sourceImportId], references: [importId], onDelete: Restrict, onUpdate: Restrict)
+  vigenteEn                   PeriodoEmpleado[] @relation("RegistroVigente")
+  anteriorVersion             RegistroLaboral?  @relation("VersionesRegistro", fields: [supersedesRecordId, periodoId], references: [recordId, periodoId], onDelete: Restrict, onUpdate: Restrict)
+  siguientesVersiones         RegistroLaboral[] @relation("VersionesRegistro")
+  evaluacionesActuales        Evaluacion[]      @relation("RegistroActualEvaluado")
+  evaluacionesComoAntecedente Evaluacion[]      @relation("RegistroAnteriorEvaluado")
+
+  @@unique([periodoId, dataVersion])
+  @@unique([recordId, periodoId])
+  @@unique([recordId, employeeId])
+  @@index([periodoId, employeeId])
+  @@index([supersedesRecordId, periodoId])
+  @@index([sourceImportId])
+}
+
+model ConfiguracionIndice {
+  version            String          @id @db.VarChar(64)
+  effectiveFrom      DateTime        @unique @db.Date
+  windowDays         Int             @default(7)
+  persistencePeriods Int             @default(2)
+  weights            Json
+  thresholds         Json
+  mediumLimit        Float           @db.Double
+  highLimit          Float           @db.Double
+  minExceededFactors Int
+  createdBy          String          @db.VarChar(64)
+  createdAt          DateTime        @default(now()) @db.DateTime(3)
+  evaluaciones       Evaluacion[]
+  jobs               ProcessingJob[]
+}
+
+model Evaluacion {
+  evaluationId           String              @id @default(cuid()) @db.VarChar(36)
+  periodoId              String              @db.VarChar(36)
+  employeeId             String              @db.VarChar(64)
+  actualRecordId         String              @db.VarChar(36)
+  anteriorRecordId       String?             @db.VarChar(36)
+  rulesVersion           String              @db.VarChar(64)
+  engineVersion          String              @default("cu02-v1") @db.VarChar(32)
+  processingFingerprint  String              @db.Char(64)
+  supersedesEvaluationId String?             @db.VarChar(36)
+  indice                 Decimal             @db.Decimal(5, 2)
+  nivel                  Nivel
+  indicadores            Json
+  scores                 Json
+  contribuciones         Json
+  ranking                Json
+  excedidas              Json
+  persistencia           Json
+  snapshot               Json
+  createdAt              DateTime            @default(now()) @db.DateTime(3)
+  periodo                PeriodoEmpleado     @relation("EvaluacionesPeriodo", fields: [periodoId, employeeId], references: [periodoId, employeeId], onDelete: Restrict, onUpdate: Restrict)
+  registroActual         RegistroLaboral     @relation("RegistroActualEvaluado", fields: [actualRecordId, periodoId], references: [recordId, periodoId], onDelete: Restrict, onUpdate: Restrict)
+  registroAnterior       RegistroLaboral?    @relation("RegistroAnteriorEvaluado", fields: [anteriorRecordId, employeeId], references: [recordId, employeeId], onDelete: Restrict, onUpdate: Restrict)
+  reglas                 ConfiguracionIndice @relation(fields: [rulesVersion], references: [version], onDelete: Restrict, onUpdate: Restrict)
+  vigenteEn              PeriodoEmpleado[]   @relation("EvaluacionVigente")
+  anteriorVersion        Evaluacion?         @relation("VersionesEvaluacion", fields: [supersedesEvaluationId, periodoId], references: [evaluationId, periodoId], onDelete: Restrict, onUpdate: Restrict)
+  siguientesVersiones    Evaluacion[]        @relation("VersionesEvaluacion")
+  alerta                 Alerta?
+
+  @@unique([periodoId, processingFingerprint], map: "evaluacion_periodo_fingerprint_key")
+  @@unique([evaluationId, periodoId])
+  @@unique([evaluationId, employeeId])
+  @@index([periodoId, employeeId])
+  @@index([actualRecordId, periodoId])
+  @@index([anteriorRecordId, employeeId])
+  @@index([rulesVersion])
+  @@index([supersedesEvaluationId, periodoId])
+  @@index([nivel, createdAt])
+}
+
+model Alerta {
+  alertId            String             @id @default(cuid()) @db.VarChar(36)
+  evaluationId       String             @unique @db.VarChar(36)
+  employeeId         String             @db.VarChar(64)
+  destinatarioId     String?            @db.VarChar(64)
+  motivoDestinatario MotivoDestinatario
+  causas             Json
+  sugerencias        Json
+  vigencia           VigenciaAlerta     @default(ACTIVA)
+  canal              CanalAlerta        @default(INTERNO)
+  estadoEnvio        EstadoEnvio        @default(NO_APLICA)
+  createdAt          DateTime           @default(now()) @db.DateTime(3)
+  evaluacion         Evaluacion         @relation(fields: [evaluationId, employeeId], references: [evaluationId, employeeId], onDelete: Restrict, onUpdate: Restrict)
+  empleado           Empleado           @relation("EmpleadoAlertado", fields: [employeeId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
+  destinatario       Empleado?          @relation("DestinatarioAlerta", fields: [destinatarioId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([evaluationId, employeeId])
+  @@index([employeeId, vigencia, createdAt])
+  @@index([destinatarioId, vigencia])
+  @@index([vigencia, createdAt, alertId])
+}
+
+model ProcessingJob {
+  jobId        String               @id @default(cuid()) @db.VarChar(36)
+  origen       OrigenJob
+  importId     String?              @unique @db.VarChar(36)
+  rulesVersion String?              @db.VarChar(64)
+  estado       EstadoJob            @default(PENDIENTE)
+  createdBy    String               @db.VarChar(64)
+  createdAt    DateTime             @default(now()) @db.DateTime(3)
+  updatedAt    DateTime             @updatedAt @db.DateTime(3)
+  startedAt    DateTime?            @db.DateTime(3)
+  finishedAt   DateTime?            @db.DateTime(3)
+  ownerToken   String?              @db.VarChar(64)
+  leaseUntil   DateTime?            @db.DateTime(3)
+  intentos     Int                  @default(0)
+  importacion  Importacion?         @relation(fields: [importId], references: [importId], onDelete: Restrict, onUpdate: Restrict)
+  reglas       ConfiguracionIndice? @relation(fields: [rulesVersion], references: [version], onDelete: Restrict, onUpdate: Restrict)
+  pares        ProcessingJobPar[]
+
+  @@index([estado, leaseUntil])
+  @@index([rulesVersion])
+}
+
+// La lista no desaparece al fallar/reiniciar. El contador del DTO se deriva de pares.
+model ProcessingJobPar {
+  jobId        String          @db.VarChar(36)
+  periodoId    String          @db.VarChar(36)
+  orden        Int
+  estado       EstadoJob       @default(PENDIENTE)
+  errorCodigo  String?         @db.VarChar(64)
+  errorDetalle String?         @db.Text
+  updatedAt    DateTime        @updatedAt @db.DateTime(3)
+  completedAt  DateTime?       @db.DateTime(3)
+  job          ProcessingJob   @relation(fields: [jobId], references: [jobId], onDelete: Restrict, onUpdate: Restrict)
+  periodo      PeriodoEmpleado @relation(fields: [periodoId], references: [periodoId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([jobId, periodoId])
+  @@unique([jobId, orden])
+  @@index([periodoId, estado])
+}
