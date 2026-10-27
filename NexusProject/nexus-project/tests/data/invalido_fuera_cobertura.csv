@@ -1,0 +1,2 @@
+employee_id,period_start,period_end,horas_extra,dias_consecutivos_sin_descanso,tareas_activas,tareas_pendientes,tareas_vencidas,vacaciones_pendientes_dias,horas_trabajadas,dias_desde_ultimas_vacaciones
+EMP-051,2026-10-05,2026-10-11,10,5,8,3,1,5,50,
