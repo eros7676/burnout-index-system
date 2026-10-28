@@ -1,6 +1,6 @@
 # CU02: reglas de referencia
 
-Copia de referencia de DOCUMENTACION (26/10/2026). Cambios deben sincronizarse con contratos y pruebas.
+Referencia sincronizada con [DOCUMENTACION vigente](<../DOCUMENTACION - 3 Plus.pdf>) el 28/10/2026. Alcance académico: Entrega 3 Plus final, alfa-1. Los cambios contractuales deben sincronizarse con tipos, consumidores y pruebas.
 
 4. CU02 · CALCULAR ÍNDICE DE RIESGO DE SOBRECARGA
 
@@ -26,7 +26,7 @@ Persistir la evaluación y solicitar CU03 para construir el informe, incluso si 
 
 HE (horas extra): cantidad de horas extra de la SEMANA. Valor ≥ 0. Umbral inicial ilustrativo U_HE = 8 h/semana.
 
-DS (días seguidos): días trabajados consecutivos al final de esa semana, incluyendo antecedentes. Umbral inicial U_DS = 6 días.
+DS (días seguidos): días trabajados consecutivos al final de esa semana, incluyendo antecedentes. Umbral inicial U_DS = 6 días. P0 valida un entero no negativo; no cruza la continuidad de la racha entre semanas. La consistencia cronológica de origen corresponde a quien prepara los datos. El fixture 9→14 es aceptado por el contrato P0; una validación cronológica adicional queda para una ampliación posterior.
 
 CT · Proporción de pendientes y vencidas
 
@@ -38,7 +38,7 @@ Si A=0, CT=0 solo cuando P=V=0. Si no se cumple 0≤V≤P≤A, CU01 rechaza el r
 
 Umbral v1: U_CT=0,35. CT mide acumulación relativa, no esfuerzo ni productividad. A=10, P=10 y V=0 da CT=0,40 y supera este umbral: es el comportamiento deliberado de la regla demostrativa, no prueba de sobrecarga. Por sí solo no basta para ALTO.
 
-VP (vacaciones pendientes): saldo de días al cierre. Umbral inicial U_VP = 10 días. Este indicador es una señal contextual de recuperación pendiente, no evidencia concluyente de sobrecarga.
+VP (vacaciones pendientes): saldo de días al cierre. Umbral inicial U_VP = 10 días. Este indicador es una señal contextual de recuperación pendiente, no evidencia concluyente de sobrecarga. Las demás licencias no forman parte de las variables ponderadas de la v1.
 
 4.3 Normalización, fórmula y pesos iniciales
 
@@ -92,7 +92,7 @@ Paso B · Ponderar sin redondear
 
 contribución_i = peso_i × score_i
 
-Los pesos HE=0,30, DS=0,30, CT=0,25 y VP=0,15 suman 1. Cada contribución se expresa en puntos del índice; no en porcentaje de causalidad.
+Los pesos HE=0,30, DS=0,30, CT=0,25 y VP=0,15 suman 1. Cada contribución se expresa en puntos del índice; no en porcentaje de causalidad. El mayor peso de HE y DS prioriza jornada extendida y continuidad sin recuperación; CT y VP aportan señales complementarias. Los umbrales iniciales permiten contrastar escenarios simulados y se revisarán según las pruebas y la devolución docente, sin asumir validación empírica.
 
 Paso C · Obtener el índice
 
