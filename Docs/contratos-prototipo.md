@@ -1,6 +1,6 @@
 # Contratos y pruebas del prototipo
 
-Referencia tomada de DOCUMENTACION el 26/10/2026. Si cambia el acuerdo, actualizar tipos, consumidores y pruebas juntos.
+Referencia sincronizada con [DOCUMENTACION vigente](<../DOCUMENTACION - 3 Plus.pdf>) el 28/10/2026 y el alcance académico final de Entrega 3 Plus (alfa-1). Si cambia el acuerdo contractual, actualizar tipos, consumidores y pruebas juntos.
 
 1. Diccionario de entrada CSV
 
@@ -803,3 +803,20 @@ Este flujo representa lo que ocurre al usar la app. El mapa de Tareas Resumen re
 DTO: objeto que un módulo entrega a otro. Contrato: forma y significado obligatorio de entradas/salidas. Seed: datos iniciales ficticios y reglas. Fingerprint: huella estable de contenido normalizado. Idempotencia: repetir una operación sin duplicar su efecto. Snapshot: copia de los datos/reglas usados. Transacción: guardado íntegro o rollback. Vigente: resultado actual por empleado/semana. Job: trabajo persistido de procesamiento. Lease: permiso temporal exclusivo para ejecutarlo. Mock: respuesta simulada con el mismo contrato. E2E: prueba desde carga del archivo hasta resultado visible.
 
 Hecho: contrato compartido usado, criterios de la tarea cumplidos, pruebas relevantes aprobadas, npm run build correcto y PR revisado. README permite instalar, migrar, seedear, ejecutar y repetir el ejemplo sin instrucciones verbales; incluir .env.example, versiones en lockfile, comandos de pruebas y recuperación de job. T16 valida instalación limpia. Cada cambio contractual se actualiza en consumidores y pruebas antes de integrar.
+
+
+## 9. Verificación de los requerimientos no funcionales
+
+Referencia: RNF01–RNF07 de Entrega 3 Plus, alfa-1. Son criterios por comprobar y registrar en T16; no afirman pruebas aprobadas ni amplían P0. Los requisitos del sistema final conservan su etapa.
+
+| Criterio | Etapa | Verificación y aceptación |
+| --- | --- | --- |
+| RNF01 · Rendimiento | P0 / T16 | 49 evaluables, un operador local y CSV de hasta 1.000 filas y 5 MiB: 95 % de consultas de tablero ≤3 s; validación más cálculo del lote ≤60 s. Registrar equipo, entorno, lote y mediciones. 10 usuarios y 10.000 registros: ampliación posterior, sin bloquear P0. |
+| RNF02 · Seguridad | P1 / sistema final | P1: autorización por rol y ámbito en servidor; bloquear consulta de equipo ajeno. Sistema final: identidad autenticada, HTTPS y hash seguro de contraseñas; empleado sin acceso a índices/alertas. P0 local ficticio no acredita estos controles. |
+| RNF03 · Usabilidad | P0 / T16 | Nivel con texto y color; errores con campo y causa. Operador equivalente a RRHH puede importar un CSV válido e identificar errores de otro inválido sin asistencia del desarrollador. |
+| RNF04 · Fiabilidad | P0 / P1 / final | P0: carga inválida sin parciales; repetir archivo, confirmación o job no duplica datos/alertas. P1: fallo y reintento de correo simulado conservan alerta. Correo real se verifica al incorporarlo en el sistema final. |
+| RNF05 · Escalabilidad | Ampliación posterior | Incorporar equipos/empleados sin cambiar el cálculo. Prueba con 100 empleados simulados, integridad y ámbito de acceso cuando haya roles. No sustituye el dataset de 49 ni obliga a modificar T03 para P0. |
+| RNF06 · Mantenibilidad | P0 / T16 | Separación de importación, cálculo, notificación y persistencia. Cambiar pesos/umbrales mediante configuración versionada sin alterar el motor. Probar datos completos, insuficientes, picos aislados y varios factores sostenidos. |
+| RNF07 · Portabilidad | P0 / T16 | Ejecutar importación y consultas equivalentes en Chrome y Firefox de escritorio. Mismo conjunto de datos y configuración produce los mismos resultados; documentar versiones de navegador. No exige instalar software cliente. |
+
+Registro de evidencia: fecha, entorno, datos, pasos, resultado esperado/obtenido y estado (cumple, falla o pendiente). Un criterio futuro queda pendiente de su etapa. La compatibilidad documental no certifica rendimiento, seguridad ni funcionamiento. Esta matriz no requiere cambiar contratos, fórmula, seed ni fixtures T01–T03.
