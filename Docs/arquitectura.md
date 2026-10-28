@@ -16,7 +16,7 @@ La raíz ejecutable de Next.js es NexusProject/nexus-project. Se conserva para a
 | src/components/ | Componentes React; dashboard-home es una maqueta. |
 | prisma/ | Esquema, migración inicial y seed T02. |
 | templates/ | Encabezado CSV y ejemplo contractual. |
-| tests/ | Contratos T01, catálogo/fechas T02 y pruebas MySQL separadas; circuito completo pendiente. |
+| tests/ | Contratos T01, catálogo/fechas T02, archivos/escenarios T03 y pruebas MySQL separadas; circuito completo pendiente. |
 
 ## API acordada
 
@@ -42,7 +42,7 @@ No existe autenticación implementada por usar un grupo de rutas llamado (dashbo
 
 ## Contratos
 
-[Contratos y pruebas](contratos-prototipo.md) contiene tipos, entradas/salidas, estados y ejemplo. CU02 y sus fórmulas se rigen por DOCUMENTACION. Si cambia la fuente, sincronizar el repositorio antes de integrar. La entrega PDF y Docs/DashboardCode.md son antecedentes, no sustituyen el contrato vigente.
+[Contratos y pruebas](contratos-prototipo.md) contiene tipos, entradas/salidas, estados y ejemplo. CU02 y sus fórmulas se rigen por DOCUMENTACION. Si cambia la fuente, sincronizar el repositorio antes de integrar. Las fuentes vigentes son [DOCUMENTACION](<../DOCUMENTACION - 3 Plus.pdf>) para el contrato del prototipo y [Entrega 3 Plus](<../Grupo 8 - Entrega 3 Plus.pdf>) para el alcance académico final (alfa-1). P0/P1/sistema final indican etapas y no funcionalidades ya implementadas. `Docs/DashboardCode.md` es una maqueta histórica; sus textos, datos y alertas no definen las reglas vigentes.
 
 [Guía T01](t01-base.md): imports compartidos, ejemplos de mocks y comandos de verificación. Las adiciones HTTP describen el contrato existente; no agregan nuevas operaciones de negocio.
 
