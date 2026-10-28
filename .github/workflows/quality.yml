@@ -6,6 +6,8 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mysql://demo:demo@localhost:3306/demo
     defaults:
       run:
         working-directory: NexusProject/nexus-project
@@ -17,10 +19,9 @@ jobs:
           cache: npm
           cache-dependency-path: NexusProject/nexus-project/package-lock.json
       - run: npm ci
+      - run: npm run db:generate
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
       - run: npm run db:validate
-        env:
-          DATABASE_URL: mysql://demo:demo@localhost:3306/demo

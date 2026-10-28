@@ -10,8 +10,12 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "tsc -p tsconfig.test.json && node scripts/test.mjs",
     "db:validate": "prisma validate",
+    "db:compile-seed": "node scripts/seed.mjs --compile-only",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:test": "tsc -p tsconfig.test.json && node scripts/test.mjs --mysql"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -20,6 +24,7 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "dotenv": "^16.6.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -14,7 +14,26 @@ function buscarTests(directorio) {
   });
 }
 
-const archivos = buscarTests(".test-build/tests").sort();
+const mysql = process.argv.includes("--mysql");
+if (mysql && !process.env.TEST_DATABASE_URL) {
+  throw new Error(
+    "db:test requiere TEST_DATABASE_URL apuntando a una base MySQL de pruebas migrada.",
+  );
+}
+if (mysql) {
+  const destino = new URL(process.env.TEST_DATABASE_URL);
+  if (
+    destino.protocol !== "mysql:" ||
+    !/^\/[A-Za-z0-9_]+_test$/.test(destino.pathname)
+  ) {
+    throw new Error(
+      "TEST_DATABASE_URL debe apuntar a una base MySQL cuyo nombre termine en _test.",
+    );
+  }
+}
+const archivos = buscarTests(".test-build/tests")
+  .filter((archivo) => archivo.endsWith(".mysql.test.js") === mysql)
+  .sort();
 if (archivos.length === 0)
   throw new Error("No se encontraron pruebas compiladas.");
 const resultado = spawnSync(process.execPath, ["--test", ...archivos], {

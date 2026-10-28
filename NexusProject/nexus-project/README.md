@@ -12,10 +12,12 @@ Ejecutar npm ci, npm run dev, npm run lint, npm run typecheck, npm test y npm ru
 - src/server/services: CU01/CU02/CU03, con motor CU02 puro.
 - src/server/repositories: acceso a Prisma.
 - src/app/api: rutas HTTP definidas en la documentación.
-- prisma/: única ubicación de esquema y futuras migraciones/seed.
+- prisma/: esquema, migración inicial y seed T02.
 - templates/: CSV de referencia.
-- tests/: pruebas base T01; escenarios funcionales pendientes.
+- tests/: pruebas base T01, catálogo/fechas T02 y pruebas MySQL separadas.
 
 La pantalla actual es una maqueta con datos ficticios fijos. No calcula índices ni envía notificaciones.
 
 Ver [guía T01](../../Docs/t01-base.md) para consumir contratos y mocks sin redefinirlos.
+
+Ver [guía T02](../../Docs/t02-persistencia.md) para persistencia. Con MySQL disponible: `npm run db:generate`, `npm run db:deploy` y `npm run db:seed`. El seed carga catálogo y reglas v1; no genera evaluaciones. `npm run db:test` requiere una base de pruebas independiente. La migración y las siete comprobaciones MySQL de T02 pasaron localmente el 27/10/2026.

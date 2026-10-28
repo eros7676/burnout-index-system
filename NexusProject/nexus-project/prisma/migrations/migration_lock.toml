@@ -1,0 +1,2 @@
+# Do not edit manually. Commit this file with the migrations.
+provider = "mysql"
