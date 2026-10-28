@@ -1,3 +1,7 @@
+# Maqueta visual histórica
+
+Este archivo conserva una propuesta HTML de interfaz con datos fijos. No define contratos ni acredita cálculo, alertas, correo, seguridad o cumplimiento normativo. Sus niveles, denominadores y textos pueden diferir de las reglas actuales; INCOMPLETO vigente conserva un índice numérico cuando solo falta historial. Para implementar, usar [DOCUMENTACION vigente](<../DOCUMENTACION - 3 Plus.pdf>), [contratos](contratos-prototipo.md) y [CU02](cu02-reglas.md).
+
 <!DOCTYPE html>
 
 <html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
