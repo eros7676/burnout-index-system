@@ -41,7 +41,7 @@ export const empleadosSemilla = [
   }),
 ] satisfies Prisma.EmpleadoCreateManyInput[];
 
-// Bootstrap de la regla acordada. El validador/script de nuevas versiones es T09.
+// Bootstrap de v1. Las versiones siguientes se publican con npm run rules:publish.
 // No importar mocks: sus identificadores y huellas no son datos persistibles.
 export const reglasSemilla = {
   version: "v1",
