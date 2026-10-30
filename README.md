@@ -13,9 +13,11 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 - [DOCUMENTACION: alcance, casos de uso y reglas](https://docs.google.com/document/d/13uTkbb7unMw-kcXwMvuIkLGyR5vwCOslZ-HQNOGouhQ/edit)
 - [DOCUMENTACION vigente en PDF](<DOCUMENTACION - 3 Plus.pdf>)
 - [Entrega 3 Plus final en PDF](<Grupo 8 - Entrega 3 Plus.pdf>) — referencia académica; versión final alfa-1.
+- [Tareas del primer prototipo](Docs/tareas-prototipo.md)
 - [Tareas P0 con casillas](https://github.com/eros7676/burnout-index-system/issues/2)
 - [Contratos y pruebas de referencia](Docs/contratos-prototipo.md)
 - [Mapa de carpetas y API](Docs/arquitectura.md)
+- [Guía T09](Docs/t09-reglas.md)
 
 T03 incorpora la plantilla de 138 filas para 49 personas evaluables, archivos de errores y escenarios, resultados esperados y pruebas de datos. Ver [guía T03](NexusProject/nexus-project/tests/data/README.md). Estos archivos preparan la integración; no implementan importación ni cálculo.
 
@@ -65,7 +67,7 @@ npm run db:validate
 
 `db:generate` genera el cliente sin conectarse a MySQL; `db:validate` necesita una DATABASE_URL con formato válido pero no abre conexión. `db:deploy` aplica las migraciones versionadas y `db:seed` carga el catálogo ficticio y reglas v1. `db:migrate` se reserva para desarrollar nuevas migraciones y requiere MySQL y permisos para una shadow database.
 
-El seed puede repetirse sin sobrescribir filas existentes: cuatro equipos, 45 técnicos, cuatro Team Leads y un gerente (50 personas, 49 evaluables según los tipos P0). Conserva EMP-001 → TL-01 → GER-01. No precarga registros laborales, evaluaciones ni alertas: el CSV del ejemplo debe poder importarse desde cero. Los archivos y escenarios T03 ya están en `templates/` y `tests/data/`; el script de nuevas reglas corresponde a T09.
+El seed puede repetirse sin sobrescribir filas existentes: cuatro equipos, 45 técnicos, cuatro Team Leads y un gerente (50 personas, 49 evaluables según los tipos P0). Conserva EMP-001 → TL-01 → GER-01. No precarga registros laborales, evaluaciones ni alertas: el CSV del ejemplo debe poder importarse desde cero. Los archivos y escenarios T03 ya están en `templates/` y `tests/data/`. Las versiones posteriores a v1 se publican con el script de [T09](Docs/t09-reglas.md).
 
 `npm test` ejecuta contratos/mocks T01 y comprobaciones de catálogo/fechas T02 y archivos/escenarios T03, sin MySQL. `npm run db:test` ejecuta exclusivamente las pruebas MySQL y exige TEST_DATABASE_URL para una base migrada cuyo nombre termine en `_test`; ver la guía T02. Las siete comprobaciones MySQL de T02 pasaron en `nexus_t02_test`. T07/T08/T16 deben agregar las pruebas del motor y del circuito completo.
 

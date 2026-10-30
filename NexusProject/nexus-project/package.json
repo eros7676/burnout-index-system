@@ -15,7 +15,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "db:test": "tsc -p tsconfig.test.json && node scripts/test.mjs --mysql"
+    "db:test": "tsc -p tsconfig.test.json && node scripts/test.mjs --mysql",
+    "rules:publish": "node scripts/rules-publish.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
