@@ -248,4 +248,4 @@ T02 sostiene las operaciones que persisten datos. T16 verifica todas las P0. T06
 - T01 está en el código: contratos, catálogo HTTP, errores, mocks y pruebas base. La guía es [t01-base.md](t01-base.md). Los mocks no implementan los endpoints ni el motor.
 - T02 está en el código: esquema Prisma, migración inicial, seed y pruebas MySQL. La guía es [t02-persistencia.md](t02-persistencia.md). Eso no completa CU01, CU02 ni CU03.
 - T03 está en el repositorio: plantilla, escenarios y pruebas de datos. No implementa la importación ni el cálculo.
-- T09 ya valida una regla y publica una versión nueva con su trabajo de reevaluación. El recálculo sigue en T07 y T08, y las pruebas de T09 todavía no están. Las pruebas del motor y del circuito completo corresponden a T07, T08 y T16.
+- T09 valida una regla y publica una versión nueva con su trabajo de reevaluación. Sus pruebas de validación están en `npm test` y las de publicación/persistencia en `npm run db:test`, con una base MySQL de pruebas migrada. El recálculo sigue en T07 y T08. Las pruebas del motor y del circuito completo corresponden a T07, T08 y T16.

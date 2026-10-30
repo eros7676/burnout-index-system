@@ -31,3 +31,5 @@ El JSON tiene la forma de `ConfiguracionIndice`. Un archivo válido sería:
 Si algo de eso falla, no se escribe nada. Si la regla es válida, en la misma transacción se inserta la fila y un `ProcessingJob` de origen `CAMBIO_REGLAS`. El trabajo incluye las semanas confirmadas cuyo lunes es igual o posterior al inicio de esta versión y anterior al inicio de una versión más nueva, si existe. El orden es empleado y fecha. Si todavía no hay semanas confirmadas, el trabajo queda `COMPLETADO` con cero pares: las importaciones posteriores toman la versión vigente según la fecha. v1 no se actualiza.
 
 Una regla inválida termina con código de salida 1 y el detalle por campo. El comando no imprime la URL de la base.
+
+Pruebas permanentes: `npm test` comprueba validación y límites de la configuración. `npm run db:test` comprueba publicación atómica, preservación de v1, duplicados, intervalos, orden de pares y trabajos vacíos; requiere `TEST_DATABASE_URL` de una base migrada cuyo nombre termine en `_test`. Ver [las instrucciones de pruebas](../NexusProject/nexus-project/tests/README.md).

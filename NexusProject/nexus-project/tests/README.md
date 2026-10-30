@@ -12,6 +12,8 @@ El CSV de templates/ejemplo-dos-semanas.csv espera índices 83,71 y 91,21: prime
 
 ## T03 y verificación de T16
 
+T09 agrega `reglas.test.ts` a `npm test`: configuración completa, campos obligatorios, pesos y tolerancia de suma, umbrales, fechas UTC, vigencia en lunes y restricciones P0. `reglas.mysql.test.ts` se ejecuta con `npm run db:test` y exige una base migrada en `TEST_DATABASE_URL` cuyo nombre termine en `_test`. Comprueba rechazo sin escrituras, preservación de v1, duplicados de versión/vigencia, trabajos vacíos, intervalo con y sin versión siguiente, exclusión de períodos sin registros, orden de pares y rollback si falla la creación del trabajo. Los escenarios revierten sus datos, incluso al fallar una aserción. No ejecutan el motor T07/T08.
+
 `npm test` también descubre `data.test.ts`: comprueba encabezados, cobertura del catálogo, archivos de escenarios y resultados de referencia de T03, sin MySQL. Ver [preparación de cada archivo](data/README.md). Estas comprobaciones no sustituyen las futuras pruebas de importación, motor y alertas.
 
 T16 debe registrar evidencia de los RNF01–RNF07 según [Contratos y pruebas, sección 9](../../../Docs/contratos-prototipo.md#9-verificación-de-los-requerimientos-no-funcionales), distinguiendo P0, P1 y sistema final. Los controles futuros se registran pendientes; las pruebas actuales no acreditan rendimiento, autorización ni correo.
