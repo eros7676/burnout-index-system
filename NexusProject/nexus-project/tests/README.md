@@ -21,3 +21,7 @@ T16 debe registrar evidencia de los RNF01–RNF07 según [Contratos y pruebas, s
 ## T08
 
 `evaluaciones.test.ts` prueba huellas canónicas y JSON exacto. `evaluaciones.mysql.test.ts` ejecuta el motor real con persistencia, snapshots, versiones, concurrencia y protección por token/lease. Se ejecuta con `npm run db:test` en una base MySQL terminada en `_test`; ver [guía T08](../../../Docs/t08-evaluaciones.md).
+
+## T10
+
+`informes.test.ts` cubre explicaciones de los cuatro niveles, el pico aislado MEDIO, el orden de factores y las recomendaciones. `informes.mysql.test.ts` lee evaluaciones reales, historial, snapshots y alertas sin escribir. Se ejecuta con `npm run db:test`; ver [guía T10](../../../Docs/t10-informes.md).

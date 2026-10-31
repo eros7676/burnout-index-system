@@ -18,10 +18,11 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 - [Contratos y pruebas de referencia](Docs/contratos-prototipo.md)
 - [Mapa de carpetas y API](Docs/arquitectura.md)
 - [Guía T09](Docs/t09-reglas.md)
+- [Guía T10](Docs/t10-informes.md)
 
 T03 incorpora la plantilla de 138 filas para 49 personas evaluables, archivos de errores y escenarios, resultados esperados y pruebas de datos. Ver [guía T03](NexusProject/nexus-project/tests/data/README.md). Estos archivos preparan la integración; no implementan importación ni cálculo.
 
-T07 implementa `calcularEvaluacion`: fórmula, ranking, clasificación pura y persistencia semanal matemática, sin acceso a base de datos. Ver [guía T07](Docs/t07-calculo.md). T08 agrega persistencia de evaluaciones, snapshots, historial, vigencia, reintentos y protección frente a cálculos obsoletos; ver [guía T08](Docs/t08-evaluaciones.md). La integración HTTP y CU03 corresponde a las tarjetas siguientes.
+T07 implementa `calcularEvaluacion`: fórmula, ranking, clasificación pura y persistencia semanal matemática, sin acceso a base de datos. Ver [guía T07](Docs/t07-calculo.md). T08 agrega persistencia de evaluaciones, snapshots, historial, vigencia, reintentos y protección frente a cálculos obsoletos; ver [guía T08](Docs/t08-evaluaciones.md). T10 arma el informe individual desde esa evaluación guardada, sin recalcular ni crear alertas; ver [guía T10](Docs/t10-informes.md). La integración HTTP y CU03 corresponde a las tarjetas siguientes.
 
 ## Alcance
 

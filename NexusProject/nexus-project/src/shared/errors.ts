@@ -17,7 +17,8 @@ export type CodigoErrorDominio =
   | CodigoErrorFila
   | "CONTRATO_INVALIDO"
   | "CONFIGURACION_INVALIDA"
-  | "REQUIERE_REPROCESO";
+  | "REQUIERE_REPROCESO"
+  | "NO_ENCONTRADO";
 export const CODIGOS_WARNING = ["HORAS_EXTREMAS"] as const;
 
 /** El motor lanza este error; nunca fabrica un nivel para representar un fallo. */

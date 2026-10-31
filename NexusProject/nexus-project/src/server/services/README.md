@@ -7,3 +7,5 @@ T09 está en `reglas.ts` (validación pura) y `publicar-reglas.ts` (versión inm
 T07 está en `calculo.ts`: `calcularEvaluacion` devuelve el `Calculo` completo sin IO ni mutaciones. Ver [Docs/t07-calculo.md](../../../../../Docs/t07-calculo.md). T08 consume este motor para persistir evaluaciones.
 
 T08 está en `evaluaciones.ts`: carga versiones y reglas aplicables, publica evaluaciones idempotentemente, conserva historial y procesa sucesores inmediatos. Ver [Docs/t08-evaluaciones.md](../../../../../Docs/t08-evaluaciones.md) para integración con jobs y CU03.
+
+T10 está en `informes.ts` y arma el `InformeDTO` con `obtenerEvaluacion`. No recalcula ni crea alertas. Las sugerencias reutilizables por T11 están en `recomendaciones.ts`. Ver [Docs/t10-informes.md](../../../../../Docs/t10-informes.md).
