@@ -18,6 +18,8 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 - [Contratos y pruebas de referencia](Docs/contratos-prototipo.md)
 - [Mapa de carpetas y API](Docs/arquitectura.md)
 - [Guía T09](Docs/t09-reglas.md)
+- [Guía T05: validaciones CSV y duplicados](Docs/t05-validaciones.md)
+- [Diagnóstico de Turbopack y conexión local de sus workers](Docs/turbopack-diagnostico.md)
 
 T03 incorpora la plantilla de 138 filas para 49 personas evaluables, archivos de errores y escenarios, resultados esperados y pruebas de datos. Ver [guía T03](NexusProject/nexus-project/tests/data/README.md). Estos archivos preparan la integración; no implementan importación ni cálculo.
 
