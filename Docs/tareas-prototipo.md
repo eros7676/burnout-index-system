@@ -77,7 +77,7 @@ Responsable: Eros. Depende de: T01, T09 (definiciones acordadas).
 
 Implementar `calcularEvaluacion` conforme a CU02, separando puntuación y clasificación del acceso a la base. CT usa el total semanal, incluidas las completadas. `score_i = min(100, 50 × Xi / Ui)`. Redondear solo el índice final. Ranking por contribución, con desempate HE, DS, CT, VP. Comparar el índice contractual redondeado.
 
-Listo cuando: hay tests de normalización, valores límite, ranking, división por cero y el ejemplo de índice ≈ 83,71. La fórmula se prueba sin base de datos.
+Listo cuando: hay pruebas sin base de datos de normalización y CT=0, límites y redondeo contractual, ranking y desempates, el ejemplo de índice ≈ 83,71, clasificación y persistencia matemática con historial insuficiente, persistido, pico aislado y hueco, entradas inválidas y concordancia con el oráculo T03.
 
 ### T04 · API CU01 de validación y confirmación CSV
 
