@@ -36,7 +36,11 @@ const archivos = buscarTests(".test-build/tests")
   .sort();
 if (archivos.length === 0)
   throw new Error("No se encontraron pruebas compiladas.");
-const resultado = spawnSync(process.execPath, ["--test", ...archivos], {
+const argumentos = ["--test"];
+// Las suites MySQL comparten fixtures de catálogo como v1; ejecutarlas en
+// procesos paralelos provoca conflictos aunque cada escenario revierta.
+if (mysql) argumentos.push("--test-concurrency=1");
+const resultado = spawnSync(process.execPath, [...argumentos, ...archivos], {
   stdio: "inherit",
 });
 if (resultado.error) throw resultado.error;
