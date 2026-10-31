@@ -17,3 +17,7 @@ T09 agrega `reglas.test.ts` a `npm test`: configuración completa, campos obliga
 `npm test` también descubre `data.test.ts`: comprueba encabezados, cobertura del catálogo, archivos de escenarios y resultados de referencia de T03, sin MySQL. Ver [preparación de cada archivo](data/README.md). Estas comprobaciones no sustituyen las futuras pruebas de importación, motor y alertas.
 
 T16 debe registrar evidencia de los RNF01–RNF07 según [Contratos y pruebas, sección 9](../../../Docs/contratos-prototipo.md#9-verificación-de-los-requerimientos-no-funcionales), distinguiendo P0, P1 y sistema final. Los controles futuros se registran pendientes; las pruebas actuales no acreditan rendimiento, autorización ni correo.
+
+## T08
+
+`evaluaciones.test.ts` prueba huellas canónicas y JSON exacto. `evaluaciones.mysql.test.ts` ejecuta el motor real con persistencia, snapshots, versiones, concurrencia y protección por token/lease. Se ejecuta con `npm run db:test` en una base MySQL terminada en `_test`; ver [guía T08](../../../Docs/t08-evaluaciones.md).

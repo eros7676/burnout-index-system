@@ -4,7 +4,7 @@ Prototipo para identificar indicadores de posible sobrecarga laboral. Next.js + 
 
 ## Estado y referencias
 
-Existe una base de Next.js y una **maqueta visual con datos fijos**, disponible en / y /home. T02 agrega el esquema Prisma, migración inicial, conexión y seed; los módulos funcionales y su integración siguen pendientes. No confundir carpetas reservadas con funcionalidades terminadas.
+Existe una base de Next.js y una **maqueta visual con datos fijos**, disponible en / y /home. T02 agrega el esquema Prisma, migración inicial, conexión y seed; CU02 ya cuenta con motor puro T07 y persistencia T08. La importación, las consultas, CU03 y su integración siguen pendientes. No confundir carpetas reservadas con funcionalidades terminadas.
 
 T01 incorpora contratos TypeScript, catálogo HTTP, errores de dominio, mocks tipados y pruebas base sin base de datos. La guía de uso está en [Docs/t01-base.md](Docs/t01-base.md). Los mocks no implementan los endpoints ni el motor del índice.
 
@@ -21,7 +21,7 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 
 T03 incorpora la plantilla de 138 filas para 49 personas evaluables, archivos de errores y escenarios, resultados esperados y pruebas de datos. Ver [guía T03](NexusProject/nexus-project/tests/data/README.md). Estos archivos preparan la integración; no implementan importación ni cálculo.
 
-T07 implementa `calcularEvaluacion`: fórmula, ranking, clasificación pura y persistencia semanal matemática, sin acceso a base de datos. Ver [guía T07](Docs/t07-calculo.md). La persistencia de evaluaciones e integración siguen pendientes en T08 y las tareas correspondientes.
+T07 implementa `calcularEvaluacion`: fórmula, ranking, clasificación pura y persistencia semanal matemática, sin acceso a base de datos. Ver [guía T07](Docs/t07-calculo.md). T08 agrega persistencia de evaluaciones, snapshots, historial, vigencia, reintentos y protección frente a cálculos obsoletos; ver [guía T08](Docs/t08-evaluaciones.md). La integración HTTP y CU03 corresponde a las tarjetas siguientes.
 
 ## Alcance
 
@@ -71,7 +71,7 @@ npm run db:validate
 
 El seed puede repetirse sin sobrescribir filas existentes: cuatro equipos, 45 técnicos, cuatro Team Leads y un gerente (50 personas, 49 evaluables según los tipos P0). Conserva EMP-001 → TL-01 → GER-01. No precarga registros laborales, evaluaciones ni alertas: el CSV del ejemplo debe poder importarse desde cero. Los archivos y escenarios T03 ya están en `templates/` y `tests/data/`. Las versiones posteriores a v1 se publican con el script de [T09](Docs/t09-reglas.md).
 
-`npm test` ejecuta contratos/mocks T01 y comprobaciones de catálogo/fechas T02 y archivos/escenarios T03, sin MySQL. `npm run db:test` ejecuta exclusivamente las pruebas MySQL y exige TEST_DATABASE_URL para una base migrada cuyo nombre termine en `_test`; ver la guía T02. Las siete comprobaciones MySQL de T02 pasaron en `nexus_t02_test`. T07 incorpora el motor puro y sus pruebas; T08/T16 deben agregar persistencia del cálculo y pruebas del circuito completo.
+`npm test` ejecuta contratos/mocks T01 y comprobaciones de catálogo/fechas T02 y archivos/escenarios T03, sin MySQL. `npm run db:test` ejecuta exclusivamente las pruebas MySQL y exige TEST_DATABASE_URL para una base migrada cuyo nombre termine en `_test`; ver la guía T02. Las siete comprobaciones MySQL de T02 pasaron en `nexus_t02_test`. T07 incorpora el motor puro y sus pruebas; T08 agrega pruebas de persistencia del motor con MySQL; T16 debe verificar el circuito completo.
 
 ## Trabajo en equipo
 
