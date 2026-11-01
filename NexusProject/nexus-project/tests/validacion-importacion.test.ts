@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { empleadosSemilla } from "../prisma/seed-data";
+import { empleadosSemilla, reglasSemilla } from "../prisma/seed-data";
 import {
   COLUMNAS_CSV,
   ErrorFormatoImportacion,
@@ -22,6 +22,7 @@ function fuente(historico: HistoricoValidacion[] = []): FuenteValidacion {
   return {
     empleados: async () => empleadosSemilla,
     registros: async () => historico,
+    primeraVigencia: async () => reglasSemilla.effectiveFrom,
   };
 }
 const validar = (bytes: Uint8Array, f = fuente(), reloj = ahora) =>
@@ -150,6 +151,22 @@ test("T05: fechas reales y cierre exacto en Buenos Aires independiente de UTC", 
   );
 });
 
+test("T05: semanas sin reglas de cálculo vigentes se rechazan al validar", async () => {
+  // Accepted, such a week would fail in processing and block the whole job.
+  const previa = await validar(
+    csv({ period_start: "2025-12-29", period_end: "2026-01-04" }),
+  );
+  assert.equal(previa.status, "RECHAZADA");
+  assert.deepEqual(
+    previa.errores.map((e) => [e.campo, e.codigo]),
+    [["period_start", "FECHA_INVALIDA"]],
+  );
+  const primera = csv({ period_start: "2026-01-05", period_end: "2026-01-11" });
+  assert.equal((await validar(primera)).status, "VALIDADA");
+  const sinReglas = { ...fuente(), primeraVigencia: async () => null };
+  assert.equal((await validar(csv(), sinReglas)).status, "RECHAZADA");
+});
+
 test("T05: números estrictos, rangos y relaciones", async () => {
   for (const horas_extra of [
     "0x10",
@@ -241,12 +258,15 @@ test("T05: cotejo puede repetirse con histórico/catálogo cambiados antes de co
   );
   assert.equal(r.errores[0].codigo, "CONFLICTO_HISTORICO");
   assert.deepEqual(r.filasNuevas, []);
+  // The sample lists valid rows only; a conflicting row is not one.
+  assert.deepEqual(r.muestra, []);
   const identica = await validarFilasImportacion(
     filas,
     fuente([{ ...datos, fingerprint: fingerprintDatos(datos) }]),
     ahora,
   );
   assert.equal(identica.omitidas, 1);
+  assert.deepEqual(identica.muestra, [datos]);
 });
 
 test("T05: parser CSV, límites, vacíos, encabezados y codificación", () => {

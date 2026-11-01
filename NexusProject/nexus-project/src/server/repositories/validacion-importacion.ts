@@ -54,5 +54,12 @@ export function fuenteValidacionPrisma(
           : [],
       );
     },
+    async primeraVigencia() {
+      const primera = await db.configuracionIndice.findFirst({
+        orderBy: { effectiveFrom: "asc" },
+        select: { effectiveFrom: true },
+      });
+      return primera ? fechaDesdeDb(primera.effectiveFrom) : null;
+    },
   };
 }
