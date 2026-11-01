@@ -172,7 +172,7 @@ export async function evaluarAfectados(
 
 /** Detalle histórico: vigente deriva del puntero, no de la fecha de creación. */
 export async function obtenerEvaluacion(
-  db: PrismaClient,
+  db: PrismaClient | Prisma.TransactionClient,
   evaluationId: string,
 ): Promise<Evaluacion | null> {
   const fila = await db.evaluacion.findUnique({

@@ -159,6 +159,36 @@ async function comprobarNext() {
     assert.equal(informe.alerta?.destinatarioId, "TL-01");
     assert.equal(informe.alerta.canal, "INTERNO");
     assert.equal(informe.alerta.estadoEnvio, "NO_APLICA");
+    async function consultar(ruta: string) {
+      const respuesta = await fetch(`${base}/api/${ruta}`);
+      assert.equal(respuesta.status, 200);
+      assert.equal(respuesta.headers.get("cache-control"), "no-store");
+      return respuesta.json();
+    }
+    const lista = await consultar("evaluaciones?employeeId=EMP-001&pageSize=1");
+    assert.equal(lista.total, 2);
+    assert.equal(lista.items[0].indice, 91.21);
+    assert.equal(lista.items[0].actualizado, true);
+    const detalleHttp = await consultar(
+      `evaluaciones/${lista.items[0].evaluationId}`,
+    );
+    assert.equal(detalleHttp.alerta.alertId, informe.alerta.alertId);
+    const resumen = await consultar(
+      "resumen?employeeId=EMP-001&periodStart=2026-10-12",
+    );
+    assert.equal(resumen.totalEvaluaciones, 1);
+    assert.equal(resumen.promedioIndice, 91.21);
+    const alertas = await consultar("alertas?employeeId=EMP-001");
+    assert.equal(alertas.total, 1);
+    assert.equal(alertas.items[0].vigencia, "ACTIVA");
+    assert.equal((await fetch(`${base}/api/evaluaciones?page=0`)).status, 400);
+    assert.equal(
+      (await fetch(`${base}/api/evaluaciones/inexistente`)).status,
+      404,
+    );
+    console.log(
+      "T13: cuatro rutas GET del build real verificadas con MySQL, filtros, informe, resumen y alerta.",
+    );
     const repetida = await validar();
     assert.equal(repetida.omitidas, 2);
     const sinTrabajo = await confirmar(repetida.importId);

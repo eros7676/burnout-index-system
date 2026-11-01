@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 import type { InformeDTO } from "../../shared/contracts";
 import { ErrorDominio } from "../../shared/errors";
 import {
@@ -16,7 +16,7 @@ import { recomendacionesDe } from "./recomendaciones";
  * No recalcula, no publica y no crea ni supera alertas.
  */
 export async function construirInforme(
-  db: PrismaClient,
+  db: PrismaClient | Prisma.TransactionClient,
   evaluationId: string,
 ): Promise<InformeDTO> {
   const evaluacion = await obtenerEvaluacion(db, evaluationId);

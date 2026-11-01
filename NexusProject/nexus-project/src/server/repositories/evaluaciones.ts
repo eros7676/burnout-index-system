@@ -32,7 +32,7 @@ export type PropietarioJob = { jobId: string; ownerToken: string };
 const reprocesar = (mensaje: string) =>
   new ErrorDominio("REQUIERE_REPROCESO", mensaje);
 
-function registroDesdeDb(
+export function registroDesdeDb(
   registro: RegistroDb,
   par: ParPeriodo,
 ): RegistroLaboral {
@@ -52,7 +52,7 @@ function registroDesdeDb(
     diasDesdeUltimasVacaciones: registro.diasDesdeUltimasVacaciones,
   };
 }
-function reglasDesdeDb(reglas: ReglasDb) {
+export function reglasDesdeDb(reglas: ReglasDb) {
   return validarConfiguracion({
     ...reglas,
     effectiveFrom: fechaDesdeDb(reglas.effectiveFrom),
