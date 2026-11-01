@@ -18,7 +18,7 @@ const informe = await construirInforme(db, evaluationId);
 - `factores` sigue el ranking guardado. `excedido` usa la lista guardada.
 - `explicacion` nombra el nivel guardado. Un índice de 70 o más con persistencia que no sostiene ALTO se explica como MEDIO. INCOMPLETO conserva el índice numérico. El texto dice que no es un diagnóstico.
 - `recomendaciones` está en `recomendaciones.ts`, puro y sin lectura de base, para que T11 pueda reutilizarlo. Son sugerencias de revisión humana, una por factor excedido y en el orden del ranking. Si no hay factores excedidos, hay una sola frase que no pide una acción automática.
-- `alerta` es la fila persistida de esa evaluación, con vigencia ACTIVA o SUPERADA, o `null` si T11 todavía no creó ninguna.
+- `alerta` es la fila persistida de esa evaluación, con vigencia ACTIVA o SUPERADA, o `null` si no hay alerta. T11 la crea durante el procesamiento; esta lectura no la genera.
 - El empleado sale del catálogo: nombre, equipo y tipo. No se agrega un snapshot de empleado al contrato.
 
 ## Verificación

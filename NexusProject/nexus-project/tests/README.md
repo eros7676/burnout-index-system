@@ -25,3 +25,7 @@ T16 debe registrar evidencia de los RNF01–RNF07 según [Contratos y pruebas, s
 ## T10
 
 `informes.test.ts` cubre explicaciones de los cuatro niveles, el pico aislado MEDIO, el orden de factores y las recomendaciones. `informes.mysql.test.ts` lee evaluaciones reales, historial, snapshots y alertas sin escribir. Se ejecuta con `npm run db:test`; ver [guía T10](../../../Docs/t10-informes.md).
+
+## T11
+
+`alertas.test.ts` cubre el destinatario de técnico y Team Lead, la incidencia sin responsable y el orden de causas y sugerencias. `alertas.mysql.test.ts` crea la alerta real de un ALTO, comprueba que no se duplica y que un nivel posterior distinto la deja SUPERADA. Se ejecuta con `npm run db:test`; ver [guía T11](../../../Docs/t11-alertas.md).

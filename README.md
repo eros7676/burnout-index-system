@@ -4,7 +4,7 @@ Prototipo para identificar indicadores de posible sobrecarga laboral. Next.js + 
 
 ## Estado y referencias
 
-Existe una base de Next.js y una **maqueta visual con datos fijos**, disponible en / y /home. T02 agrega el esquema Prisma, migración inicial, conexión y seed; CU02 ya cuenta con motor puro T07 y persistencia T08. La importación, las consultas, CU03 y su integración siguen pendientes. No confundir carpetas reservadas con funcionalidades terminadas.
+Existe una base de Next.js y una **maqueta visual con datos fijos**, disponible en / y /home. T02 agrega el esquema Prisma, migración inicial, conexión y seed; CU02 ya cuenta con motor puro T07 y persistencia T08. La importación, las consultas y la integración HTTP siguen pendientes. CU03 interno queda en T11. No confundir carpetas reservadas con funcionalidades terminadas.
 
 T01 incorpora contratos TypeScript, catálogo HTTP, errores de dominio, mocks tipados y pruebas base sin base de datos. La guía de uso está en [Docs/t01-base.md](Docs/t01-base.md). Los mocks no implementan los endpoints ni el motor del índice.
 
@@ -19,10 +19,11 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 - [Mapa de carpetas y API](Docs/arquitectura.md)
 - [Guía T09](Docs/t09-reglas.md)
 - [Guía T10](Docs/t10-informes.md)
+- [Guía T11](Docs/t11-alertas.md)
 
 T03 incorpora la plantilla de 138 filas para 49 personas evaluables, archivos de errores y escenarios, resultados esperados y pruebas de datos. Ver [guía T03](NexusProject/nexus-project/tests/data/README.md). Estos archivos preparan la integración; no implementan importación ni cálculo.
 
-T07 implementa `calcularEvaluacion`: fórmula, ranking, clasificación pura y persistencia semanal matemática, sin acceso a base de datos. Ver [guía T07](Docs/t07-calculo.md). T08 agrega persistencia de evaluaciones, snapshots, historial, vigencia, reintentos y protección frente a cálculos obsoletos; ver [guía T08](Docs/t08-evaluaciones.md). T10 arma el informe individual desde esa evaluación guardada, sin recalcular ni crear alertas; ver [guía T10](Docs/t10-informes.md). La integración HTTP y CU03 corresponde a las tarjetas siguientes.
+T07 implementa `calcularEvaluacion`: fórmula, ranking, clasificación pura y persistencia semanal matemática, sin acceso a base de datos. Ver [guía T07](Docs/t07-calculo.md). T08 agrega persistencia de evaluaciones, snapshots, historial, vigencia, reintentos y protección frente a cálculos obsoletos; ver [guía T08](Docs/t08-evaluaciones.md). T10 arma el informe individual desde esa evaluación guardada, sin recalcular ni crear alertas; ver [guía T10](Docs/t10-informes.md). T11 crea la alerta interna única cuando el nivel vigente es ALTO; ver [guía T11](Docs/t11-alertas.md). La integración HTTP corresponde a las tarjetas siguientes.
 
 ## Alcance
 

@@ -9,3 +9,5 @@ T07 está en `calculo.ts`: `calcularEvaluacion` devuelve el `Calculo` completo s
 T08 está en `evaluaciones.ts`: carga versiones y reglas aplicables, publica evaluaciones idempotentemente, conserva historial y procesa sucesores inmediatos. Ver [Docs/t08-evaluaciones.md](../../../../../Docs/t08-evaluaciones.md) para integración con jobs y CU03.
 
 T10 está en `informes.ts` y arma el `InformeDTO` con `obtenerEvaluacion`. No recalcula ni crea alertas. Las sugerencias reutilizables por T11 están en `recomendaciones.ts`. Ver [Docs/t10-informes.md](../../../../../Docs/t10-informes.md).
+
+T11 está en `alertas.ts` y `destinatario-alerta.ts`. Crea la alerta interna única de un ALTO vigente dentro del tx de `alPublicar`. Ver [Docs/t11-alertas.md](../../../../../Docs/t11-alertas.md).
