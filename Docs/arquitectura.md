@@ -32,7 +32,7 @@ La raíz ejecutable de Next.js es NexusProject/nexus-project. Se conserva para a
 | GET | /api/resumen | Conteos y promedio |
 | GET | /api/alertas | Alertas internas vigentes |
 
-Las carpetas reservadas NO implementan estos endpoints. No añadir una API pública para calcular CU02 por empleado: confirmar dispara el procesamiento de servidor. Consultar un informe no crea alertas.
+Las cinco rutas de importación y procesamiento T04 están implementadas en esta rama local; las cuatro consultas T13 siguen reservadas. No añadir una API pública para calcular CU02 por empleado: confirmar dispara el procesamiento de servidor. Consultar un informe no crea alertas.
 
 ## Reservas para etapas posteriores
 
@@ -46,4 +46,4 @@ No existe autenticación implementada por usar un grupo de rutas llamado (dashbo
 
 [Guía T01](t01-base.md): imports compartidos, ejemplos de mocks y comandos de verificación. Las adiciones HTTP describen el contrato existente; no agregan nuevas operaciones de negocio.
 
-[Guía T02](t02-persistencia.md): modelos, vigencia por período, migraciones, catálogo ficticio y pruebas MySQL. Los servicios implementados incluyen [validación CSV T05](t05-validaciones.md), [cálculo T07](t07-calculo.md), [persistencia de evaluaciones T08](t08-evaluaciones.md), [reglas T09](t09-reglas.md), [informes T10](t10-informes.md) y [alertas internas T11](t11-alertas.md). T04 integra la confirmación y el procesamiento; T13 expone las consultas y T14 conecta el tablero. Esas integraciones siguen pendientes.
+[Guía T02](t02-persistencia.md): modelos, vigencia por período, migraciones, catálogo ficticio y pruebas MySQL. Los servicios implementados incluyen [validación CSV T05](t05-validaciones.md), [cálculo T07](t07-calculo.md), [persistencia de evaluaciones T08](t08-evaluaciones.md), [reglas T09](t09-reglas.md), [informes T10](t10-informes.md) y [alertas internas T11](t11-alertas.md). [T04](t04-importaciones.md) integra la confirmación HTTP y el procesamiento recuperable. T13 debe exponer las consultas y T14 conectar el tablero.

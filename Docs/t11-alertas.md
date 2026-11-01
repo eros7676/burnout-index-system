@@ -4,7 +4,7 @@ Crea la alerta de CU03 cuando la evaluación vigente es `ALTO`. No recalcula el 
 
 ## Estado de integración
 
-El servicio está implementado y verificado con T08/T10 y MySQL, incluida la publicación atómica, el rollback y la concurrencia. T10/T11 pueden integrarse a `main` para comenzar T04. La conexión desde la confirmación HTTP queda como criterio pendiente de T04, y la consulta y visualización corresponden a T13/T14. Esta separación permite aceptar los servicios sin dar por demostrado el circuito completo de T16.
+El servicio está implementado y verificado con T08/T10 y MySQL, incluida la publicación atómica, el rollback y la concurrencia. Esta rama local T04 agrega la conexión desde confirmación y reintento HTTP, con pruebas de integración. La consulta y visualización corresponden a T13/T14; el circuito completo con interfaz sigue pendiente de T16.
 
 ## Uso
 
@@ -34,13 +34,13 @@ const evaluacion = await evaluarPeriodo(db, par, {
 
 `construirInforme` solo lee la fila. Una consulta del informe no crea la alerta.
 
-## Integración pendiente de T04
+## Integración con T04
 
-La publicación de T08 admite un callback opcional; T04 debe pasar `alPublicar: alPublicarAlerta` en cada publicación del procesamiento y sus reintentos. Sin ese callback la publicación guarda la evaluación, pero no crea automáticamente su alerta. Las pruebas T11 ya verifican el callback directamente; todavía no verifican su invocación desde una ruta de T04.
+La publicación de T08 admite un callback opcional; T04 pasa `alPublicar: alPublicarAlerta` en cada publicación del procesamiento y sus reintentos. Sin ese callback la publicación guarda la evaluación, pero no crea automáticamente su alerta. Las pruebas T11 verifican el callback directamente; `importaciones.mysql.test.ts` verifica también su invocación desde HTTP y `db:test:http` recorre el build real de Next.js. Ver [guía T04](t04-importaciones.md).
 
 La confirmación de CU01 inserta registros y job en una transacción. Después, cada par se evalúa mediante T08 con el adaptador de T11 dentro de la transacción de publicación de ese par. T04 solicita el informe T10 y solo entonces cuenta el par como completado. Si falla T11, se revierte la publicación de ese par; la importación sigue CONFIRMADA y los pares ya completados se conservan. T04 registra el fallo del job fuera de la transacción revertida y permite reintentarlo según el contrato.
 
-Pruebas de aceptación pendientes de T04, sobre una base aislada con migración y seed:
+Criterios de aceptación cubiertos por las pruebas locales de T04, sobre una base aislada con migración y seed:
 
 - Validar y confirmar por HTTP `templates/ejemplo-dos-semanas.csv`: dos registros y dos evaluaciones, primera INCOMPLETO con 83,71 y segunda ALTO con 91,21; job COMPLETADO.
 - Comprobar una sola alerta ACTIVA de la segunda evaluación, dirigida a TL-01, con canal INTERNO y estado NO_APLICA. El informe debe leer esa misma alerta. Hasta disponer de T13, las aserciones pueden consultar Prisma y `construirInforme` desde la prueba de integración.
@@ -48,7 +48,7 @@ Pruebas de aceptación pendientes de T04, sobre una base aislada con migración 
 - Inyectar un fallo de T11 desde la prueba de integración: conservar la carga CONFIRMADA, dejar el job FALLIDO y revertir la publicación del par fallido. Reintentar por la API debe terminar el job sin duplicar resultados ni alertas.
 - Comprobar que T04 procesa también los sucesores inmediatos afectados y usa el mismo adaptador al reintentar. Si una evaluación sustituye otra, la alerta antigua queda SUPERADA y solo nace otra ACTIVA si la nueva es ALTO.
 
-En la PR de T10/T11, la comprobación del callback desde HTTP se registra como dependencia de integración de T04. Se da por verificada cuando pasan estas pruebas; no se marca como aprobada por las pruebas directas del servicio.
+En T10/T11, la comprobación del callback desde HTTP se registró como dependencia de T04. Esta rama aporta esa evidencia local; no implica integración remota ni aceptación del tablero.
 
 ## Verificación
 

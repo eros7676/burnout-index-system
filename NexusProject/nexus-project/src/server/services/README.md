@@ -2,6 +2,8 @@
 
 CU01, CU02 y CU03 usan `src/shared/contracts.ts`. El cálculo de CU02 es puro, sin Next.js ni Prisma; T08 orquesta la persistencia. Las rutas HTTP validan la petición y llaman servicios.
 
+T04 está en `importaciones.ts` y `procesamientos.ts`: vistas previas persistidas de 30 minutos, confirmación/revalidación atómica, cancelación y ejecución recuperable con token/lease. Integra T08 con `alPublicarAlerta` y construye T10 antes de completar cada par. El adaptador HTTP está en `../http/cu01.ts`. Ver [Docs/t04-importaciones.md](../../../../../Docs/t04-importaciones.md).
+
 T09 está en `reglas.ts` (validación pura) y `publicar-reglas.ts` (versión inmutable más el trabajo de reevaluación). No calcula el índice ni abre una pantalla. El comando está en [Docs/t09-reglas.md](../../../../../Docs/t09-reglas.md).
 
 T05 está en `csv-importacion.ts` y `validacion-importacion.ts`: parsea y normaliza CSV, valida catálogo y períodos, y detecta duplicados y conflictos con el histórico. T04 debe revalidar dentro de su transacción de confirmación. Ver [Docs/t05-validaciones.md](../../../../../Docs/t05-validaciones.md).
