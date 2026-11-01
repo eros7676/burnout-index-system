@@ -13,14 +13,14 @@ La raíz ejecutable de Next.js es NexusProject/nexus-project. Se conserva para a
 | src/shared/mocks.ts | Respuestas ficticias tipadas para consumidores. |
 | src/server/services/ | CU01, CU02 y CU03; CU02 puro separado de la orquestación. |
 | src/server/repositories/ | Prisma, consultas y transacciones. |
-| src/components/ | Componentes React; dashboard-home es una maqueta. |
+| src/components/ | Componentes React; dashboard-home consume las consultas T13 (T14). |
 | prisma/ | Esquema, migración inicial y seed T02. |
 | templates/ | Encabezado CSV y ejemplo contractual. |
 | tests/ | Contratos, catálogo, fixtures, validación, cálculo, reglas, informes y alertas; pruebas MySQL separadas y circuito completo pendiente. |
 
 ## API acordada
 
-T06 agrega `/importaciones`, enlazada desde la maqueta, con un componente cliente y transporte HTTP en `src/client/importaciones-api.ts`. Consume las cinco rutas T04 sin acceder a Prisma ni calcular índices en el navegador. Ver [guía T06](t06-pantalla-carga.md).
+T06 agrega `/importaciones`, enlazada desde el tablero, con un componente cliente y transporte HTTP en `src/client/importaciones-api.ts`. Consume las cinco rutas T04 sin acceder a Prisma ni calcular índices en el navegador. Ver [guía T06](t06-pantalla-carga.md).
 
 | Método | Ruta | Operación |
 | --- | --- | --- |
@@ -34,7 +34,7 @@ T06 agrega `/importaciones`, enlazada desde la maqueta, con un componente client
 | GET | /api/resumen | Conteos y promedio |
 | GET | /api/alertas | Alertas internas vigentes |
 
-Las cinco rutas de importación y procesamiento T04 están implementadas en esta rama local; las cuatro consultas T13 están implementadas en t13-feature. No añadir una API pública para calcular CU02 por empleado: confirmar dispara el procesamiento de servidor. Consultar un informe no crea alertas.
+Las cinco rutas de importación y procesamiento T04 y las cuatro consultas T13 están implementadas. T14 conecta `/` y `/home` mediante `src/client/tablero-api.ts`, con filtros, resumen, paginación, informe y alertas; ver [guía T14](t14-tablero.md). No añadir una API pública para calcular CU02 por empleado: confirmar dispara el procesamiento de servidor. Consultar un informe no crea alertas.
 
 ## Reservas para etapas posteriores
 
@@ -48,4 +48,4 @@ No existe autenticación implementada por usar un grupo de rutas llamado (dashbo
 
 [Guía T01](t01-base.md): imports compartidos, ejemplos de mocks y comandos de verificación. Las adiciones HTTP describen el contrato existente; no agregan nuevas operaciones de negocio.
 
-[Guía T02](t02-persistencia.md): modelos, vigencia por período, migraciones, catálogo ficticio y pruebas MySQL. Los servicios implementados incluyen [validación CSV T05](t05-validaciones.md), [cálculo T07](t07-calculo.md), [persistencia de evaluaciones T08](t08-evaluaciones.md), [reglas T09](t09-reglas.md), [informes T10](t10-informes.md) y [alertas internas T11](t11-alertas.md). [T04](t04-importaciones.md) integra la confirmación HTTP y el procesamiento recuperable. T13 expone las consultas persistidas; T14 debe conectar el tablero.
+[Guía T02](t02-persistencia.md): modelos, vigencia por período, migraciones, catálogo ficticio y pruebas MySQL. Los servicios implementados incluyen [validación CSV T05](t05-validaciones.md), [cálculo T07](t07-calculo.md), [persistencia de evaluaciones T08](t08-evaluaciones.md), [reglas T09](t09-reglas.md), [informes T10](t10-informes.md) y [alertas internas T11](t11-alertas.md). [T04](t04-importaciones.md) integra la confirmación HTTP y el procesamiento recuperable. T13 expone las consultas persistidas y T14 conecta el tablero.

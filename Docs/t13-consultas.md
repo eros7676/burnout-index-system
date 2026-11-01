@@ -1,6 +1,6 @@
 # T13 · API de consultas y resultados
 
-Implementación local en `t13-feature`, creada desde main con T06 integrado. Expone resultados persistidos de T04/T08/T10/T11 para el futuro tablero T14. No agrega pantallas, cálculo público, autenticación ni permisos P1.
+T13 está integrado en `main`. Expone resultados persistidos de T04/T08/T10/T11, consumidos por el [tablero T14](t14-tablero.md). No agrega pantallas, cálculo público, autenticación ni permisos P1.
 
 ## Rutas
 

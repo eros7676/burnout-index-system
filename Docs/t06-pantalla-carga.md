@@ -1,6 +1,6 @@
 # T06 · Pantalla de carga CSV
 
-Disponible en `/importaciones`, desde «Importar datos» o «Importación de datos» en `/` y `/home`. Requiere la instalación de MySQL, migración y seed del README. El resumen sigue siendo una maqueta: consultar resultados y mostrarlos en el tablero corresponde a T13/T14.
+Disponible en `/importaciones`, desde «Importar datos» o «Importación de datos» en `/` y `/home`. Requiere la instalación de MySQL, migración y seed del README. T14 conecta el resumen a resultados persistidos de T13; ver [guía del tablero](t14-tablero.md).
 
 ## Uso
 
