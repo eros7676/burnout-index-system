@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { sembrarBase } from "../prisma/seed-base";
 
-test("T06/T14 real: importar, consultar tablero/informe/alerta y repetir CSV desde Chromium con MySQL", async ({
+test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplicar alerta con MySQL", async ({
   page,
 }) => {
   test.skip(
@@ -25,6 +25,9 @@ test("T06/T14 real: importar, consultar tablero/informe/alerta y repetir CSV des
   try {
     await db.$transaction((tx) => sembrarBase(tx));
     expect(await db.registroLaboral.count()).toBe(0); // Nunca borra ni reutiliza datos existentes.
+    await page.request.post("/api/demo/sesion", {
+      data: { userId: "demo-rrhh" },
+    });
     await page.goto("/importaciones");
     await page
       .getByLabel("Archivo CSV", { exact: true })
@@ -123,6 +126,43 @@ test("T06/T14 real: importar, consultar tablero/informe/alerta y repetir CSV des
         .getByRole("row"),
     ).toHaveCount(3);
     await expect(page.getByText("1 activas", { exact: true })).toBeVisible();
+    const correo = page.getByLabel("Correo simulado", { exact: true });
+    await correo
+      .getByRole("button", { name: "Preparar fallo simulado" })
+      .click();
+    await expect(correo.getByRole("listitem")).toContainText("PENDIENTE");
+    // Recargar demuestra que el pendiente se recupera desde la base.
+    await page.reload();
+    await correo
+      .getByRole("button", { name: "Ver / actualizar intentos" })
+      .click();
+    await correo
+      .getByRole("button", { name: "Procesar envío pendiente" })
+      .click();
+    await expect(correo.getByRole("listitem")).toContainText("FALLIDO");
+    await correo
+      .getByRole("button", { name: "Reintentar correo simulado" })
+      .click();
+    await correo
+      .getByRole("button", { name: "Procesar envío pendiente" })
+      .click();
+    await expect(correo.getByRole("listitem").first()).toContainText(
+      "Enviado (simulado)",
+    );
+    await expect(correo.getByRole("listitem")).toHaveCount(2);
+    await page.reload();
+    await correo
+      .getByRole("button", { name: "Ver / actualizar intentos" })
+      .click();
+    await expect(correo.getByRole("listitem").first()).toContainText(
+      "Enviado (simulado)",
+    );
+    expect(await db.alerta.count()).toBe(1);
+    expect(await db.intentoNotificacion.count()).toBe(2);
+    await page.screenshot({
+      path: "test-results/t12-correo-real.png",
+      fullPage: true,
+    });
   } finally {
     await Promise.all(lecturas);
     const importId = { in: imports };
@@ -134,6 +174,9 @@ test("T06/T14 real: importar, consultar tablero/informe/alerta y repetir CSV des
       await db.$transaction(async (tx) => {
         await tx.processingJobPar.deleteMany({ where: { job: { importId } } });
         await tx.processingJob.deleteMany({ where: { importId } });
+        await tx.intentoNotificacion.deleteMany({
+          where: { alerta: { evaluacion: { periodoId } } },
+        });
         await tx.alerta.deleteMany({ where: { evaluacion: { periodoId } } });
         await tx.periodoEmpleado.updateMany({
           where: { periodoId },

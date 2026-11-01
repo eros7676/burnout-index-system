@@ -1,5 +1,9 @@
 import type {
   Alerta,
+  UsuarioDemoDTO,
+  SesionDemoDTO,
+  EventoAuditoria,
+  FiltrosAuditoria,
   ApiError,
   ErrorValidacionImportacion,
   FilaTablero,
@@ -7,6 +11,8 @@ import type {
   FiltrosComunes,
   FiltrosEvaluaciones,
   InformeDTO,
+  IntentoNotificacion,
+  SolicitudNotificacion,
   JobDTO,
   Pagina,
   ResultadoCancelacion,
@@ -17,6 +23,9 @@ import type {
 
 /** Catálogo acordado; no implica que existan Route Handlers. */
 export const API_ROUTES = {
+  consultarSesionDemo: { method: "GET", path: "/api/demo/sesion" },
+  seleccionarUsuarioDemo: { method: "POST", path: "/api/demo/sesion" },
+  listarAuditoria: { method: "GET", path: "/api/auditoria" },
   validarImportacion: { method: "POST", path: "/api/importaciones/validar" },
   confirmarImportacion: {
     method: "POST",
@@ -35,11 +44,26 @@ export const API_ROUTES = {
   obtenerInforme: { method: "GET", path: "/api/evaluaciones/{evaluationId}" },
   obtenerResumen: { method: "GET", path: "/api/resumen" },
   listarAlertas: { method: "GET", path: "/api/alertas" },
+  listarNotificaciones: {
+    method: "GET",
+    path: "/api/alertas/{alertId}/notificaciones",
+  },
+  prepararNotificacion: {
+    method: "POST",
+    path: "/api/alertas/{alertId}/notificaciones",
+  },
+  procesarNotificacion: {
+    method: "POST",
+    path: "/api/alertas/{alertId}/notificaciones/{intentoId}/procesar",
+  },
 } as const;
 
 type CuerpoVacio = Record<string, never>;
 /** File se envía como campo `file` de multipart/form-data, nunca como JSON. */
 export type PeticionesApi = {
+  consultarSesionDemo: { body?: undefined };
+  seleccionarUsuarioDemo: { body: { userId: string } };
+  listarAuditoria: { query?: FiltrosAuditoria; body?: undefined };
   validarImportacion: { file: File };
   confirmarImportacion: { params: { id: string }; body: CuerpoVacio };
   cancelarImportacion: { params: { id: string }; body?: undefined };
@@ -49,8 +73,20 @@ export type PeticionesApi = {
   obtenerInforme: { params: { evaluationId: string }; body?: undefined };
   obtenerResumen: { query?: FiltrosComunes; body?: undefined };
   listarAlertas: { query?: FiltrosAlertas; body?: undefined };
+  listarNotificaciones: { params: { alertId: string }; body?: undefined };
+  prepararNotificacion: {
+    params: { alertId: string };
+    body: SolicitudNotificacion;
+  };
+  procesarNotificacion: {
+    params: { alertId: string; intentoId: string };
+    body?: undefined;
+  };
 };
 export type CuerposExito = {
+  consultarSesionDemo: SesionDemoDTO;
+  seleccionarUsuarioDemo: { usuario: UsuarioDemoDTO };
+  listarAuditoria: Pagina<EventoAuditoria>;
   validarImportacion: VistaPrevia;
   confirmarImportacion: ResultadoImportacion;
   cancelarImportacion: ResultadoCancelacion;
@@ -60,9 +96,13 @@ export type CuerposExito = {
   obtenerInforme: InformeDTO;
   obtenerResumen: ResumenDTO;
   listarAlertas: Pagina<Alerta>;
+  listarNotificaciones: IntentoNotificacion[];
+  prepararNotificacion: IntentoNotificacion;
+  procesarNotificacion: IntentoNotificacion;
 };
 export type OperacionApi = keyof typeof API_ROUTES;
-export type EstadoErrorHttp = 400 | 404 | 409 | 410 | 413 | 415 | 422 | 500;
+export type EstadoErrorHttp =
+  400 | 401 | 403 | 404 | 409 | 410 | 413 | 415 | 422 | 500;
 export type RespuestaApi<K extends OperacionApi> =
   | { status: 200; body: CuerposExito[K] }
   | { status: Exclude<EstadoErrorHttp, 422>; body: ApiError }
@@ -79,6 +119,8 @@ export const API_DEFAULTS = {
   maxPageSize: 100,
 } as const;
 export const HTTP_ERRORS = {
+  401: "Sesión demo ausente o inválida",
+  403: "Operación o equipo sin permiso",
   400: "Petición o formato inválido",
   404: "Identificador inexistente",
   409: "Conflicto o estado incompatible",

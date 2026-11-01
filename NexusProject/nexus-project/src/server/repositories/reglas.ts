@@ -1,3 +1,4 @@
+import { registrarEvento } from "./auditoria";
 import { Prisma } from "@prisma/client";
 import type { ConfiguracionIndice, FechaISO } from "../../shared/contracts";
 import { ErrorDominio } from "../../shared/errors";
@@ -11,7 +12,10 @@ export type VersionPublicada = {
   estado: "PENDIENTE" | "COMPLETADO";
 };
 
-function yaExiste(campo: "version" | "effectiveFrom", valor: string): ErrorDominio {
+function yaExiste(
+  campo: "version" | "effectiveFrom",
+  valor: string,
+): ErrorDominio {
   const detalle =
     campo === "version"
       ? `Ya existe la versión ${valor}. Cada versión es inmutable.`
@@ -107,6 +111,29 @@ export async function guardarVersionNueva(
         },
       },
       select: { jobId: true },
+    });
+    const anterior = await tx.configuracionIndice.findFirst({
+      where: { effectiveFrom: { lt: inicio } },
+      orderBy: { effectiveFrom: "desc" },
+      select: { version: true },
+    });
+    await registrarEvento(tx, {
+      accion: "REGLAS_PUBLICADAS",
+      entidad: "REGLAS",
+      recursoId: reglas.version,
+      actorId: reglas.createdBy,
+      detalles: {
+        versionAnterior: anterior?.version ?? null,
+        version: reglas.version,
+        effectiveFrom: reglas.effectiveFrom,
+        weights: reglas.weights,
+        thresholds: reglas.thresholds,
+        mediumLimit: reglas.mediumLimit,
+        highLimit: reglas.highLimit,
+        minExceededFactors: reglas.minExceededFactors,
+        jobId: trabajo.jobId,
+        semanas: periodos.length,
+      },
     });
     return {
       version: reglas.version,

@@ -1,34 +1,35 @@
 # Aplicación Next.js
 
-La guía de instalación y alcance está en el [README principal](../../README.md).
+Instalación completa, requisitos y alcance en el [README principal](../../README.md). Ejecutar los comandos npm desde esta carpeta; Docker Compose desde la raíz del repositorio.
 
-T16 incorpora `npm run verify:p0` y `npm run test:acceptance`. La primera verificación ejecuta migración, seed, comprobaciones y suites en secuencia sobre TEST_DATABASE_URL exclusiva; la segunda ejecuta solo aceptación real en Chrome/Firefox sobre un build existente. No omiten pruebas por falta de base. Ver [guía T16](../../Docs/t16-integracion.md), incluidos instalación limpia, puertos, reportes y protocolo humano RNF03.
+## Preparación
 
-La corrección T16 agrupa escrituras/lecturas de importación y une inicio/publicación por par, conservando la finalización después del informe y los controles de token/lease. El máximo de 1.000 filas/5 MiB pasó en 53,75 s (Chrome) y 53,68 s (Firefox), sin modificar el umbral de 60 s. `verify:p0` pasó: 60 pruebas sin MySQL, 67 con MySQL, nueve rutas HTTP, 15 escenarios T06/T14 y ocho T16, además de lint/tipos/build/Prisma. La prueba humana RNF03 sigue pendiente. Esta corrección no requiere migración ni dependencias nuevas.
+Copiar `.env.example` a `.env`, configurar `DATABASE_URL`, ejecutar `npm ci`, `npm run db:generate`, `npm run db:deploy` y `npm run db:seed`. Hay tres migraciones: persistencia T02, intentos de notificación T12 y auditoría T15b. El seed conserva el catálogo ficticio y las reglas v1 sin precargar resultados. No subir archivos `.env`.
 
-Ejecutar npm ci, npm run dev, npm run lint, npm run typecheck, npm test y npm run build desde esta carpeta. Copiar .env.example a .env para Prisma. Docker Compose se ejecuta desde la raíz del repositorio. T01 y sus pruebas no requieren MySQL.
+Iniciar con `npm run dev` y seleccionar **RRHH** en **Usuario de demostración** antes de importar `templates/ejemplo-dos-semanas.csv`. La pantalla `/importaciones` valida y confirma; `/` y `/home` muestran evaluaciones, informes, alertas y controles de simulación de correo.
 
-- src/shared/contracts.ts: contrato TypeScript común.
-- src/shared/services.ts: firmas obligatorias de CU01/CU02/CU03.
-- src/shared/api.ts: rutas, peticiones, respuestas y errores HTTP P0 tipados.
-- src/shared/errors.ts: error de dominio común y códigos de validación.
-- src/shared/mocks.ts: respuestas ficticias para desarrollar consumidores.
-- src/server/services: validación CSV T05, cálculo puro T07, persistencia de evaluaciones T08, reglas T09, informes T10 y alertas internas T11.
-- src/server/repositories: lecturas y escrituras Prisma para validaciones, evaluaciones, reglas, informes y alertas.
-- src/app/api: cinco rutas T04 de importación y procesamiento y cuatro consultas T13 implementadas.
-- src/client/tablero-api.ts y src/components/dashboard-home.tsx: tablero T14 conectado a la API real, sin resultados precargados.
-- prisma/: esquema, migración inicial y seed T02.
-- templates/: CSV de referencia.
-- tests/: pruebas de contratos, datos, validación, cálculo, persistencia, reglas, informes y alertas; las pruebas MySQL se ejecutan por separado.
+## Permisos y trazabilidad
 
-El resumen en / y /home consume T13 y muestra resultados persistidos: filtros por empleado/equipo/semana/nivel, paginación, resumen, informe con ranking y alertas internas. Contempla carga, vacío, error y resultados desactualizados. Ver [guía T14](../../Docs/t14-tablero.md). La pantalla /importaciones (T06) consume la API real T04: valida CSV, muestra vista previa/errores, confirma, cancela y consulta/reintenta jobs. Ver [guía T06](../../Docs/t06-pantalla-carga.md).
+[T15a](../../Docs/t15a-permisos.md) agrega sesión firmada y controles en los runtimes HTTP. RRHH administra cargas y notificaciones; Gerencia consulta todos los resultados y auditoría; cada Team Lead solo consulta su equipo; el empleado no consulta índices, informes ni alertas. Sin sesión: 401; sin permiso: 403. La selección pública de identidades es únicamente para una demo local, sin autenticación productiva. Las sesiones duran ocho horas. Sin `DEMO_SESSION_SECRET` se invalidan al reiniciar; varios procesos necesitan una clave privada compartida.
 
-Ver [guía T01](../../Docs/t01-base.md) para consumir contratos y mocks sin redefinirlos.
+[T15b](../../Docs/t15b-auditoria.md) guarda eventos junto con validaciones, confirmaciones, cancelaciones y reglas. Los reintentos conservan la trazabilidad sin duplicar eventos. `GET /api/auditoria` ofrece filtros y paginación a RRHH y Gerencia, sin una pantalla específica. Los actores de importación provienen de la sesión verificada. El registro no copia CSV ni contraseñas y no reemplaza snapshots/versiones de P0.
 
-Ver [guía T02](../../Docs/t02-persistencia.md) para persistencia. Con MySQL disponible: `npm run db:generate`, `npm run db:deploy` y `npm run db:seed`. El seed carga catálogo y reglas v1; no genera evaluaciones. Una versión posterior se publica con `npm run rules:publish -- ruta/regla.json`; ver [guía T09](../../Docs/t09-reglas.md). `npm run db:test` requiere una base de pruebas independiente. La migración y las siete comprobaciones MySQL de T02 pasaron localmente el 27/10/2026.
+[T12](../../Docs/t12-notificaciones.md) conserva intentos y estados de correo simulado sobre la misma alerta. Preparar y procesar son acciones explícitas; se muestran como **Enviado (simulado)**. No se envía correo real.
 
-Ver [guía T03](tests/data/README.md) para la plantilla de 138 filas, cobertura de 49 evaluables y escenarios esperados. Las pruebas de datos verifican los fixtures; las pruebas T07 ejecutan el motor real y las pruebas MySQL T04/T08/T10/T11 verifican importaciones, evaluaciones, informes y alertas persistidos. La carga CSV está conectada en T06 y el tablero en T14; la aceptación integral queda en T16. Los criterios RNF por etapa se registran en [Contratos y pruebas, sección 9](../../Docs/contratos-prototipo.md#9-verificación-de-los-requerimientos-no-funcionales).
+## Verificación
 
-Ver [T05](../../Docs/t05-validaciones.md), [T10](../../Docs/t10-informes.md) y [T11](../../Docs/t11-alertas.md) para integrar sus servicios. Durante la publicación de T08, T04 debe pasar `alPublicar: alPublicarAlerta` para crear la alerta en la misma transacción. Consultar un informe solo lee la alerta existente; no la crea ni envía correo.
+Ejecutar `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` y `npm run db:validate`.
 
-T04 integra la confirmación HTTP y los reintentos con T08/T10/T11; ver [guía T04](../../Docs/t04-importaciones.md) y [criterios de integración](../../Docs/t11-alertas.md#integración-con-t04). `npm run db:test` verifica HTTP y MySQL con fallos inyectados. Después del build, `npm run db:test:http` inicia un servidor Next.js temporal y comprueba las cinco rutas T04 y cuatro consultas T13 reales con TEST_DATABASE_URL. Ver [guía T13](../../Docs/t13-consultas.md). `npm run test:ui` cubre T06/T14; con TEST_DATABASE_URL incluye el escenario real importación → tablero → informe/alerta → repetición sin duplicados. La base debe ser aislada, migrada, con nombre terminado en `_test` y sin registros laborales.
+Para integración, usar una base exclusiva cuyo nombre termine en `_test`, migrada y con seed. Establecer `TEST_DATABASE_URL` a esa base; nunca usar la base de la aplicación. Ejecutar en secuencia:
+
+```sh
+npm run db:test
+npm run db:test:http
+npm run test:ui
+```
+
+`db:test:http` y `test:ui` necesitan un build previo. Las pruebas HTTP seleccionan RRHH y comprueban también rechazos y ámbito de otros roles. Sin `TEST_DATABASE_URL`, `test:ui` omite escenarios reales: esa ejecución no acredita integración completa. Las pruebas conservan sus eventos de auditoría en la base aislada y limpian sus datos operativos.
+
+`npm run test:acceptance` ejecuta T16 en Chrome/Firefox; `npm run verify:p0` encadena instalación y suites. Consultar [guía T16](../../Docs/t16-integracion.md) para Chrome for Testing, rendimiento y usabilidad humana. La aceptación histórica de T16 y la variación posterior registrada en [T12](../../Docs/t12-notificaciones.md) no equivalen a una medición actual de rendimiento. La revisión de T15a/T15b se centra en permisos, trazabilidad y regresiones funcionales.
+
+Contratos, rutas y mocks están en `src/shared/`; los guards HTTP en `src/server/http/`; reglas, importación y cálculo en `src/server/services/` y `src/server/repositories/`. Publicar reglas con `npm run rules:publish -- ruta/regla.json`; ver [T09](../../Docs/t09-reglas.md). Evidencia y estructura de las suites en [tests/README.md](tests/README.md).

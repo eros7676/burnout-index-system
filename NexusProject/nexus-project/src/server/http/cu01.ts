@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
+import { actorDemo } from "./permisos-demo";
 import type {
   ApiError,
   ErrorValidacionImportacion,
@@ -15,8 +16,8 @@ import {
 } from "../services/importaciones";
 import { obtenerJob, procesarImportacion } from "../services/procesamientos";
 
-// P0: operador ficticio local. Identidad y permisos de sesión corresponden a P1.
-const ACTOR_LOCAL = "demo-local";
+// El runtime T15a verifica la sesión; los adaptadores internos usan demo-local por defecto.
+const actor = actorDemo;
 const json = (body: unknown, status = 200) =>
   Response.json(body, {
     status,
@@ -183,7 +184,7 @@ export function crearHttpCu01(
         const vistaPrevia = await validarImportacion(
           db,
           await archivoDePeticion(request),
-          ACTOR_LOCAL,
+          actor(request),
           opciones,
         );
         if (vistaPrevia.status === "RECHAZADA") {
@@ -204,12 +205,16 @@ export function crearHttpCu01(
       respuestaCu01(async () => {
         comprobarId(id);
         await exigirObjetoVacio(request);
-        return json(await confirmarImportacion(db, id, ACTOR_LOCAL, opciones));
+        return json(
+          await confirmarImportacion(db, id, actor(request), opciones),
+        );
       }),
-    cancelar: (_request: Request, id: string) =>
+    cancelar: (request: Request, id: string) =>
       respuestaCu01(async () => {
         comprobarId(id);
-        return json(await cancelarImportacion(db, id, ACTOR_LOCAL, opciones));
+        return json(
+          await cancelarImportacion(db, id, actor(request), opciones),
+        );
       }),
     consultar: (_request: Request, jobId: string) =>
       respuestaCu01(async () => {

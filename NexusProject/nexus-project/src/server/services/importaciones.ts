@@ -1,3 +1,6 @@
+import { randomUUID } from "node:crypto";
+import { registrarEvento } from "../repositories/auditoria";
+import { ErrorFormatoImportacion } from "./csv-importacion";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import type {
   ResultadoCancelacion,
@@ -57,7 +60,7 @@ export function comprobarArchivoCsv(archivo: File) {
     );
 }
 
-export async function validarImportacion(
+async function validarImportacionInterna(
   db: PrismaClient,
   archivo: File,
   actorId: string,
@@ -75,28 +78,48 @@ export async function validarImportacion(
   );
   await eliminarTemporalesVencidos(db, ahora);
   const expiresAt = new Date(ahora.getTime() + VIGENCIA_PREVIA_MS);
-  const carga = await db.importacion.create({
-    data: {
-      sourceName: archivo.name.slice(0, 255),
-      sourceHash,
-      uploadedBy: actorId,
-      uploadedAt: ahora,
-      status: validacion.status,
-      expiresAt,
-      totalFilas: validacion.totalFilas,
-      nuevas: validacion.nuevas,
-      omitidas: validacion.omitidas,
-      errores: jsonImportacion(validacion.errores),
-      warnings: jsonImportacion(validacion.warnings),
-      temporal: {
-        create: {
-          // Las celdas recortadas son strings: conservan precisión y también las filas omitidas.
-          datos: jsonImportacion(filas),
-          // JSON textual evita el recorte numérico de Prisma/MySQL en la muestra temporal.
-          muestra: JSON.stringify(validacion.muestra),
+  const carga = await db.$transaction(async (tx) => {
+    const creada = await tx.importacion.create({
+      data: {
+        sourceName: archivo.name.slice(0, 255),
+        sourceHash,
+        uploadedBy: actorId,
+        uploadedAt: ahora,
+        status: validacion.status,
+        expiresAt,
+        totalFilas: validacion.totalFilas,
+        nuevas: validacion.nuevas,
+        omitidas: validacion.omitidas,
+        errores: jsonImportacion(validacion.errores),
+        warnings: jsonImportacion(validacion.warnings),
+        temporal: {
+          create: {
+            // Las celdas recortadas son strings: conservan precisión y también las filas omitidas.
+            datos: jsonImportacion(filas),
+            // JSON textual evita el recorte numérico de Prisma/MySQL en la muestra temporal.
+            muestra: JSON.stringify(validacion.muestra),
+          },
         },
       },
-    },
+    });
+    await registrarEvento(tx, {
+      accion:
+        validacion.status === "VALIDADA"
+          ? "IMPORTACION_VALIDADA"
+          : "IMPORTACION_RECHAZADA",
+      entidad: "IMPORTACION",
+      recursoId: creada.importId,
+      actorId,
+      detalles: {
+        sourceHash,
+        schemaVersion: "indicadores-v1",
+        totalFilas: validacion.totalFilas,
+        nuevas: validacion.nuevas,
+        omitidas: validacion.omitidas,
+        codigosError: [...new Set(validacion.errores.map((e) => e.codigo))],
+      },
+    });
+    return creada;
   });
   const { status, totalFilas, nuevas, omitidas, muestra, errores, warnings } =
     validacion;
@@ -111,6 +134,36 @@ export async function validarImportacion(
     errores,
     warnings,
   };
+}
+
+/** Los rechazos de formato previos a la vista previa también dejan un evento mínimo. */
+export async function validarImportacion(
+  db: PrismaClient,
+  archivo: File,
+  actorId: string,
+  opciones: OpcionesImportacion = {},
+): Promise<VistaPrevia> {
+  // Los límites de transporte se rechazan incluso si MySQL no está disponible.
+  comprobarArchivoCsv(archivo);
+  try {
+    return await validarImportacionInterna(db, archivo, actorId, opciones);
+  } catch (error) {
+    if (
+      error instanceof ErrorFormatoImportacion ||
+      error instanceof ErrorImportacion
+    ) {
+      await db.$transaction((tx) =>
+        registrarEvento(tx, {
+          accion: "IMPORTACION_RECHAZADA",
+          entidad: "IMPORTACION",
+          recursoId: randomUUID(),
+          actorId,
+          detalles: { etapa: "FORMATO", codigo: error.codigo },
+        }),
+      );
+    }
+    throw error;
+  }
 }
 
 export async function confirmarImportacion(
@@ -230,6 +283,19 @@ export async function confirmarImportacion(
           resultadoConfirmacion: jsonImportacion(resultado),
         },
       });
+      await registrarEvento(tx, {
+        accion: "IMPORTACION_CONFIRMADA",
+        entidad: "IMPORTACION",
+        recursoId: importId,
+        actorId,
+        detalles: {
+          sourceHash: carga.sourceHash,
+          schemaVersion: "indicadores-v1",
+          insertados: nuevas.length,
+          omitidos: validacion.omitidas,
+          jobId,
+        },
+      });
       await tx.importacionTemporal.delete({ where: { importId } });
       return { repetida: false, resultado };
     });
@@ -297,6 +363,13 @@ export async function cancelarImportacion(
     await tx.importacion.update({
       where: { importId },
       data: { status: "CANCELADA", cancelledAt: reloj(), cancelledBy: actorId },
+    });
+    await registrarEvento(tx, {
+      accion: "IMPORTACION_CANCELADA",
+      entidad: "IMPORTACION",
+      recursoId: importId,
+      actorId,
+      detalles: { estadoAnterior: carga.status },
     });
     return { importId, status: "CANCELADA" };
   });

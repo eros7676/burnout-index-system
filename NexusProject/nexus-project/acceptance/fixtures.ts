@@ -35,6 +35,9 @@ export const test = base.extend<{ db: PrismaClient }>({
       ).toBe(0);
       preparada = true;
       await db.$transaction((tx) => sembrarBase(tx));
+      await page.request.post("/api/demo/sesion", {
+        data: { userId: "demo-rrhh" },
+      });
       await ejecutarPrueba(db);
     } finally {
       await Promise.all(lecturas);

@@ -161,6 +161,8 @@ Quedan fuera del recorrido mínimo de la demo.
 
 ### T12 · Simulador de correo y estados de envío
 
+Implementado localmente en `t12-feature`: migración de intentos, API idempotente, pendientes recuperables, simulación determinista y controles/historial en el tablero. Ver [guía T12](t12-notificaciones.md). La revisión humana y la integración remota se registran por separado.
+
 Responsable: Francisco + Alfonso. Depende de: T11.
 
 Notificador ficticio con canal SIMULADO, intentos y estados PENDIENTE, ENVIADO, FALLIDO y SIN_DESTINATARIO. ENVIADO se muestra como «Enviado (simulado)». Reintentar la notificación no recrea la alerta. La alerta INTERNA de P0 conserva NO_APLICA mientras no se simule el envío.
@@ -169,6 +171,8 @@ Listo cuando: fallar o repetir un envío simulado no elimina ni duplica la alert
 
 ### T15a · Usuarios de demostración y permisos
 
+Implementación local en `t15-feature`: sesión demo firmada, selector de identidades y autorización en todas las rutas de datos, con filtro obligatorio del equipo para Team Leads. Ver [guía T15a](t15a-permisos.md) para la matriz de permisos y la evidencia de pruebas.
+
 Responsable: Eros + Gonzalo. Depende de: T02, T04, T13.
 
 Usuarios demo de RRHH, Team Lead y Gerencia. Los controles de autorización corren en el servidor. El Team Lead solo ve su equipo. El empleado no accede a índices ni alertas. Esta demo no es autenticación productiva.
@@ -176,6 +180,8 @@ Usuarios demo de RRHH, Team Lead y Gerencia. Los controles de autorización corr
 Listo cuando: las pruebas bloquean a un usuario sin permiso y la consulta de un equipo ajeno.
 
 ### T15b · Auditoría de importaciones y reglas
+
+Implementación local en `t15-feature`, desde T12: eventos transaccionales y consulta HTTP paginada con filtros. Ver [guía T15b](t15b-auditoria.md) para alcance y estado real de verificación. No incluye los permisos T15a.
 
 Responsable: Francisco + Santiago. Depende de: T02, T04, T09.
 

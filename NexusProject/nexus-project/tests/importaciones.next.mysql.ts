@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { readFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { createServer } from "node:net";
 import { PrismaClient } from "@prisma/client";
 import { sembrarBase } from "../prisma/seed-base";
@@ -95,6 +96,20 @@ async function comprobarNext() {
       });
     });
     const base = `http://127.0.0.1:${address.port}`;
+    const sesion = await globalThis.fetch(`${base}/api/demo/sesion`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: "demo-rrhh" }),
+    });
+    const cookie = sesion.headers.get("set-cookie")!.split(";")[0];
+    const fetch: typeof globalThis.fetch = (input, init) =>
+      globalThis.fetch(input, {
+        ...init,
+        headers: {
+          ...Object.fromEntries(new Headers(init?.headers)),
+          Cookie: cookie,
+        },
+      });
     const csv = readFileSync("templates/ejemplo-dos-semanas.csv", "utf8");
     async function validar() {
       const form = new FormData();
@@ -106,9 +121,17 @@ async function comprobarNext() {
         method: "POST",
         body: form,
       });
-      assert.equal(response.status, 200);
+      assert.equal(response.status, 200, await response.clone().text());
       const vista: VistaPrevia = await response.json();
       imports.push(vista.importId);
+      assert.equal(
+        (
+          await db.importacion.findUniqueOrThrow({
+            where: { importId: vista.importId },
+          })
+        ).uploadedBy,
+        "demo-rrhh",
+      );
       return vista;
     }
     async function confirmar(id: string): Promise<ResultadoImportacion> {
@@ -189,7 +212,148 @@ async function comprobarNext() {
     console.log(
       "T13: cuatro rutas GET del build real verificadas con MySQL, filtros, informe, resumen y alerta.",
     );
+    const rutaCorreo = `alertas/${informe.alerta.alertId}/notificaciones`;
+    assert.deepEqual(await consultar(rutaCorreo), []);
+    const peticionCorreo = { requestId: randomUUID(), resultado: "FALLO" };
+    async function prepararCorreo(body: object) {
+      const r = await fetch(`${base}/api/${rutaCorreo}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      assert.equal(r.status, 200);
+      return r.json();
+    }
+    async function procesarCorreo(id: string) {
+      const r = await fetch(`${base}/api/${rutaCorreo}/${id}/procesar`, {
+        method: "POST",
+      });
+      assert.equal(r.status, 200);
+      return r.json();
+    }
+    const pendiente = await prepararCorreo(peticionCorreo);
+    assert.equal(pendiente.estado, "PENDIENTE");
+    assert.equal(
+      (await prepararCorreo(peticionCorreo)).intentoId,
+      pendiente.intentoId,
+    );
+    assert.equal((await procesarCorreo(pendiente.intentoId)).estado, "FALLIDO");
+    const reintento = await prepararCorreo({
+      requestId: randomUUID(),
+      resultado: "EXITO",
+    });
+    assert.equal((await procesarCorreo(reintento.intentoId)).estado, "ENVIADO");
+    assert.equal((await procesarCorreo(reintento.intentoId)).estado, "ENVIADO");
+    assert.equal((await consultar(rutaCorreo)).length, 2);
+    assert.equal(
+      (await consultar(`evaluaciones/${informe.evaluacion.evaluationId}`))
+        .alerta.estadoEnvio,
+      "ENVIADO",
+    );
+    assert.equal(await db.alerta.count(), 1);
+    console.log(
+      "T12: historial, pendiente, fallo, reintento e idempotencia verificados por HTTP real.",
+    );
+    async function como(userId: string, ruta: string, method = "GET") {
+      const login = await globalThis.fetch(`${base}/api/demo/sesion`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const Cookie = login.headers.get("set-cookie")!.split(";")[0];
+      return globalThis.fetch(`${base}/api/${ruta}`, {
+        method,
+        headers: { Cookie },
+      });
+    }
+    assert.equal(
+      (await globalThis.fetch(`${base}/api/evaluaciones`)).status,
+      401,
+    );
+    for (const ruta of [
+      "evaluaciones",
+      "alertas",
+      "resumen",
+      `evaluaciones/${informe.evaluacion.evaluationId}`,
+    ])
+      assert.equal((await como("demo-empleado", ruta)).status, 403);
+    assert.equal(
+      (await como("demo-tl-01", "evaluaciones?teamId=EQ-02")).status,
+      403,
+    );
+    assert.equal(
+      (await como("demo-tl-01", "evaluaciones?employeeId=EMP-002")).status,
+      403,
+    );
+    assert.equal(
+      (
+        await como(
+          "demo-tl-02",
+          `evaluaciones/${informe.evaluacion.evaluationId}`,
+        )
+      ).status,
+      403,
+    );
+    assert.equal(
+      (
+        await como(
+          "demo-tl-01",
+          `evaluaciones/${informe.evaluacion.evaluationId}`,
+        )
+      ).status,
+      200,
+    );
+    const alcance = await como("demo-tl-02", "evaluaciones");
+    assert.equal((await alcance.json()).total, 0);
+    assert.equal((await (await como("demo-tl-02", "alertas")).json()).total, 0);
+    assert.equal(
+      (await (await como("demo-tl-02", "resumen")).json()).totalEvaluaciones,
+      0,
+    );
+    assert.equal(
+      (await (await como("demo-tl-01", "evaluaciones")).json()).total,
+      2,
+    );
+    assert.equal(
+      (
+        await globalThis.fetch(`${base}/api/auditoria`, {
+          headers: { "x-role": "RRHH", "x-demo-actor-interno": "demo-rrhh" },
+        })
+      ).status,
+      401,
+    );
+    assert.equal(
+      (await como("demo-gerencia", "importaciones/validar", "POST")).status,
+      403,
+    );
+    assert.equal((await como("demo-gerencia", "resumen")).status, 200);
+    assert.equal((await como("demo-tl-01", "auditoria")).status, 403);
+    assert.equal(
+      (await como("demo-tl-01", "importaciones/validar", "POST")).status,
+      403,
+    );
+    console.log(
+      "T15a: sesiones, empleado bloqueado, roles y ámbito del equipo verificados por HTTP real.",
+    );
     const repetida = await validar();
+    const auditoria = await consultar(
+      `auditoria?entidad=IMPORTACION&recursoId=${imports[0]}`,
+    );
+    assert.ok(
+      auditoria.items.some(
+        (e: { accion: string }) => e.accion === "IMPORTACION_VALIDADA",
+      ),
+    );
+    assert.ok(
+      auditoria.items.some(
+        (e: { accion: string }) => e.accion === "IMPORTACION_CONFIRMADA",
+      ),
+    );
+    assert.equal(
+      (await fetch(`${base}/api/auditoria?pageSize=101`)).status,
+      400,
+    );
+    console.log("T15b: consulta HTTP de auditoría de importación verificada.");
     assert.equal(repetida.omitidas, 2);
     const sinTrabajo = await confirmar(repetida.importId);
     assert.equal(sinTrabajo.insertados, 0);
@@ -216,6 +380,9 @@ async function comprobarNext() {
     await db.$transaction(async (tx) => {
       await tx.processingJobPar.deleteMany({ where: { job: { importId } } });
       await tx.processingJob.deleteMany({ where: { importId } });
+      await tx.intentoNotificacion.deleteMany({
+        where: { alerta: { evaluacion: { periodoId } } },
+      });
       await tx.alerta.deleteMany({ where: { evaluacion: { periodoId } } });
       await tx.periodoEmpleado.updateMany({
         where: { periodoId },

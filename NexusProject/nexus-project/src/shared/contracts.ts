@@ -1,6 +1,26 @@
 // Contrato del prototipo. Fuente: DOCUMENTACION, pestaña «Contratos y pruebas».
 // Estos tipos no validan datos en ejecución; CU01 y CU02 deben hacerlo en servidor.
 export type FechaISO = string; // YYYY-MM-DD validado en servidor
+export type UsuarioDemoDTO = {
+  userId: string; nombre: string;
+  rol: 'RRHH' | 'GERENCIA' | 'TEAM_LEAD' | 'EMPLEADO';
+  employeeId: string | null; teamId: string | null;
+};
+export type SesionDemoDTO = { usuario: UsuarioDemoDTO | null; usuarios: readonly UsuarioDemoDTO[] };
+export type EventoAuditoria = {
+  eventoId: string;
+  accion: string;
+  entidad: string;
+  recursoId: string;
+  actorId: string;
+  detalles: Record<string, unknown>;
+  createdAt: string;
+};
+export type FiltrosAuditoria = {
+  accion?: string; entidad?: 'IMPORTACION' | 'REGLAS';
+  recursoId?: string; actorId?: string; desde?: string; hasta?: string;
+  page?: number; pageSize?: number;
+};
 export type Factor = 'HE' | 'DS' | 'CT' | 'VP';
 export type Nivel = 'BAJO' | 'MEDIO' | 'ALTO' | 'INCOMPLETO';
 export type EstadoJob =
@@ -88,6 +108,24 @@ export type Alerta = {
   estadoEnvio: 'NO_APLICA' | 'PENDIENTE' | 'ENVIADO'
     | 'FALLIDO' | 'SIN_DESTINATARIO';
   createdAt: string;
+};
+/** P1: historial de simulación; nunca representa entrega de correo real. */
+export type ResultadoSimulado = "EXITO" | "FALLO";
+export type IntentoNotificacion = {
+  intentoId: string;
+  alertId: string;
+  requestId: string;
+  numero: number;
+  destinatarioId: string | null;
+  resultado: ResultadoSimulado;
+  estado: "PENDIENTE" | "ENVIADO" | "FALLIDO" | "SIN_DESTINATARIO";
+  detalle: string | null;
+  createdAt: string;
+  completedAt: string | null;
+};
+export type SolicitudNotificacion = {
+  requestId: string;
+  resultado: ResultadoSimulado;
 };
 // Reglas adicionales: vigente es un puntero por empleado/semana, no por rulesVersion; conservar versiones anteriores. anterior en Persistencia contiene el cálculo numérico con las reglas de la semana actual. cumple se refiere a las condiciones de ALTO (dos índices y factores comunes); motivo=NO_SOSTENIDO si hay anterior pero no se cumplen todas. Lista vacía de excedidas no es un dato faltante.
 export type ErrorCampo = {

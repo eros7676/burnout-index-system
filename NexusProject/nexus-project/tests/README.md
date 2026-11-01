@@ -1,14 +1,22 @@
 # Pruebas de servicios, persistencia e integración
 
+Verificación conjunta T15a/T15b del 01/11/2026: lint, tipos, build y Prisma correctos; **68 pruebas sin MySQL, 80 con MySQL y 19 escenarios de navegador aprobados, sin omisiones**, además de HTTP real con permisos y auditoría. Se verifican sesión vencida/manipulada, rechazo del empleado, encabezados de rol falsificados, aislamiento de evaluaciones/alertas/resumen/informes entre equipos y actor de auditoría de la sesión. Las suites SQL cubren idempotencia, concurrencia, historial y rollback. Esta ejecución no repite las mediciones de rendimiento T16.
+
+T15a agrega `permisos-demo.test.ts` y `e2e/permisos-demo.spec.ts`. Las pruebas HTTP del build seleccionan RRHH y verifican sesiones, roles, informes por ID y rechazo de equipos ajenos. La aceptación y el navegador real seleccionan explícitamente la identidad demo. Evidencia y alcance en [guía T15a](../../../Docs/t15a-permisos.md).
+
+T15b agrega `auditoria.test.ts` y `auditoria.mysql.test.ts`, y amplía la prueba HTTP del build con la consulta paginada de eventos. Cubre transiciones, privacidad, idempotencia, rollback y persistencia. Ver [guía T15b](../../../Docs/t15b-auditoria.md) para el estado de ejecución: SQL requiere Docker/MySQL disponible; compilar estas pruebas no equivale a ejecutarlas.
+
+T12 agrega `notificaciones.test.ts`, `notificaciones.mysql.test.ts` y `e2e/notificaciones.spec.ts`. Amplía las pruebas HTTP del build y el escenario real de navegador con preparación persistida, recuperación tras recarga, fallo y reintento exitoso sin duplicar la alerta. Ver [guía T12](../../../Docs/t12-notificaciones.md). La limpieza de esas pruebas elimina primero sus intentos por la relación restrictiva con la alerta.
+
 T16 agrega `acceptance/` y `playwright.acceptance.config.ts`: cuatro escenarios reales por navegador (Chrome/Firefox), sin interceptar la API. `npm run verify:p0` ejecuta todas las comprobaciones en secuencia y exige una base TEST_DATABASE_URL exclusiva; `npm run test:acceptance` requiere además el build previo. Reportes y mediciones en `test-results/`. Ver [guía T16](../../../Docs/t16-integracion.md).
 
-La corrección de rendimiento agrega regresiones SQL de rollback de bloques de importación y de publicación concurrente por dos jobs distintos. La verificación completa pasó 60 pruebas sin MySQL, 67 con MySQL, nueve rutas HTTP, 15 escenarios de regresión y ocho de aceptación. El escenario de 1.000 filas/5 MiB mantiene su aserción ≤60 s y pasó en ambos navegadores. RNF03 con operador no se certifica por estas pruebas automatizadas.
+La evidencia histórica T16 (anterior a T12/T15) incluye regresiones SQL de rollback de bloques de importación y de publicación concurrente por dos jobs distintos. La verificación completa pasó 60 pruebas sin MySQL, 67 con MySQL, nueve rutas HTTP, 15 escenarios de regresión y ocho de aceptación. El escenario de 1.000 filas/5 MiB mantiene su aserción ≤60 s y pasó en ambos navegadores. RNF03 con operador no se certifica por estas pruebas automatizadas.
 
 T14 agrega siete escenarios de navegador en `e2e/tablero.spec.ts`, ejecutados por `npm run test:ui` después del build. Cubren estados, niveles/ranking, vigencia, filtros/paginación, errores/recuperación y móvil. La prueba real de `e2e/importaciones-real.spec.ts` extiende T06 con tablero, informe, alerta y repetición sin duplicados usando TEST_DATABASE_URL aislada; sin esa variable se omite. Ver [guía T14](../../../Docs/t14-tablero.md).
 
 Desde la raíz de la aplicación: `npm test`. Usa TypeScript y el runner nativo de Node, sin dependencias adicionales ni MySQL. Compila contratos y pruebas en `.test-build/` (ignorado por Git/ESLint), luego descubre recursivamente los archivos `*.test.js`. No depende de globs del shell y funciona con Node 22 en Windows y Linux. Las nuevas pruebas se escriben como `*.test.ts` dentro de esta carpeta; deben usar imports relativos para ejecutarse fuera de Next.js.
 
-T01 comprueba serialización y cobertura de las nueve respuestas, aislamiento de copias, ejemplo documental, rechazo con errores por fila, fallos de procesamiento separados del riesgo, omisiones y formato público del error de dominio. El compilador comprueba los tipos de los fixtures. Son verificaciones de la base, no pruebas de importación, cálculo ni persistencia implementados.
+T01 nació con nueve respuestas; el catálogo actual incluye también T12 y T15a/T15b. Comprueba serialización y cobertura de todas las respuestas, aislamiento de copias, ejemplo documental, rechazo con errores por fila, fallos de procesamiento separados del riesgo, omisiones y formato público del error de dominio. El compilador comprueba los tipos de los fixtures. Son verificaciones de la base, no pruebas de importación, cálculo ni persistencia implementados.
 
 Las pruebas de servicios cubren BAJO/MEDIO/ALTO/INCOMPLETO, primera semana, huecos, carga fuera de orden, límites/redondeo, duplicados/conflictos, rollback y concurrencia. T16 verifica esos comportamientos a través de la API, los trabajos y el tablero integrados.
 
@@ -22,7 +30,7 @@ T09 agrega `reglas.test.ts` a `npm test`: configuración completa, campos obliga
 
 `npm test` también descubre `data.test.ts`: comprueba encabezados, cobertura del catálogo, archivos de escenarios y resultados de referencia de T03, sin MySQL. Ver [preparación de cada archivo](data/README.md). Estas comprobaciones de fixtures son independientes de las pruebas funcionales de los servicios.
 
-T16 debe registrar evidencia de los RNF01–RNF07 según [Contratos y pruebas, sección 9](../../../Docs/contratos-prototipo.md#9-verificación-de-los-requerimientos-no-funcionales), distinguiendo P0, P1 y sistema final. Los controles futuros se registran pendientes; las pruebas actuales no acreditan rendimiento, autorización ni correo.
+T16 debe registrar evidencia de los RNF01–RNF07 según [Contratos y pruebas, sección 9](../../../Docs/contratos-prototipo.md#9-verificación-de-los-requerimientos-no-funcionales), distinguiendo P0, P1 y sistema final. Los controles futuros se registran pendientes; las pruebas actuales no acreditan rendimiento estable, autenticación productiva ni correo real. T15a verifica autorización demo y T12 correo simulado.
 
 ## T05 y T07
 
