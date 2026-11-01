@@ -2,7 +2,7 @@ import type { PrismaClient } from "@prisma/client";
 import type { JobDTO } from "../../shared/contracts";
 import { ErrorDominio } from "../../shared/errors";
 import {
-  comenzarPar,
+  comenzarParEnTransaccion,
   completarPar,
   finalizarJob,
   obtenerJob,
@@ -11,7 +11,7 @@ import {
 } from "../repositories/procesamientos";
 import { evaluarPeriodo, type OpcionesEvaluacion } from "./evaluaciones";
 import { alPublicarAlerta } from "./alertas";
-import { construirInforme } from "./informes";
+import { construirInforme, construirInformePublicado } from "./informes";
 
 /** Inyección explícita para probar fallos; las rutas de producción usan los servicios reales. */
 export type OpcionesProcesamiento = {
@@ -29,12 +29,13 @@ export async function procesarImportacion(
   const { propietario, pares } = reclamo;
   for (const { periodoId, periodo } of pares) {
     try {
-      await comenzarPar(db, propietario, periodoId);
       const evaluacion = await evaluarPeriodo(db, parDePeriodo(periodo), {
         propietario,
+        alIniciar: (tx) => comenzarParEnTransaccion(tx, propietario, periodoId),
         alPublicar: opciones.alPublicar ?? alPublicarAlerta,
       });
-      await (opciones.informe ?? construirInforme)(db, evaluacion.evaluationId);
+      if (opciones.informe) await opciones.informe(db, evaluacion.evaluationId);
+      else await construirInformePublicado(db, evaluacion);
       await completarPar(db, propietario, periodoId);
     } catch (error) {
       // Si se perdió el token/lease, finalizarJob también rechaza sin escribir.

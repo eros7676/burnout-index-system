@@ -12,7 +12,13 @@ import {
 } from "../repositories/importaciones";
 import { transaccionImportacion } from "../repositories/transaccion-importacion";
 import { fuenteValidacionPrisma } from "../repositories/validacion-importacion";
-import { fechaParaDb } from "../repositories/fechas";
+import {
+  clavePeriodo,
+  filtroPeriodo,
+  guardarRegistrosImportados,
+  lotes,
+  parDesdePeriodo,
+} from "../repositories/registros-importacion";
 import { obtenerJob } from "../repositories/procesamientos";
 import { leerCsvImportacion, type FilaCsv } from "./csv-importacion";
 import { validarFilasImportacion } from "./validacion-importacion";
@@ -157,62 +163,40 @@ export async function confirmarImportacion(
             ? 1
             : a.datos.periodStart.localeCompare(b.datos.periodStart),
       );
-      for (const { datos, fingerprint } of nuevas) {
-        const { periodStart, periodEnd, ...metricas } = datos;
-        const clave = {
-          employeeId: datos.employeeId,
-          periodStart: fechaParaDb(periodStart),
-          periodEnd: fechaParaDb(periodEnd),
-        };
-        const periodo = await tx.periodoEmpleado.upsert({
-          where: { employeeId_periodStart_periodEnd: clave },
-          create: clave,
-          update: {},
-        });
-        if (periodo.registroVigenteId)
-          throw new ErrorImportacion(
-            409,
-            "CONFLICTO_HISTORICO",
-            "El período ya tiene datos; valide nuevamente.",
-          );
-        const registro = await tx.registroLaboral.create({
-          data: {
-            ...metricas,
-            periodoId: periodo.periodoId,
-            sourceImportId: importId,
-            fingerprint,
-          },
-        });
-        await tx.periodoEmpleado.update({
-          where: { periodoId: periodo.periodoId },
-          data: { registroVigenteId: registro.recordId },
-        });
-      }
+      const ids = await guardarRegistrosImportados(tx, importId, nuevas);
       const afectados = await obtenerParesAfectados(
         tx,
         nuevas.map((f) => f.datos),
       );
       let jobId: string | null = null;
       if (afectados.length) {
-        const pares = [];
-        for (const [orden, par] of afectados.entries()) {
-          const periodo = await tx.periodoEmpleado.findUniqueOrThrow({
-            where: {
-              employeeId_periodStart_periodEnd: {
-                employeeId: par.employeeId,
-                periodStart: fechaParaDb(par.periodStart),
-                periodEnd: fechaParaDb(par.periodEnd),
-              },
+        for (const lote of lotes(
+          afectados.filter((p) => !ids.has(clavePeriodo(p))),
+        )) {
+          const periodos = await tx.periodoEmpleado.findMany({
+            where: { OR: lote.map(filtroPeriodo) },
+            select: {
+              periodoId: true,
+              employeeId: true,
+              periodStart: true,
+              periodEnd: true,
             },
           });
-          pares.push({ periodoId: periodo.periodoId, orden });
+          for (const p of periodos)
+            ids.set(clavePeriodo(parDesdePeriodo(p)), p.periodoId);
         }
+        const pares = afectados.map((par, orden) => {
+          const periodoId = ids.get(clavePeriodo(par));
+          if (!periodoId)
+            throw new Error("Falta un período afectado por la importación.");
+          return { periodoId, orden };
+        });
         const job = await tx.processingJob.create({
           data: {
             origen: "IMPORTACION",
             importId,
             createdBy: actorId,
-            pares: { create: pares },
+            pares: { createMany: { data: pares } },
           },
         });
         jobId = job.jobId;

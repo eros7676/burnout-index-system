@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import type { InformeDTO } from "../../shared/contracts";
+import type { Evaluacion, InformeDTO } from "../../shared/contracts";
 import { ErrorDominio } from "../../shared/errors";
 import {
   leerAlertaEvaluacion,
@@ -26,6 +26,17 @@ export async function construirInforme(
       "No existe una evaluación con ese identificador.",
     );
   }
+  return construirInformePublicado(db, evaluacion);
+}
+
+/** Solo para el procesamiento de servidor: recibe la evaluación devuelta por
+ * una publicación ya confirmada. Las consultas públicas siguen leyendo por ID.
+ * Evita leer y decodificar otra vez el mismo snapshot recién persistido. */
+export async function construirInformePublicado(
+  db: PrismaClient | Prisma.TransactionClient,
+  evaluacion: Evaluacion,
+): Promise<InformeDTO> {
+  const evaluationId = evaluacion.evaluationId;
   const [empleado, alerta] = await Promise.all([
     leerEmpleadoInforme(db, evaluacion.employeeId),
     leerAlertaEvaluacion(db, evaluationId),

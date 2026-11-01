@@ -92,7 +92,7 @@ La evidencia local de T04 y sus comandos reproducibles están en [la guía de im
 
 T16 agrega `npm run verify:p0`: verificación secuencial desde migración/seed hasta aceptación con MySQL real, Chrome y Firefox. Exige TEST_DATABASE_URL de una base exclusiva vacía terminada en `_test`. No usar la base de la aplicación. Ver [guía T16](Docs/t16-integracion.md) para instalación limpia, comandos, mediciones y protocolo humano de usabilidad. Los cambios de esta tarea permanecen locales en `t16-feature`.
 
-La aceptación T16 aún no está cerrada: el circuito funcional pasó en ambos navegadores, pero el lote máximo de 1.000 filas/5 MiB tarda 106–110 s en el entorno local y supera el límite RNF01 de 60 s. RNF03 requiere además una prueba con operador humano. La suite conserva esos criterios sin omitirlos ni flexibilizarlos.
+La falla de rendimiento T16 está corregida: el lote máximo de 1.000 filas/5 MiB pasó en **53,75 s en Chrome y 53,68 s en Firefox**, frente a 106–110 s iniciales y con el límite original de 60 s. `npm run verify:p0` aprobó todas las comprobaciones automatizadas. La confirmación usa bloques atómicos y el procesamiento reduce consultas/transacciones manteniendo historial, alertas y recuperación. Ver [evidencia T16](Docs/t16-integracion.md). RNF03 sigue requiriendo una prueba con operador humano; la aceptación humana de T16 no se da por cerrada.
 
 Crear ramas feature/TXX-descripcion desde main y abrir PR a main para revisión. No se presupone una rama develop ni protección configurada. Una tarea se completa con contrato respetado, pruebas relevantes y revisión; compilar la maqueta no completa P0.
 

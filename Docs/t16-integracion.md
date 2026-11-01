@@ -2,7 +2,7 @@
 
 Rama local `t16-feature`, creada desde `main` con T14 integrado (`40c43a0`). La aceptación ejecuta el circuito CSV → validación → confirmación → evaluación → informe → alerta → tablero sobre el build de producción y MySQL real. No agrega endpoints de pruebas ni modifica los contratos, el motor o los fixtures T03.
 
-**Estado: implementación de las pruebas disponible; aceptación T16 todavía no cerrada.** El circuito funcional está aprobado en ambos navegadores. RNF01 falla para el lote máximo y RNF03 requiere el operador humano. `verify:p0` termina con error mientras persista el incumplimiento de rendimiento; no se relajaron los límites ni se omitió esa prueba.
+**Estado: falla de rendimiento corregida y verificación automatizada P0 aprobada.** La carga máxima de 1.000 filas/5 MiB pasó con el límite original de 60 s en Chrome y Firefox; `verify:p0` terminó correctamente. RNF03 sigue requiriendo una prueba con operador humano y la revisión de la tarea permanece pendiente. No se relajaron los límites ni se omitieron pruebas. La evidencia inicial fallida se conserva como referencia histórica y la medición corregida figura al final.
 
 ## Instalación limpia y verificación
 
@@ -55,7 +55,7 @@ En una demo ficticia recién sembrada, entregar al operador `invalido_una_fila.c
 
 `test-results/t16-results.json` contiene el resultado por navegador y los adjuntos de rendimiento. `test-results/acceptance/` conserva capturas, mediciones y trazas de fallos. Ambos están ignorados por Git. Conservar una copia del reporte si se necesita comparar corridas: Playwright reemplaza resultados anteriores. Nunca incluir URLs de conexión en los adjuntos.
 
-## Ejecución local · 01/11/2026
+## Primera ejecución local, antes de optimizar · 01/11/2026
 
 Fuentes copiadas a `.t16-clean/` sin dependencias, artefactos previos ni archivos de entorno; `npm ci` instaló 403 paquetes desde el lockfile. Node 24.20.0, npm 11.19.0, Next.js 16.4.2/Turbopack, Windows 10, AMD Ryzen 5 3600 (6 núcleos), 15,91 GiB de RAM. MySQL 8.0.46 descartable, puerto 3316, configuración predeterminada salvo zona UTC. Migración inicial y seed aplicados desde cero, cuatro equipos/50 personas/49 evaluables, sin resultados precargados.
 
@@ -68,8 +68,35 @@ Mediciones (incluyen interacción de navegador):
 - Chrome: lote de 1.000 filas/5.242.880 bytes, 109.613,43 ms. **Falla** el límite de 60.000 ms.
 - Firefox: mismo lote máximo, 106.591,14 ms. **Falla** el límite de 60.000 ms.
 
-La carga máxima terminó COMPLETADA con 1.000 evaluaciones y cero alertas; su fallo es de rendimiento. No demuestra fallo de atomicidad ni pérdida de datos. La medición máxima usa métricas cero y espacios normalizables; no certifica otras distribuciones de factores ni concurrencia. No se atribuye el costo a un componente concreto sin perfilado. Queda pendiente optimizar y repetir esa prueba antes de aprobar RNF01/T16.
+La carga máxima terminó COMPLETADA con 1.000 evaluaciones y cero alertas; su fallo fue de rendimiento. No demostró fallo de atomicidad ni pérdida de datos. La medición máxima usa métricas cero y espacios normalizables; no certifica otras distribuciones de factores ni concurrencia. En esa ejecución quedó pendiente perfilar, optimizar y repetir la prueba; la corrección y su verificación se describen abajo.
 
 Se corrigieron dos expectativas de la suite contra T03: en 12/10 existen 48 registros (no los 49 del catálogo), y el pico MEDIO de EMP-016 corresponde al 05/10, no al 12/10. La corrida funcional posterior está en `.t16-clean/test-results/t16-results.json`; las mediciones originales de carga máxima se conservaron en `.t16-clean/test-results/t16-carga-maxima.json`. Las pruebas máximas siguen habilitadas en la configuración final. El comando con `--grep-invert 'límite P0'` se usó solo para repetir los escenarios corregidos; no reemplaza la aceptación completa.
 
-Al terminar quedaron cero importaciones, registros laborales, evaluaciones, alertas y jobs de pruebas; solo la regla v1. Se detuvo el contenedor descartable. No se modificaron `.env`, la base de la aplicación ni GitHub; no se hizo commit ni push. La prueba humana RNF03, la optimización del lote máximo y la revisión de la tarea permanecen pendientes.
+Al terminar quedaron cero importaciones, registros laborales, evaluaciones, alertas y jobs de pruebas; solo la regla v1. Se detuvo el contenedor descartable. No se modificaron `.env`, la base de la aplicación ni GitHub; no se hizo commit ni push durante aquella ejecución inicial.
+
+## Corrección de rendimiento y verificación completa · 01/11/2026
+
+El diagnóstico directo de los servicios, sin navegador ni Next.js, reprodujo 88,47 s con 1.000 filas compactas (44.041 bytes): 64.867 eventos SQL, incluido control transaccional, y cuatro transacciones explícitas por par. Leer 5 MiB tomó menos de 0,6 s; el mayor costo fue la cantidad de operaciones secuenciales sobre MySQL. El primer cambio de lotes redujo la medición directa a 75,22 s, todavía insuficiente.
+
+La implementación final:
+
+- Lee/inserta períodos y registros en bloques de 200, dentro de una única confirmación SERIALIZABLE. Usa IDs internos UUID, sin cambios de esquema. Publica punteros con SQL parametrizado restringido al lote/fuente, comprueba el número afectado y conserva conflictos y rollback total. No usa `skipDuplicates`.
+- Consulta sucesores por lotes y reutiliza IDs para insertar los pares del job con `createMany`.
+- Une inicio del par, renovación de lease, lectura de fuentes, cálculo, evaluación y alerta en una transacción SERIALIZABLE. Conserva los controles de pertenencia/token/lease y reintentos acotados. La publicación de snapshots externos sigue comprobando la huella contra fuentes actuales.
+- Construye el informe de procesamiento desde la evaluación recién publicada, con lecturas actuales de empleado/alerta. Las consultas públicas siguen leyendo evaluaciones por ID. Finaliza el par en otra transacción, después del informe; si este falla, conserva la evaluación guardada y permite recuperar el job.
+- Actualiza job/par juntos para evitar consultas y retornos de filas que se descartaban. El job global se reclama antes de comenzar; el estado PROCESANDO del par se confirma junto con su evaluación, y las consultas concurrentes ven el último estado confirmado.
+
+Se mantuvieron las fórmulas, los contratos, el seed, los fixtures T03 y las aserciones originales de rendimiento. No se cambió la configuración de durabilidad de MySQL: `innodb_flush_log_at_trx_commit=1`, `sync_binlog=1`, binlog habilitado.
+
+Verificación desde la copia aislada `.t16-clean/`, en el mismo equipo y versiones de la primera ejecución: `npm run verify:p0` terminó con código 0. Lint, tipos, build Turbopack, validación Prisma, **60 pruebas sin MySQL**, **67 con MySQL**, **nueve rutas HTTP reales**, **15 escenarios T06/T14** y **ocho escenarios T16** aprobados; cero omitidos o fallos. Se incorporaron regresiones para fallo después de insertar un lote, fallo en el segundo bloque de 201 filas con rollback del primero y recuperación, y dos jobs distintos publicando simultáneamente el mismo período sin duplicar evaluación/alerta. También pasaron los controles previos de pérdida de token/lease, snapshots obsoletos, rollback de alerta y fallo del informe posterior a publicar.
+
+Mediciones finales de validación más procesamiento, incluyendo interacción de navegador:
+
+- Chrome 156.0.8078.80: **53.753,83 ms** para 1.000 filas/5.242.880 bytes, frente a 109.613,43 ms iniciales. Cumple ≤60.000 ms.
+- Firefox 157.0: **53.675,32 ms** para el mismo lote máximo, frente a 106.591,14 ms iniciales. Cumple ≤60.000 ms.
+- Plantilla de 138 filas/7.086 bytes: Chrome **7.769,98 ms**, Firefox **6.911,54 ms**. Ambas cumplen ≤60.000 ms.
+- p95 de 40 consultas completas sobre la plantilla: Chrome **271,81 ms**, Firefox **270,51 ms**. Ambas cumplen ≤3.000 ms.
+
+La evidencia final está en `.t16-clean/test-results/t16-results.json`, con capturas y adjuntos en `test-results/acceptance/`. El máximo sigue usando métricas cero y espacios normalizables, con un operador local: las mediciones no certifican otros equipos, distribuciones de factores ni carga concurrente. Los objetivos y las pruebas no se modificaron para obtener el resultado.
+
+Al finalizar se comprobaron cero importaciones, registros laborales, evaluaciones, alertas y jobs en la base de pruebas, conservando solo v1. Se eliminó la base separada de diagnóstico y se detuvo el contenedor. Los cambios de esta corrección quedan locales en `t16-feature`, sin commit ni push. Para cerrar la aceptación humana T16 siguen pendientes el protocolo RNF03 y la revisión.

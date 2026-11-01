@@ -4,6 +4,8 @@ La guía de instalación y alcance está en el [README principal](../../README.m
 
 T16 incorpora `npm run verify:p0` y `npm run test:acceptance`. La primera verificación ejecuta migración, seed, comprobaciones y suites en secuencia sobre TEST_DATABASE_URL exclusiva; la segunda ejecuta solo aceptación real en Chrome/Firefox sobre un build existente. No omiten pruebas por falta de base. Ver [guía T16](../../Docs/t16-integracion.md), incluidos instalación limpia, puertos, reportes y protocolo humano RNF03.
 
+La corrección T16 agrupa escrituras/lecturas de importación y une inicio/publicación por par, conservando la finalización después del informe y los controles de token/lease. El máximo de 1.000 filas/5 MiB pasó en 53,75 s (Chrome) y 53,68 s (Firefox), sin modificar el umbral de 60 s. `verify:p0` pasó: 60 pruebas sin MySQL, 67 con MySQL, nueve rutas HTTP, 15 escenarios T06/T14 y ocho T16, además de lint/tipos/build/Prisma. La prueba humana RNF03 sigue pendiente. Esta corrección no requiere migración ni dependencias nuevas.
+
 Ejecutar npm ci, npm run dev, npm run lint, npm run typecheck, npm test y npm run build desde esta carpeta. Copiar .env.example a .env para Prisma. Docker Compose se ejecuta desde la raíz del repositorio. T01 y sus pruebas no requieren MySQL.
 
 - src/shared/contracts.ts: contrato TypeScript común.

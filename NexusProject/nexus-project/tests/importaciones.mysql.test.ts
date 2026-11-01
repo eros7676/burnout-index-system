@@ -470,18 +470,16 @@ test("MySQL T04: CU01 por HTTP, atomicidad y recuperación", async (t) => {
     );
 
     await t.test(
-      "fallo en la segunda inserción revierte registros, períodos, estado y job",
+      "fallo después de insertar el lote revierte registros, períodos, estado y job",
       async () => {
-        let inserciones = 0,
-          fallar = true;
+        let fallar = true;
         const cliente = db.$extends({
           query: {
             registroLaboral: {
-              async create({ args, query }) {
-                inserciones++;
-                if (fallar && inserciones === 2)
-                  throw new Error("Fallo de escritura inyectado.");
-                return query(args);
+              async createMany({ args, query }) {
+                const resultado = await query(args);
+                if (fallar) throw new Error("Fallo de escritura inyectado.");
+                return resultado;
               },
             },
           },
@@ -520,6 +518,89 @@ test("MySQL T04: CU01 por HTTP, atomicidad y recuperación", async (t) => {
             "COMPLETADO",
           );
         });
+      },
+    );
+
+    await t.test(
+      "fallo en el segundo bloque de 201 filas revierte también el primer bloque y permite recuperar",
+      async () => {
+        let bloques = 0,
+          fallar = true;
+        const cliente = db.$extends({
+          query: {
+            registroLaboral: {
+              async createMany({ args, query }) {
+                const resultado = await query(args);
+                bloques++;
+                if (fallar && bloques === 2)
+                  throw new Error("Fallo del segundo bloque.");
+                return resultado;
+              },
+            },
+          },
+        }) as unknown as PrismaClient;
+        await escenario(
+          cliente,
+          async (s) => {
+            const fecha = (dias: number) =>
+              new Date(Date.UTC(2026, 0, 5 + dias)).toISOString().slice(0, 10);
+            const csv = [
+              s.csv.split("\n")[0],
+              ...Array.from(
+                { length: 201 },
+                (_, i) =>
+                  `${s.employeeId},${fecha(i * 7)},${fecha(i * 7 + 6)},0,0,0,0,0,0,,`,
+              ),
+            ].join("\n");
+            const previa = await s.validar(csv);
+            assert.equal(previa.status, 200);
+            assert.equal(
+              (await s.confirmar(previa.vista.importId)).status,
+              500,
+            );
+            assert.equal(bloques, 2);
+            assert.equal(
+              await db.registroLaboral.count({
+                where: { employeeId: s.employeeId },
+              }),
+              0,
+            );
+            assert.equal(
+              await db.periodoEmpleado.count({
+                where: { employeeId: s.employeeId },
+              }),
+              0,
+            );
+            assert.equal(
+              await db.processingJob.count({
+                where: { importId: previa.vista.importId },
+              }),
+              0,
+            );
+            assert.equal(
+              (
+                await db.importacion.findUniqueOrThrow({
+                  where: { importId: previa.vista.importId },
+                })
+              ).status,
+              "VALIDADA",
+            );
+            fallar = false;
+            const recuperada = await s.confirmar(previa.vista.importId);
+            assert.equal(
+              recuperada.resultado.procesamiento?.estado,
+              "COMPLETADO",
+            );
+            assert.equal(recuperada.resultado.insertados, 201);
+            assert.equal(
+              await db.evaluacion.count({
+                where: { employeeId: s.employeeId },
+              }),
+              201,
+            );
+          },
+          { ahora: () => new Date("2031-01-01T12:00:00Z") },
+        );
       },
     );
 

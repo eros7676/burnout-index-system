@@ -8,6 +8,8 @@ El servicio está implementado y verificado con evaluaciones persistidas, inclui
 
 ## Uso
 
+El procesamiento T16 puede usar `construirInformePublicado(db, evaluacion)` exclusivamente con la evaluación devuelta por una publicación ya confirmada. Reutiliza ese DTO en memoria y consulta empleado/alerta, evitando releer y decodificar el snapshot recién guardado. El informe de procesamiento se usa para comprobar su construcción; no se almacena otra copia ni se expone como resultado actual. Las consultas públicas y el detalle histórico continúan usando `construirInforme(db, evaluationId)` y leen la evaluación desde la base. El punto de inyección de fallos de T04 conserva su firma y se ejecuta también después de publicar.
+
 `construirInforme` recibe el cliente Prisma, igual que las lecturas de T08. La firma de `ServiciosPrototipo` sigue siendo `construirInforme(evaluationId)`.
 
 ```ts
