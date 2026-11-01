@@ -1,5 +1,7 @@
 # Repositorios
 
+T16 agrega `registros-importacion.ts`: escrituras y lecturas en bloques de 200 dentro de la confirmación SERIALIZABLE, sin omitir conflictos; publicación parametrizada de punteros restringida a la fuente y los períodos del lote. Los estados de procesamiento actualizan job/par juntos, conservando los bloqueos y la comprobación de token/lease antes y después del trabajo. Ver [T04](../../../../../Docs/t04-importaciones.md) y [T16](../../../../../Docs/t16-integracion.md).
+
 Acceso a Prisma/MySQL y transacciones. Las reglas de negocio van en services. T02 define modelos e integridad en `prisma/schema.prisma`; no duplicar el esquema en src/prisma. Importar el cliente de servidor desde `@/lib/db`.
 
 T04 agrega `importaciones.ts` (bloqueo de carga y limpieza diferida de temporales), `transaccion-importacion.ts` (transacciones SERIALIZABLE con reintentos acotados) y `procesamientos.ts` (reclamo, renovación y cambios de estado condicionados por token y lease con reloj UTC de MySQL). Ver [guía T04](../../../../../Docs/t04-importaciones.md).

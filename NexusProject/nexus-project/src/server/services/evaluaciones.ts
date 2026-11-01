@@ -11,9 +11,17 @@ import {
 } from "../repositories/evaluaciones";
 import { calcularEvaluacion } from "./calculo";
 import { ENGINE_VERSION, huellaEvaluacion } from "./huella-evaluacion";
+import {
+  filtroPeriodo,
+  lotes,
+  parDesdePeriodo,
+} from "../repositories/registros-importacion";
 
 export type OpcionesEvaluacion = {
   propietario?: PropietarioJob;
+  /** Orquestación interna: iniciar/renovar el par en la misma transacción.
+   * Solo IO transaccional local; una excepción revierte inicio y publicación. */
+  alIniciar?: (tx: Prisma.TransactionClient) => Promise<void>;
   /** Adaptador de T11/T10: se ejecuta también al reutilizar la evaluación.
    * Solo IO transaccional local; no enviar correo ni hacer llamadas externas.
    * Si falla, se revierte la publicación. T04 registra el fallo fuera de esta tx.
@@ -38,7 +46,10 @@ async function serializable<T>(
     } catch (error) {
       if (
         !(error instanceof Prisma.PrismaClientKnownRequestError) ||
-        error.code !== "P2034" ||
+        !(
+          error.code === "P2034" ||
+          (error.code === "P2010" && error.meta?.code === "1213")
+        ) ||
         intento >= 2
       )
         throw error;
@@ -77,26 +88,31 @@ export async function publicarEvaluacion(
   preparada: EvaluacionPreparada,
   opciones: OpcionesEvaluacion = {},
 ): Promise<Evaluacion> {
-  return serializable(db, async (tx) => {
-    const evaluacion = await guardarEvaluacion(
-      tx,
-      preparada,
-      opciones.propietario,
-    );
-    await opciones.alPublicar?.(tx, evaluacion);
-    if (opciones.propietario) {
-      const { jobId, ownerToken } = opciones.propietario;
-      const permiso = await tx.$queryRaw<{ jobId: string }[]>`
+  return serializable(db, (tx) =>
+    publicarDentroDeTransaccion(tx, preparada, opciones),
+  );
+}
+
+async function publicarDentroDeTransaccion(
+  tx: Prisma.TransactionClient,
+  fuente: EvaluacionPreparada | ParPeriodo,
+  opciones: OpcionesEvaluacion,
+) {
+  await opciones.alIniciar?.(tx);
+  const evaluacion = await guardarEvaluacion(tx, fuente, opciones.propietario);
+  await opciones.alPublicar?.(tx, evaluacion);
+  if (opciones.propietario) {
+    const { jobId, ownerToken } = opciones.propietario;
+    const permiso = await tx.$queryRaw<{ jobId: string }[]>`
         SELECT jobId FROM ProcessingJob WHERE jobId = ${jobId} AND ownerToken = ${ownerToken}
         AND estado = 'PROCESANDO' AND leaseUntil > UTC_TIMESTAMP(3) FOR UPDATE`;
-      if (permiso.length !== 1)
-        throw new ErrorDominio(
-          "REQUIERE_REPROCESO",
-          "El lease venció antes de terminar la publicación.",
-        );
-    }
-    return evaluacion;
-  });
+    if (permiso.length !== 1)
+      throw new ErrorDominio(
+        "REQUIERE_REPROCESO",
+        "El lease venció antes de terminar la publicación.",
+      );
+  }
+  return evaluacion;
 }
 
 export async function evaluarPeriodo(
@@ -104,6 +120,13 @@ export async function evaluarPeriodo(
   par: ParPeriodo,
   opciones: OpcionesEvaluacion = {},
 ): Promise<Evaluacion> {
+  if (opciones.propietario) {
+    // El job queda bloqueado antes de leer fuentes/reglas. Estas permanecen
+    // protegidas hasta publicar evaluación+alerta y volver a comprobar el lease.
+    return serializable(db, (tx) =>
+      publicarDentroDeTransaccion(tx, par, opciones),
+    );
+  }
   return publicarEvaluacion(db, await prepararEvaluacion(db, par), opciones);
 }
 
@@ -120,28 +143,22 @@ export async function obtenerParesAfectados(
       JSON.stringify([par.employeeId, par.periodStart, par.periodEnd]),
       par,
     );
-  for (const par of nuevos) {
-    agregar(par);
-    const inicio = new Date(
-      fechaParaDb(par.periodStart).getTime() + 7 * 86_400_000,
-    );
-    const fin = new Date(fechaParaDb(par.periodEnd).getTime() + 7 * 86_400_000);
-    const siguiente = await tx.periodoEmpleado.findUnique({
-      where: {
-        employeeId_periodStart_periodEnd: {
-          employeeId: par.employeeId,
-          periodStart: inicio,
-          periodEnd: fin,
-        },
-      },
-      select: { registroVigenteId: true },
+  for (const par of nuevos) agregar(par);
+  const sucesores = nuevos.map((par) => ({
+    employeeId: par.employeeId,
+    periodStart: fechaDesdeDb(
+      new Date(fechaParaDb(par.periodStart).getTime() + 7 * 86_400_000),
+    ),
+    periodEnd: fechaDesdeDb(
+      new Date(fechaParaDb(par.periodEnd).getTime() + 7 * 86_400_000),
+    ),
+  }));
+  for (const lote of lotes(sucesores)) {
+    const siguientes = await tx.periodoEmpleado.findMany({
+      where: { OR: lote.map(filtroPeriodo), registroVigenteId: { not: null } },
+      select: { employeeId: true, periodStart: true, periodEnd: true },
     });
-    if (siguiente?.registroVigenteId)
-      agregar({
-        employeeId: par.employeeId,
-        periodStart: fechaDesdeDb(inicio),
-        periodEnd: fechaDesdeDb(fin),
-      });
+    for (const siguiente of siguientes) agregar(parDesdePeriodo(siguiente));
   }
   return [...pares.values()].sort((a, b) =>
     a.employeeId < b.employeeId

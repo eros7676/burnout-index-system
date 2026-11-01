@@ -20,6 +20,8 @@ La vista previa dura 30 minutos. `ImportacionTemporal.datos` conserva las filas 
 
 Confirmar bloquea el importId y revalida catálogo e histórico dentro de una transacción SERIALIZABLE. Inserta solo filas nuevas, actualiza punteros y guarda confirmación y job antes del commit. Un conflicto no reemplaza registros; una falla revierte todo. Las carreras transitorias se reintentan de forma acotada sobre la transacción completa; las restricciones únicas siguen siendo la última protección. Un histórico idéntico que apareció después de validar pasa a omitido.
 
+La optimización T16 realiza lecturas e inserciones en bloques de hasta 200 filas, con IDs internos UUID de 36 caracteres para los períodos/registros nuevos. No usa `skipDuplicates` ni ignora conflictos. Los punteros se publican mediante un UPDATE parametrizado acotado a los períodos y a la fuente de esta importación, solo si siguen vacíos; se verifica la cantidad afectada. Sucesores y IDs se consultan por lote y los pares del job se insertan juntos. Todos los bloques siguen dentro de la misma transacción: fallar en el segundo revierte también el primero. No cambia el contrato HTTP ni requiere migración.
+
 Los afectados son los pares nuevos y sus sucesores inmediatos existentes, sin duplicados, ordenados por empleado y fecha. No se propaga hasta W+2. Si todas las filas se omiten, no se crea job.
 
 Al confirmar o cancelar se elimina el temporal. La limpieza de vencidos es diferida al operar CU01 y conserva metadatos; el vencimiento se comprueba igualmente al confirmar/cancelar y devuelve 410. No requiere cron para impedir confirmaciones vencidas.

@@ -1,5 +1,9 @@
 # Servicios del servidor
 
+Optimización T16: los jobs evalúan y publican dentro de una transacción SERIALIZABLE por par, sin una preparación redundante. La publicación de snapshots externos sigue revalidando la huella. El informe de procesamiento reutiliza la evaluación recién publicada mediante `construirInformePublicado`; las consultas HTTP mantienen la lectura por ID. Ver [T08](../../../../../Docs/t08-evaluaciones.md), [T10](../../../../../Docs/t10-informes.md) y [T16](../../../../../Docs/t16-integracion.md).
+
+El callback interno `alIniciar` comparte esa transacción para renovar el lease e iniciar el par. No debe abrir otra conexión ni hacer IO externo. La finalización del par sigue separada, después de construir el informe, para conservar la recuperación si el informe falla.
+
 CU01, CU02 y CU03 usan `src/shared/contracts.ts`. El cálculo de CU02 es puro, sin Next.js ni Prisma; T08 orquesta la persistencia. Las rutas HTTP validan la petición y llaman servicios.
 
 T04 está en `importaciones.ts` y `procesamientos.ts`: vistas previas persistidas de 30 minutos, confirmación/revalidación atómica, cancelación y ejecución recuperable con token/lease. Integra T08 con `alPublicarAlerta` y construye T10 antes de completar cada par. El adaptador HTTP está en `../http/cu01.ts`. Ver [Docs/t04-importaciones.md](../../../../../Docs/t04-importaciones.md).

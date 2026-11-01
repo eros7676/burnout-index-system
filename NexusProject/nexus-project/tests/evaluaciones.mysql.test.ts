@@ -10,6 +10,7 @@ import { decodificarJsonExacto } from "../src/server/repositories/json-exacto";
 import { calcularEvaluacion } from "../src/server/services/calculo";
 import { fechaParaDb } from "../src/server/repositories/fechas";
 import { publicarConfiguracion } from "../src/server/services/publicar-reglas";
+import { alPublicarAlerta } from "../src/server/services/alertas";
 import {
   evaluarPeriodo,
   evaluarAfectados,
@@ -596,6 +597,49 @@ test("MySQL T08: motor, persistencia, historial y concurrencia reales", async (t
           assert.equal(
             await db.alerta.count({ where: { employeeId: s.employeeId } }),
             0,
+          );
+        }),
+    );
+    await t.test(
+      "dos jobs distintos publican simultáneamente el mismo período sin duplicar evaluación ni alerta",
+      () =>
+        escenario(db, async (s) => {
+          await s.agregar(0);
+          const { periodo } = await s.agregar(1);
+          const jobs = await Promise.all(
+            [0, 1].map((i) =>
+              db.processingJob.create({
+                data: {
+                  origen: "CAMBIO_REGLAS",
+                  rulesVersion: "v1",
+                  createdBy: "demo-local",
+                  estado: "PROCESANDO",
+                  ownerToken: `dueno-${i}`,
+                  leaseUntil: new Date(Date.now() + 120_000),
+                  pares: { create: { periodoId: periodo.periodoId, orden: 0 } },
+                },
+              }),
+            ),
+          );
+          const resultados = await Promise.all(
+            jobs.map((job) =>
+              evaluarPeriodo(db, s.par(), {
+                propietario: { jobId: job.jobId, ownerToken: job.ownerToken! },
+                alPublicar: alPublicarAlerta,
+              }),
+            ),
+          );
+          assert.equal(resultados[0].evaluationId, resultados[1].evaluationId);
+          assert.equal(resultados[0].nivel, "ALTO");
+          assert.equal(
+            await db.evaluacion.count({ where: { employeeId: s.employeeId } }),
+            1,
+          );
+          assert.equal(
+            await db.alerta.count({
+              where: { employeeId: s.employeeId, vigencia: "ACTIVA" },
+            }),
+            1,
           );
         }),
     );

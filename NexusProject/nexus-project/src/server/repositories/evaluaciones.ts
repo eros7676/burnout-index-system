@@ -23,6 +23,7 @@ import {
 
 export type EntradaEvaluacion = {
   periodoId: string;
+  evaluacionVigenteId: string | null;
   snapshot: SnapshotEvaluacion;
 };
 export type EvaluacionPreparada = EntradaEvaluacion & {
@@ -124,6 +125,7 @@ export async function leerEntradaEvaluacion(
     );
   return {
     periodoId: periodo.periodoId,
+    evaluacionVigenteId: periodo.evaluacionVigenteId,
     snapshot: {
       actual: registroDesdeDb(periodo.registroVigente, par),
       anterior: anterior?.registroVigente
@@ -200,9 +202,10 @@ export function evaluacionDesdeDb(
  */
 export async function guardarEvaluacion(
   tx: Prisma.TransactionClient,
-  preparada: EvaluacionPreparada,
+  fuente: EvaluacionPreparada | ParPeriodo,
   propietario?: PropietarioJob,
 ): Promise<Evaluacion> {
+  const preparada = "snapshot" in fuente ? fuente : null;
   // MySQL usa su reloj UTC para validar lease; el bloqueo impide que otro dueño
   // reclame el job durante la publicación. El commit es la frontera del permiso.
   if (propietario) {
@@ -210,26 +213,27 @@ export async function guardarEvaluacion(
       SELECT jobId FROM ProcessingJob WHERE jobId = ${propietario.jobId}
       AND ownerToken = ${propietario.ownerToken} AND estado = 'PROCESANDO'
       AND leaseUntil > UTC_TIMESTAMP(3) FOR UPDATE`;
-    const par = await tx.processingJobPar.findUnique({
-      where: {
-        jobId_periodoId: {
-          jobId: propietario.jobId,
-          periodoId: preparada.periodoId,
-        },
-      },
-    });
-    if (jobs.length !== 1 || !par)
+    if (jobs.length !== 1)
       throw reprocesar(
         "El ejecutor perdió su lease/token o el período no pertenece al job.",
       );
+    if (preparada) await comprobarPar(tx, propietario, preparada.periodoId);
   }
-  const actual = preparada.snapshot.actual;
-  const entrada = await leerEntradaEvaluacion(tx, actual);
+  // La ruta directa de un job lee y publica en esta misma transacción
+  // SERIALIZABLE. La ruta de snapshot externo sigue revalidando su huella.
+  const entrada = await leerEntradaEvaluacion(
+    tx,
+    preparada ? preparada.snapshot.actual : (fuente as ParPeriodo),
+  );
+  const actual = entrada.snapshot.actual;
+  if (propietario && !preparada)
+    await comprobarPar(tx, propietario, entrada.periodoId);
   const fingerprint = huellaEvaluacion(entrada.snapshot);
   if (
-    entrada.periodoId !== preparada.periodoId ||
-    fingerprint !== preparada.processingFingerprint ||
-    huellaEvaluacion(preparada.snapshot) !== preparada.processingFingerprint
+    preparada &&
+    (entrada.periodoId !== preparada.periodoId ||
+      fingerprint !== preparada.processingFingerprint ||
+      huellaEvaluacion(preparada.snapshot) !== preparada.processingFingerprint)
   )
     throw reprocesar(
       "Cambiaron los datos, antecedentes o reglas. Volver a calcular antes de publicar.",
@@ -239,9 +243,6 @@ export async function guardarEvaluacion(
     entrada.snapshot.anterior,
     entrada.snapshot.reglas,
   );
-  const periodo = await tx.periodoEmpleado.findUniqueOrThrow({
-    where: { periodoId: entrada.periodoId },
-  });
   let fila = await tx.evaluacion.findUnique({
     where: {
       periodoId_processingFingerprint: {
@@ -260,7 +261,7 @@ export async function guardarEvaluacion(
         rulesVersion: entrada.snapshot.reglas.version,
         engineVersion: ENGINE_VERSION,
         processingFingerprint: fingerprint,
-        supersedesEvaluationId: periodo.evaluacionVigenteId,
+        supersedesEvaluationId: entrada.evaluacionVigenteId,
         indice: calculo.indice,
         nivel: calculo.nivel,
         indicadores: codificarJsonExacto(calculo.indicadores),
@@ -273,19 +274,33 @@ export async function guardarEvaluacion(
       },
     });
   }
-  if (periodo.evaluacionVigenteId !== fila.evaluationId) {
-    if (periodo.evaluacionVigenteId)
+  if (entrada.evaluacionVigenteId !== fila.evaluationId) {
+    if (entrada.evaluacionVigenteId)
       await tx.alerta.updateMany({
         where: {
-          evaluationId: periodo.evaluacionVigenteId,
+          evaluationId: entrada.evaluacionVigenteId,
           vigencia: "ACTIVA",
         },
         data: { vigencia: "SUPERADA" },
       });
-    await tx.periodoEmpleado.update({
+    const cambio = await tx.periodoEmpleado.updateMany({
       where: { periodoId: entrada.periodoId },
       data: { evaluacionVigenteId: fila.evaluationId },
     });
+    if (cambio.count !== 1)
+      throw reprocesar("El período dejó de estar disponible para publicar.");
   }
   return evaluacionDesdeDb(fila, fila.evaluationId);
+}
+
+async function comprobarPar(
+  tx: Prisma.TransactionClient,
+  propietario: PropietarioJob,
+  periodoId: string,
+) {
+  const par = await tx.processingJobPar.findUnique({
+    where: { jobId_periodoId: { jobId: propietario.jobId, periodoId } },
+    select: { periodoId: true },
+  });
+  if (!par) throw reprocesar("El período no pertenece al job.");
 }

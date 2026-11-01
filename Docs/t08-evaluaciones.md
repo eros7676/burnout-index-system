@@ -38,6 +38,10 @@ const detalle = await obtenerEvaluacion(db, evaluacion.evaluationId);
 
 ## Huella, snapshots y atomicidad
 
+En el procesamiento de un job, `evaluarPeriodo` bloquea primero el job y realiza lectura, cálculo y publicación dentro de una única transacción SERIALIZABLE. Así evita una transacción previa de preparación y lecturas repetidas; conserva la comprobación de pertenencia del par y verifica el lease otra vez después de `alPublicar`. Las fuentes, antecedentes y reglas quedan protegidos hasta el commit. `prepararEvaluacion`/`publicarEvaluacion` siguen disponibles para snapshots externos: esa ruta relee las fuentes y rechaza huellas obsoletas como antes. Los deadlocks P2010/1213 y conflictos P2034 reintentan la transacción completa hasta tres intentos.
+
+T04 pasa `alIniciar` para renovar el lease y marcar el par PROCESANDO dentro de esa misma transacción. Inicio, evaluación y alerta se confirman o revierten juntos; no se abre una segunda transacción desde el callback. El job global ya figura PROCESANDO desde el reclamo. Mientras la publicación está en curso, otras consultas siguen viendo el estado confirmado previamente del par. Al fallar, T04 registra FALLIDO fuera de la transacción revertida; al publicar, construye el informe y solo después confirma COMPLETADO en otra transacción. Esto mantiene la evaluación guardada si el fallo posterior pertenece al informe.
+
 La huella SHA-256 incluye el registro actual completo, antecedente completo o null,
 snapshot de reglas y `engineVersion=cu02-v1`. La serialización ordena claves para
 que el orden de propiedades JSON no cambie la identidad. No incluye job ni hora de
