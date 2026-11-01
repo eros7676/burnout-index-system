@@ -26,8 +26,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <aside role="status" style={{ padding: "12px 20px", background: "#fff3cd", color: "#4d3800", fontWeight: 600 }}>
-          Maqueta visual · datos ficticios fijos. El cálculo, la importación y las
-          notificaciones todavía no están conectados.
+          Demo local con datos ficticios · Importación CSV disponible. El resumen
+          sigue siendo una maqueta con valores fijos; no representa las cargas realizadas.
         </aside>
         {children}
       </body>
