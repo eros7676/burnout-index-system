@@ -89,6 +89,24 @@ export type Alerta = {
     | 'FALLIDO' | 'SIN_DESTINATARIO';
   createdAt: string;
 };
+/** P1: historial de simulación; nunca representa entrega de correo real. */
+export type ResultadoSimulado = "EXITO" | "FALLO";
+export type IntentoNotificacion = {
+  intentoId: string;
+  alertId: string;
+  requestId: string;
+  numero: number;
+  destinatarioId: string | null;
+  resultado: ResultadoSimulado;
+  estado: "PENDIENTE" | "ENVIADO" | "FALLIDO" | "SIN_DESTINATARIO";
+  detalle: string | null;
+  createdAt: string;
+  completedAt: string | null;
+};
+export type SolicitudNotificacion = {
+  requestId: string;
+  resultado: ResultadoSimulado;
+};
 // Reglas adicionales: vigente es un puntero por empleado/semana, no por rulesVersion; conservar versiones anteriores. anterior en Persistencia contiene el cálculo numérico con las reglas de la semana actual. cumple se refiere a las condiciones de ALTO (dos índices y factores comunes); motivo=NO_SOSTENIDO si hay anterior pero no se cumplen todas. Lista vacía de excedidas no es un dato faltante.
 export type ErrorCampo = {
   fila: number | null; // encabezado=1, primera fila=2

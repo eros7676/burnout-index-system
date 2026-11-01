@@ -14,6 +14,7 @@ import type {
   ResumenDTO,
 } from "@/shared/contracts";
 import "./tablero.css";
+import { NotificacionAlerta } from "./notificacion-alerta";
 
 const niveles: Nivel[] = ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"];
 const factores: Record<Factor, string> = {
@@ -619,6 +620,40 @@ export default function DashboardHomeView() {
                   <article key={alerta.alertId}>
                     <h3>{alerta.employeeId}</h3>
                     <AlertaContenido alerta={alerta} />
+                    <NotificacionAlerta
+                      alerta={alerta}
+                      alCambiar={(intento) => {
+                        setSeleccion(null);
+                        setRespuesta((prev) =>
+                          prev?.datos
+                            ? {
+                                ...prev,
+                                datos: {
+                                  ...prev.datos,
+                                  alertas: {
+                                    ...prev.datos.alertas,
+                                    items: prev.datos.alertas.items.map((a) =>
+                                      a.alertId === alerta.alertId
+                                        ? {
+                                            ...a,
+                                            canal: "SIMULADO",
+                                            estadoEnvio: intento.estado,
+                                            destinatarioId:
+                                              intento.destinatarioId,
+                                            motivoDestinatario:
+                                              intento.destinatarioId
+                                                ? "OK"
+                                                : "SIN_DESTINATARIO",
+                                          }
+                                        : a,
+                                    ),
+                                  },
+                                },
+                              }
+                            : prev,
+                        );
+                      }}
+                    />
                     <button
                       onClick={() =>
                         setSeleccion({

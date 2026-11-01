@@ -161,6 +161,8 @@ Quedan fuera del recorrido mínimo de la demo.
 
 ### T12 · Simulador de correo y estados de envío
 
+Implementado localmente en `t12-feature`: migración de intentos, API idempotente, pendientes recuperables, simulación determinista y controles/historial en el tablero. Ver [guía T12](t12-notificaciones.md). La revisión humana y la integración remota se registran por separado.
+
 Responsable: Francisco + Alfonso. Depende de: T11.
 
 Notificador ficticio con canal SIMULADO, intentos y estados PENDIENTE, ENVIADO, FALLIDO y SIN_DESTINATARIO. ENVIADO se muestra como «Enviado (simulado)». Reintentar la notificación no recrea la alerta. La alerta INTERNA de P0 conserva NO_APLICA mientras no se simule el envío.

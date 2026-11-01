@@ -227,6 +227,18 @@ export const resumenMock: ResumenDTO = {
 };
 
 /** Cada endpoint tiene un cuerpo de éxito comprobado contra el contrato común. */
+export const intentoNotificacionMock = {
+  intentoId: "mock-intento-1",
+  alertId: alertaMock.alertId,
+  requestId: "00000000-0000-4000-8000-000000000001",
+  numero: 1,
+  destinatarioId: "TL-01",
+  resultado: "EXITO",
+  estado: "PENDIENTE",
+  detalle: null,
+  createdAt,
+  completedAt: null,
+} satisfies import("./contracts").IntentoNotificacion;
 export const cuerposExitoMock = {
   validarImportacion: vistaPreviaMock,
   confirmarImportacion: resultadoImportacionMock,
@@ -242,6 +254,14 @@ export const cuerposExitoMock = {
   obtenerInforme: informeMock,
   obtenerResumen: resumenMock,
   listarAlertas: { items: [alertaMock], total: 1, page: 1, pageSize: 50 },
+  listarNotificaciones: [intentoNotificacionMock],
+  prepararNotificacion: intentoNotificacionMock,
+  procesarNotificacion: {
+    ...intentoNotificacionMock,
+    estado: "ENVIADO",
+    detalle: "Enviado (simulado).",
+    completedAt: createdAt,
+  },
 } satisfies CuerposExito;
 
 /** Copia aislada por consumidor; no hace fetch ni conserva estado. */

@@ -805,6 +805,10 @@ DTO: objeto que un módulo entrega a otro. Contrato: forma y significado obligat
 Hecho: contrato compartido usado, criterios de la tarea cumplidos, pruebas relevantes aprobadas, npm run build correcto y PR revisado. README permite instalar, migrar, seedear, ejecutar y repetir el ejemplo sin instrucciones verbales; incluir .env.example, versiones en lockfile, comandos de pruebas y recuperación de job. T16 valida instalación limpia. Cada cambio contractual se actualiza en consumidores y pruebas antes de integrar.
 
 
+## Extensión P1 · T12
+
+La extensión P1 T12 agrega `IntentoNotificacion`, `SolicitudNotificacion`, `ResultadoSimulado` y tres operaciones HTTP sin cambiar las rutas P0 ni la forma de `Alerta`. El contrato detallado está en [la guía T12](t12-notificaciones.md#contrato-http-p1) y los tipos/mocks en `src/shared/`. La alerta conserva `INTERNO / NO_APLICA` hasta preparar expresamente una simulación; el canal `SIMULADO` identifica todos sus estados de envío. Repetir solicitudes o procesamientos no duplica la alerta ni el envío exitoso; los reintentos fallidos se conservan en el historial.
+
 ## 9. Verificación de los requerimientos no funcionales
 
 Referencia: RNF01–RNF07 de Entrega 3 Plus, alfa-1. Son criterios por comprobar y registrar en T16; no afirman pruebas aprobadas ni amplían P0. Los requisitos del sistema final conservan su etapa.

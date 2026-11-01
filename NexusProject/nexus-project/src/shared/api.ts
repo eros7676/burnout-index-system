@@ -7,6 +7,8 @@ import type {
   FiltrosComunes,
   FiltrosEvaluaciones,
   InformeDTO,
+  IntentoNotificacion,
+  SolicitudNotificacion,
   JobDTO,
   Pagina,
   ResultadoCancelacion,
@@ -35,6 +37,18 @@ export const API_ROUTES = {
   obtenerInforme: { method: "GET", path: "/api/evaluaciones/{evaluationId}" },
   obtenerResumen: { method: "GET", path: "/api/resumen" },
   listarAlertas: { method: "GET", path: "/api/alertas" },
+  listarNotificaciones: {
+    method: "GET",
+    path: "/api/alertas/{alertId}/notificaciones",
+  },
+  prepararNotificacion: {
+    method: "POST",
+    path: "/api/alertas/{alertId}/notificaciones",
+  },
+  procesarNotificacion: {
+    method: "POST",
+    path: "/api/alertas/{alertId}/notificaciones/{intentoId}/procesar",
+  },
 } as const;
 
 type CuerpoVacio = Record<string, never>;
@@ -49,6 +63,15 @@ export type PeticionesApi = {
   obtenerInforme: { params: { evaluationId: string }; body?: undefined };
   obtenerResumen: { query?: FiltrosComunes; body?: undefined };
   listarAlertas: { query?: FiltrosAlertas; body?: undefined };
+  listarNotificaciones: { params: { alertId: string }; body?: undefined };
+  prepararNotificacion: {
+    params: { alertId: string };
+    body: SolicitudNotificacion;
+  };
+  procesarNotificacion: {
+    params: { alertId: string; intentoId: string };
+    body?: undefined;
+  };
 };
 export type CuerposExito = {
   validarImportacion: VistaPrevia;
@@ -60,6 +83,9 @@ export type CuerposExito = {
   obtenerInforme: InformeDTO;
   obtenerResumen: ResumenDTO;
   listarAlertas: Pagina<Alerta>;
+  listarNotificaciones: IntentoNotificacion[];
+  prepararNotificacion: IntentoNotificacion;
+  procesarNotificacion: IntentoNotificacion;
 };
 export type OperacionApi = keyof typeof API_ROUTES;
 export type EstadoErrorHttp = 400 | 404 | 409 | 410 | 413 | 415 | 422 | 500;

@@ -20,6 +20,7 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 - [Guía T09](Docs/t09-reglas.md)
 - [Guía T10](Docs/t10-informes.md)
 - [Guía T11](Docs/t11-alertas.md)
+- [Guía T12: correo simulado e intentos](Docs/t12-notificaciones.md)
 - [Guía T05: validaciones CSV y duplicados](Docs/t05-validaciones.md)
 - [Guía T04: API CSV, confirmación y recuperación](Docs/t04-importaciones.md)
 - [Guía T06: pantalla CSV y pruebas de navegador](Docs/t06-pantalla-carga.md)
@@ -35,6 +36,8 @@ T07 implementa `calcularEvaluacion`: fórmula, ranking, clasificación pura y pe
 T04 publica con `alPublicar: alPublicarAlerta` y propietario de job tanto al confirmar como al reintentar. La integración HTTP con T08/T10/T11 tiene pruebas locales de atomicidad, alertas, idempotencia y recuperación; ver [guía T04](Docs/t04-importaciones.md) y [criterios de integración](Docs/t11-alertas.md#integración-con-t04). T13 expone los resultados y T14 los muestra. La aceptación integral se ejecuta con T16; sus resultados y criterios pendientes se registran en [la guía T16](Docs/t16-integracion.md).
 
 ## Alcance
+
+T12 incorpora el correo simulado P1, su historial persistido y controles de preparación, procesamiento y reintento en el tablero. Mantiene una sola alerta y muestra **Enviado (simulado)**. Los envíos se solicitan explícitamente; una importación conserva `INTERNO / NO_APLICA`. Ver [guía T12](Docs/t12-notificaciones.md) para migración, API, demostración y pruebas.
 
 | Etapa | Incluye |
 | --- | --- |

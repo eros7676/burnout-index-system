@@ -1,5 +1,7 @@
 # Pruebas de servicios, persistencia e integración
 
+T12 agrega `notificaciones.test.ts`, `notificaciones.mysql.test.ts` y `e2e/notificaciones.spec.ts`. Amplía las pruebas HTTP del build y el escenario real de navegador con preparación persistida, recuperación tras recarga, fallo y reintento exitoso sin duplicar la alerta. Ver [guía T12](../../../Docs/t12-notificaciones.md). La limpieza de esas pruebas elimina primero sus intentos por la relación restrictiva con la alerta.
+
 T16 agrega `acceptance/` y `playwright.acceptance.config.ts`: cuatro escenarios reales por navegador (Chrome/Firefox), sin interceptar la API. `npm run verify:p0` ejecuta todas las comprobaciones en secuencia y exige una base TEST_DATABASE_URL exclusiva; `npm run test:acceptance` requiere además el build previo. Reportes y mediciones en `test-results/`. Ver [guía T16](../../../Docs/t16-integracion.md).
 
 La corrección de rendimiento agrega regresiones SQL de rollback de bloques de importación y de publicación concurrente por dos jobs distintos. La verificación completa pasó 60 pruebas sin MySQL, 67 con MySQL, nueve rutas HTTP, 15 escenarios de regresión y ocho de aceptación. El escenario de 1.000 filas/5 MiB mantiene su aserción ≤60 s y pasó en ambos navegadores. RNF03 con operador no se certifica por estas pruebas automatizadas.

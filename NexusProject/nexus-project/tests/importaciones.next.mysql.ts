@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { readFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { createServer } from "node:net";
 import { PrismaClient } from "@prisma/client";
 import { sembrarBase } from "../prisma/seed-base";
@@ -189,6 +190,48 @@ async function comprobarNext() {
     console.log(
       "T13: cuatro rutas GET del build real verificadas con MySQL, filtros, informe, resumen y alerta.",
     );
+    const rutaCorreo = `alertas/${informe.alerta.alertId}/notificaciones`;
+    assert.deepEqual(await consultar(rutaCorreo), []);
+    const peticionCorreo = { requestId: randomUUID(), resultado: "FALLO" };
+    async function prepararCorreo(body: object) {
+      const r = await fetch(`${base}/api/${rutaCorreo}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      assert.equal(r.status, 200);
+      return r.json();
+    }
+    async function procesarCorreo(id: string) {
+      const r = await fetch(`${base}/api/${rutaCorreo}/${id}/procesar`, {
+        method: "POST",
+      });
+      assert.equal(r.status, 200);
+      return r.json();
+    }
+    const pendiente = await prepararCorreo(peticionCorreo);
+    assert.equal(pendiente.estado, "PENDIENTE");
+    assert.equal(
+      (await prepararCorreo(peticionCorreo)).intentoId,
+      pendiente.intentoId,
+    );
+    assert.equal((await procesarCorreo(pendiente.intentoId)).estado, "FALLIDO");
+    const reintento = await prepararCorreo({
+      requestId: randomUUID(),
+      resultado: "EXITO",
+    });
+    assert.equal((await procesarCorreo(reintento.intentoId)).estado, "ENVIADO");
+    assert.equal((await procesarCorreo(reintento.intentoId)).estado, "ENVIADO");
+    assert.equal((await consultar(rutaCorreo)).length, 2);
+    assert.equal(
+      (await consultar(`evaluaciones/${informe.evaluacion.evaluationId}`))
+        .alerta.estadoEnvio,
+      "ENVIADO",
+    );
+    assert.equal(await db.alerta.count(), 1);
+    console.log(
+      "T12: historial, pendiente, fallo, reintento e idempotencia verificados por HTTP real.",
+    );
     const repetida = await validar();
     assert.equal(repetida.omitidas, 2);
     const sinTrabajo = await confirmar(repetida.importId);
@@ -216,6 +259,9 @@ async function comprobarNext() {
     await db.$transaction(async (tx) => {
       await tx.processingJobPar.deleteMany({ where: { job: { importId } } });
       await tx.processingJob.deleteMany({ where: { importId } });
+      await tx.intentoNotificacion.deleteMany({
+        where: { alerta: { evaluacion: { periodoId } } },
+      });
       await tx.alerta.deleteMany({ where: { evaluacion: { periodoId } } });
       await tx.periodoEmpleado.updateMany({
         where: { periodoId },
