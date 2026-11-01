@@ -1,495 +1,650 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { tableroApi as api } from "@/client/tablero-api";
+import type {
+  Alerta,
+  Factor,
+  FilaTablero,
+  FiltrosComunes,
+  InformeDTO,
+  Nivel,
+  Pagina,
+  ResumenDTO,
+} from "@/shared/contracts";
+import "./tablero.css";
 
-const navigation = [
-  { icon: "space_dashboard", label: "Resumen", active: true },
-  { icon: "group", label: "Personas", count: "50" },
-  { icon: "hub", label: "Equipos", count: "4 cél." },
-  { icon: "warning", label: "Alertas", count: "4 activas", alert: true },
-  { icon: "upload_file", label: "Importación de datos" },
-  { icon: "analytics", label: "Historial y reportes" },
-  { icon: "tune", label: "Configuración del motor" },
-  { icon: "admin_panel_settings", label: "Usuarios y permisos" },
-];
-
-const metrics = [
-  {
-    label: "Personas evaluadas",
-    value: "50",
-    detail: "/ 50",
-    tag: "100% dotación activa",
-    icon: "groups",
-    tone: "success",
-    caption: "4 células operativas",
-  },
-  {
-    label: "Riesgo alto",
-    value: "4",
-    detail: "personas (8.0%)",
-    tag: "+1 vs. mes anterior",
-    icon: "crisis_alert",
-    tone: "danger",
-    caption: "Acción inmediata",
-  },
-  {
-    label: "Riesgo medio",
-    value: "12",
-    detail: "personas (24.0%)",
-    tag: "Estable vs. mes anterior",
-    icon: "timelapse",
-    tone: "",
-    caption: "Seguimiento quincenal",
-  },
-  {
-    label: "Historial insuficiente",
-    value: "2",
-    detail: "personas (4.0%)",
-    tag: "Sin imputar a riesgo bajo",
-    icon: "pending_actions",
-    tone: "",
-    caption: "Principio de precaución activo",
-  },
-];
-
-const teams = [
-  { name: "Célula Alfa", total: 14, high: 2, medium: 4, low: 8 },
-  { name: "Célula Beta", total: 12, high: 1, medium: 3, low: 8 },
-  { name: "Célula Gamma", total: 13, high: 1, medium: 4, low: 8 },
-  { name: "Célula Delta", total: 11, high: 0, medium: 1, low: 10 },
-];
-
-const cases = [
-  {
-    initials: "MB",
-    name: "Mateo Benítez",
-    role: "Backend Senior",
-    team: "Alfa",
-    score: "84 / 100",
-    level: "Alto",
-    tone: "high",
-    factors: ["32h extra", "12d s/descanso", "8 tareas vencidas"],
-    recommendation: "Redistribuir backlog y programar franco",
-  },
-  {
-    initials: "LF",
-    name: "Lucía Fernández",
-    role: "Tech Lead",
-    team: "Beta",
-    score: "79 / 100",
-    level: "Alto",
-    tone: "high",
-    factors: ["26h extra", "9d s/descanso", "14 tareas concur."],
-    recommendation: "Delegar reviews y congelar asignaciones",
-  },
-  {
-    initials: "GM",
-    name: "Gonzalo Morales",
-    role: "DevOps Engineer",
-    team: "Alfa",
-    score: "76 / 100",
-    level: "Alto",
-    tone: "high",
-    factors: ["34h extra nocturnas", "Guardias no descansadas"],
-    recommendation: "Rotación de guardia con cél. Gamma",
-  },
-  {
-    initials: "CR",
-    name: "Camila Rossi",
-    role: "QA Automation",
-    team: "Gamma",
-    score: "72 / 100",
-    level: "Alto",
-    tone: "high",
-    factors: ["22h extra", "28d vac. pendientes"],
-    recommendation: "Programar período de receso pendiente",
-  },
-  {
-    initials: "MS",
-    name: "Martín Soria",
-    role: "Frontend Semi-Senior",
-    team: "Alfa",
-    score: "58 / 100",
-    level: "Medio",
-    tone: "medium",
-    factors: ["14h extra", "Pico tareas de sprint"],
-    recommendation: "Monitoreo preventivo de cierre",
-  },
-  {
-    initials: "SV",
-    name: "Sofía Valenzuela",
-    role: "Data Analyst",
-    team: "Beta",
-    score: "—",
-    level: "Incompleto",
-    tone: "incomplete",
-    factors: ["Sin semana anterior", "Índice conservado, historial insuficiente"],
-    recommendation: "Cargar la semana anterior",
-  },
-];
-
-const alerts = [
-  {
-    type: "Crítica · Célula Alfa",
-    time: "09:34 hs",
-    message:
-      "M. Benítez acumuló 12 jornadas sin descanso semanal ininterrumpido.",
-    notified: "Notificado: J. Romero (Lead Alfa)",
-    status: "Interna (maqueta)",
-    tone: "",
-  },
-  {
-    type: "Crítica · Célula Alfa",
-    time: "09:32 hs",
-    message:
-      "G. Morales presenta horas extra por revisar según las reglas configuradas.",
-    notified: "Notificado: M. Rossi (RRHH)",
-    status: "Interna (maqueta)",
-    tone: "",
-  },
-  {
-    type: "Advertencia · Célula Beta",
-    time: "09:31 hs",
-    message:
-      "L. Fernández tiene 14 tareas concurrentes en sprint de release crítico.",
-    notified: "Notificado: Dir. Operaciones",
-    status: "Interna (maqueta)",
-    tone: "warning",
-  },
-  {
-    type: "Integridad · Ingesta",
-    time: "09:30 hs",
-    message:
-      "2 colaboradores con inconsistencias de marcas biométricas en semana 42.",
-    notified: "Asignado: Soporte RRHH",
-    status: "En cola",
-    tone: "integrity",
-  },
-];
-
-const iconPaths: Record<string, string> = {
-  monitor_heart: "M3 4h18v12H3V4zm2 2v8h14V6H5zm2 5h2l1-2 2 4 1-2h4v2h-3l-2 3-2-4-1 1H7v-2zM8 19h8v2H8z",
-  verified_user: "M12 2 4 5v6c0 5.1 3.4 9.8 8 11 4.6-1.2 8-5.9 8-11V5l-8-3zm0 2.2 6 2.2V11c0 4-2.5 7.8-6 9-3.5-1.2-6-5-6-9V6.4l6-2.2zm-1 10.4-2-2-1.4 1.4L11 17l5.4-5.4L15 10.2z",
-  expand_more: "m7 10 5 5 5-5z",
-  space_dashboard: "M3 3h8v8H3V3zm10 0h8v5h-8V3zM3 13h8v8H3v-8zm10-3h8v11h-8V10z",
-  group: "M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3zM8 11c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3zm0 2c-2.3 0-7 1.2-7 3.5V20h14v-3.5C15 14.2 10.3 13 8 13zm8.2.1c-.4 0-.9 0-1.4.1 1.2.8 2.2 1.9 2.2 3.3V20h6v-3.5c0-2.3-4.5-3.4-6.8-3.4z",
-  hub: "M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 14a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm16 0a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM10 8l-4 7 2 1 4-7zm4 1 4 7 2-1-4-7zM8 17h8v2H8z",
-  warning: "M1 21h22L12 2 1 21zm12-3h-2v-2h2zm0-4h-2v-5h2z",
-  upload_file: "M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8zm0 2 4 4h-4zM11 18V12l-2 2-1.4-1.4L12 8l4.4 4.6L15 14l-2-2v6z",
-  analytics: "M3 3h2v16h16v2H3V3zm4 10 4-4 3 3 6-7 1.5 1.3-7.4 8.7-3-3L8.4 15z",
-  tune: "M3 6h11v2H3zm15 0h3v2h-3zM3 11h3v2H3zm7 0h11v2H10zM3 16h9v2H3zm13 0h5v2h-5zM14 4h2v6h-2zM7 9h2v6H7zm7 5h2v6h-2z",
-  admin_panel_settings: "M12 2 3 6v6c0 5.5 3.8 9.8 9 11 5.2-1.2 9-5.5 9-11V6zm0 2.2 7 3.1V12c0 4.2-2.8 7.8-7 9-4.2-1.2-7-4.8-7-9V7.3zm0 3.3a3 3 0 0 0-3 3c0 1 .5 1.8 1.2 2.4C8.8 13.4 8 14.3 8 16v1h8v-1c0-1.7-.8-2.6-2.2-3.1A3 3 0 0 0 12 7.5z",
-  sync_alt: "M12 4V1L8 5l4 4V6c3.3 0 6 2.7 6 6h2c0-4.4-3.6-8-8-8zm-6 6H4c0 4.4 3.6 8 8 8v3l4-4-4-4v3c-3.3 0-6-2.7-6-6z",
-  calendar_month: "M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14zM7 11h4v4H7zm6 0h4v4h-4z",
-  arrow_drop_down: "m7 10 5 5 5-5z",
-  memory: "M5 5h14v14H5V5zm2 2v10h10V7zm-5 2h3v2H2zm0 4h3v2H2zm17-4h3v2h-3zm0 4h3v2h-3zM9 2h2v3H9zm4 0h2v3h-2zm-4 17h2v3H9zm4 0h2v3h-2z",
-  file_upload: "M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8zm0 2 4 4h-4zM13 18h-2v-5l-2 2-1.4-1.4L12 9l4.4 4.6L15 15l-2-2z",
-  check_circle: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-2 15-5-5 1.4-1.4L10 14.2l7.6-7.6L19 8z",
-  verified: "M23 12 20.6 9.3l.3-3.6-3.6-.8L15.5 2 12 3.5 8.5 2 6.7 4.9l-3.6.8.3 3.6L1 12l2.4 2.7-.3 3.6 3.6.8L8.5 22l3.5-1.5 3.5 1.5 1.8-2.9 3.6-.8-.3-3.6zM10 16.5l-3.5-3.5 1.4-1.4 2.1 2.1 5.1-5.1 1.4 1.4z",
-  shield: "M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5zm0 2.2 7 3.1V11c0 4.5-2.9 8.8-7 10-4.1-1.2-7-5.5-7-10V6.3z",
-  info: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2zm0-8h-2V7h2z",
-  groups: "M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 2c-2.7 0-7 1.4-7 4v2h14v-2c0-2.6-4.3-4-7-4zm8 .1c-.4 0-.8 0-1.2.1 1.3.9 2.2 2.1 2.2 3.8V19h6v-2c0-2.6-4.3-3.9-7-3.9z",
-  crisis_alert: "M12 2 1 21h22L12 2zm1 15h-2v-2h2zm0-4h-2V8h2zm9-7-2-1 2-3 2 1zm-20 0-2-3 2-1 2 3zm17 2 3-1 1 2-3 1zM2 8l3 1-1 2-3-1z",
-  timelapse: "M12 2a10 10 0 1 0 10 10h-2a8 8 0 1 1-8-8zm1 1v9h8A9 9 0 0 0 13 3zm2.2 2.3A7 7 0 0 1 19 10h-4z",
-  pending_actions: "M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H5V9h14v2h2V6a2 2 0 0 0-2-2zm0 3H5V6h14zm-5 7v-3h2v3.2l2.2 1.3-1 1.7zM17 12a5 5 0 1 0 0 10 5 5 0 0 0 0-10z",
-  trending_up: "M16 6h6v6h-2V9.4l-6.2 6.2-4-4L3 18.2 1.6 16.8l8.2-8.2 4 4L18.6 8H16z",
-  check: "m9 16.2-4.2-4.2-1.4 1.4L9 19l12-12-1.4-1.4z",
-  horizontal_rule: "M4 11h16v2H4z",
-  insights: "M12 3a9 9 0 0 0-5 16.5V22h10v-2.5A9 9 0 0 0 12 3zm3 15.2V20H9v-1.8a7 7 0 1 1 6 0zM11 6h2v6h-2zm1 10a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4z",
-  priority_high: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 14h-2V8h2zm0 3h-2v-2h2z",
-  search: "M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.8v.8l5 5 1.5-1.5-5-5zm-5 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z",
-  download: "M5 20h14v-2H5zm7-2 6-6h-4V4h-4v8H6z",
-  chevron_right: "m9 6 6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z",
-  edit_note: "M3 17.3V21h3.7L18.8 8.9l-3.7-3.7zM21 6.7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.7 3.7zM3 3h10v2H5v14h14v-8h2v10H3z",
-  notifications_active: "M12 22a2.5 2.5 0 0 0 2.5-2.5h-5A2.5 2.5 0 0 0 12 22zm7-6v-5a7 7 0 0 0-5.5-6.8V3a1.5 1.5 0 0 0-3 0v1.2A7 7 0 0 0 5 11v5l-2 2v1h18v-1zm-14 1 2-2v-4a5 5 0 0 1 10 0v4l2 2z",
-  arrow_forward: "M12 4 10.6 5.4l5.6 5.6H4v2h12.2l-5.6 5.6L12 20l8-8z",
-  done_all: "m1 13 4 4 9-9-1.4-1.4L5 14.2l-2.6-2.6zm6 0 4 4L22 6l-1.4-1.4L11 14.2l-2.6-2.6zm7 4 1.4 1.4L23 11l-1.4-1.4z",
-  hourglass_top: "M6 2v6l4 4-4 4v6h12v-6l-4-4 4-4V2zm10 14.8V20H8v-3.2l4-4zM8 7.2V4h8v3.2l-4 4z",
+const niveles: Nivel[] = ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"];
+const factores: Record<Factor, string> = {
+  HE: "Horas extra",
+  DS: "Días consecutivos sin descanso",
+  CT: "Carga de tareas",
+  VP: "Vacaciones pendientes",
 };
+const numero = (valor: number | null) =>
+  valor === null
+    ? "—"
+    : valor.toLocaleString("es-AR", { maximumFractionDigits: 2 });
+const mensaje = (error: unknown) =>
+  error instanceof Error ? error.message : "No se pudo completar la consulta.";
 
-function Icon({
-  children,
-  className = "",
+function NivelTexto({ nivel }: { nivel: Nivel }) {
+  return (
+    <span className={`tab-level tab-${nivel.toLowerCase()}`}>{nivel}</span>
+  );
+}
+function Paginador({
+  pagina,
+  cambiar,
+  nombre,
 }: {
-  children: string;
-  className?: string;
+  pagina: Pagina<unknown>;
+  cambiar: (page: number) => void;
+  nombre: string;
 }) {
   return (
-    <svg
-      className={`icon ${className}`}
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path d={iconPaths[children] ?? iconPaths.info} />
-    </svg>
+    <nav className="tab-pages" aria-label={`Páginas de ${nombre}`}>
+      <span>
+        {pagina.total} resultados · Página {pagina.page}
+      </span>
+      <div>
+        <button
+          disabled={pagina.page <= 1}
+          onClick={() => cambiar(pagina.page - 1)}
+        >
+          Anterior
+        </button>
+        <button
+          disabled={pagina.page * pagina.pageSize >= pagina.total}
+          onClick={() => cambiar(pagina.page + 1)}
+        >
+          Siguiente
+        </button>
+      </div>
+    </nav>
+  );
+}
+function AlertaContenido({ alerta }: { alerta: Alerta }) {
+  return (
+    <>
+      <p>
+        <strong>{alerta.vigencia}</strong> · Canal {alerta.canal} · Estado de
+        envío:{" "}
+        {alerta.estadoEnvio === "ENVIADO" && alerta.canal === "SIMULADO"
+          ? "Enviado (simulado)"
+          : alerta.estadoEnvio}
+      </p>
+      <p>
+        {alerta.motivoDestinatario === "SIN_DESTINATARIO"
+          ? "SIN_DESTINATARIO · Revisar la asignación de responsable."
+          : `Destinatario: ${alerta.destinatarioId}`}
+      </p>
+      <p>
+        Causas:{" "}
+        {alerta.causas.map((f) => `${f} · ${factores[f]}`).join("; ") ||
+          "Sin causas registradas"}
+      </p>
+      <ul>
+        {alerta.sugerencias.map((s, i) => (
+          <li key={i}>{s}</li>
+        ))}
+      </ul>
+    </>
   );
 }
 
-export default function DashboardHomeView() {
+type Seleccion = { id: string; anterior: boolean };
+function Detalle({
+  seleccion,
+  cerrar,
+}: {
+  seleccion: Seleccion;
+  cerrar: () => void;
+}) {
+  const [estado, setEstado] = useState<{
+    informe?: InformeDTO;
+    error?: string;
+  }>({});
+  const [intento, setIntento] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    api.informe(seleccion.id, controller.signal).then(
+      (informe) => {
+        if (!controller.signal.aborted) setEstado({ informe });
+      },
+      (error) => {
+        if (!controller.signal.aborted) setEstado({ error: mensaje(error) });
+      },
+    );
+    return () => controller.abort();
+  }, [seleccion.id, intento]);
+  const informe = estado.informe;
   return (
-    <div className="dashboard">
-      <aside className="sidebar" aria-label="Navegación principal" tabIndex={0}>
-        <div>
-          <div className="sidebar-top">
-            <div className="brand-mark"><Icon>monitor_heart</Icon></div>
-            <div>
-              <p className="brand-name">Nexo Laboral</p>
-              <p className="brand-subtitle">Nexus Digital · Operaciones</p>
-            </div>
-          </div>
-
-          <div className="role-badge">
-            <span><Icon>verified_user</Icon> RRHH Admin</span>
-            <Icon>expand_more</Icon>
-          </div>
-
-          <nav className="nav-list" aria-label="Secciones">
-            {navigation.map((item) => (
-              item.label === "Importación de datos" ? <Link className="nav-item" key={item.label} href="/importaciones"><span className="nav-item-label"><Icon>{item.icon}</Icon><span>{item.label}</span></span></Link> :
-              <div
-                className={`nav-item${item.active ? " active" : ""}`}
-                key={item.label}
-                aria-current={item.active ? "page" : undefined}
-              >
-                <span className="nav-item-label">
-                  <Icon>{item.icon}</Icon>
-                  <span>{item.label}</span>
-                </span>
-                {item.count && (
-                  <span className={`nav-counter${item.alert ? " alert" : ""}`}>
-                    {item.count}
-                  </span>
-                )}
-              </div>
-            ))}
-          </nav>
+    <section
+      className="tab-card tab-detail"
+      aria-labelledby="informe-titulo"
+      tabIndex={-1}
+      ref={(node) => {
+        node?.focus();
+      }}
+    >
+      <div className="tab-section-head">
+        <h2 id="informe-titulo">Informe individual</h2>
+        <button onClick={cerrar}>Cerrar informe</button>
+      </div>
+      {!informe && !estado.error && <p role="status">Cargando informe…</p>}
+      {estado.error && (
+        <div role="alert">
+          <p>{estado.error}</p>
+          <button
+            onClick={() => {
+              setEstado({});
+              setIntento((n) => n + 1);
+            }}
+          >
+            Reintentar informe
+          </button>
         </div>
-
-      </aside>
-
-      <div className="app-content">
-        <header className="topbar">
-          <div className="topbar-context">
-            <strong>Tablero de Diagnóstico Operativo</strong>
-            <span>·</span>
-            <span>RRHH</span>
+      )}
+      {informe && (
+        <>
+          {(seleccion.anterior || !informe.evaluacion.vigente) && (
+            <p className="tab-warning" role="status">
+              Resultado anterior / histórico. Este informe no representa el
+              nivel actual.
+            </p>
+          )}
+          <h3>
+            {informe.empleado.nombre} · {informe.empleado.employeeId}
+          </h3>
+          <p>
+            Equipo {informe.empleado.teamId} · {informe.empleado.tipo} ·{" "}
+            {informe.evaluacion.periodStart} al {informe.evaluacion.periodEnd}
+          </p>
+          <p className="tab-score">
+            {numero(informe.evaluacion.indice)} <small>/ 100</small>{" "}
+            <NivelTexto nivel={informe.evaluacion.nivel} />
+          </p>
+          <p>
+            Reglas {informe.evaluacion.rulesVersion} · Motor{" "}
+            {informe.evaluacion.engineVersion} ·{" "}
+            {informe.evaluacion.vigente
+              ? "Versión vigente del período al consultar"
+              : "Versión histórica"}
+          </p>
+          <p>El informe conserva los valores de la evaluación guardada.</p>
+          <p>{informe.explicacion}</p>
+          <h3>Ranking de contribuciones</h3>
+          <div
+            className="tab-scroll"
+            role="region"
+            aria-label="Factores del informe"
+            tabIndex={0}
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th>Orden</th>
+                  <th>Factor</th>
+                  <th>Valor</th>
+                  <th>Umbral</th>
+                  <th>Puntuación / 100</th>
+                  <th>Contribución al índice</th>
+                  <th>Excedido</th>
+                </tr>
+              </thead>
+              <tbody>
+                {informe.factores.map((f, i) => (
+                  <tr key={f.codigo}>
+                    <td>{i + 1}</td>
+                    <th scope="row">
+                      {f.codigo} · {factores[f.codigo]}
+                    </th>
+                    <td>{numero(f.valor)}</td>
+                    <td>{numero(f.umbral)}</td>
+                    <td>{numero(f.score)}</td>
+                    <td>{numero(f.contribucion)} puntos</td>
+                    <td>{f.excedido ? "Sí" : "No"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <div className="topbar-actions">
-            <span className="topbar-date"><Icon>calendar_month</Icon> Octubre 2024 <Icon>arrow_drop_down</Icon></span>
-            <span className="topbar-system"><Icon>memory</Icon> Motor v1.4.2 · 24/10/2024 09:30 hs</span>
-            <Link className="button-visual" href="/importaciones"><Icon>file_upload</Icon> Importar datos</Link>
+          <h3>Persistencia semanal</h3>
+          <p>
+            {informe.evaluacion.persistencia.motivo === "HISTORIAL_INSUFICIENTE"
+              ? "Historial insuficiente: falta la semana anterior. Se conserva el índice numérico."
+              : informe.evaluacion.persistencia.cumple
+                ? "SOSTENIDO · Cumple la condición de persistencia."
+                : "NO_SOSTENIDO · No cumple la condición de persistencia para ALTO."}
+          </p>
+          {informe.evaluacion.persistencia.anterior && (
+            <p>
+              Semana anterior:{" "}
+              {informe.evaluacion.persistencia.anterior.periodo.periodStart} ·
+              Índice {numero(informe.evaluacion.persistencia.anterior.indice)}
+            </p>
+          )}
+          <p>
+            Factores comunes excedidos:{" "}
+            {informe.evaluacion.persistencia.comunesExcedidas.join(", ") ||
+              "Ninguno"}
+          </p>
+          <h3>Sugerencias para revisión humana</h3>
+          <ul>
+            {informe.recomendaciones.map((r, i) => (
+              <li key={i}>{r}</li>
+            ))}
+          </ul>
+          <h3>Alerta de esta evaluación</h3>
+          {informe.alerta ? (
+            <AlertaContenido alerta={informe.alerta} />
+          ) : (
+            <p>Sin alerta asociada.</p>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+type Datos = {
+  filas: Pagina<FilaTablero>;
+  resumen: ResumenDTO;
+  alertas: Pagina<Alerta>;
+};
+type Consulta = {
+  comunes: FiltrosComunes;
+  nivel?: Nivel;
+  page: number;
+  pageSize: number;
+  alertPage: number;
+  revision: number;
+};
+const inicial: Consulta = {
+  comunes: {},
+  page: 1,
+  pageSize: 20,
+  alertPage: 1,
+  revision: 0,
+};
+
+export default function DashboardHomeView() {
+  const [consulta, setConsulta] = useState<Consulta>(inicial);
+  const [respuesta, setRespuesta] = useState<{
+    consulta: Consulta;
+    datos?: Datos;
+    error?: string;
+  }>();
+  const [seleccion, setSeleccion] = useState<Seleccion | null>(null);
+  const actual = respuesta?.consulta === consulta ? respuesta : undefined;
+  useEffect(() => {
+    const controller = new AbortController();
+    Promise.all([
+      api.evaluaciones(
+        {
+          ...consulta.comunes,
+          nivel: consulta.nivel,
+          page: consulta.page,
+          pageSize: consulta.pageSize,
+        },
+        controller.signal,
+      ),
+      api.resumen(consulta.comunes, controller.signal),
+      api.alertas(
+        { ...consulta.comunes, page: consulta.alertPage, pageSize: 10 },
+        controller.signal,
+      ),
+    ]).then(
+      ([filas, resumen, alertas]) => {
+        if (!controller.signal.aborted)
+          setRespuesta({ consulta, datos: { filas, resumen, alertas } });
+      },
+      (error) => {
+        if (!controller.signal.aborted)
+          setRespuesta({ consulta, error: mensaje(error) });
+      },
+    );
+    return () => controller.abort();
+  }, [consulta]);
+  function cambiar(nueva: Consulta) {
+    setSeleccion(null);
+    setConsulta(nueva);
+  }
+  function actualizar() {
+    cambiar({ ...consulta, revision: consulta.revision + 1 });
+  }
+  const datos = actual?.datos;
+
+  return (
+    <div className="tab-app">
+      <aside className="tab-sidebar">
+        <Link className="tab-brand" href="/home">
+          <span aria-hidden="true">N</span>
+          <div>
+            Nexo Laboral<small>Indicadores de sobrecarga</small>
+          </div>
+        </Link>
+        <nav aria-label="Principal">
+          <Link href="/home" aria-current="page">
+            Resumen
+          </Link>
+          <a href="#evaluaciones">Evaluaciones</a>
+          <a href="#alertas">Alertas internas</a>
+          <Link href="/importaciones">Importación de datos</Link>
+        </nav>
+        <p>
+          Prototipo P0
+          <br />
+          Datos ficticios · Uso local
+        </p>
+      </aside>
+      <main className="tab-main">
+        <header className="tab-header">
+          <div>
+            <p className="tab-eyebrow">SEGUIMIENTO SEMANAL</p>
+            <h1>Resumen de indicadores</h1>
+            <p>Evaluaciones almacenadas por empleado, equipo y período.</p>
+          </div>
+          <div className="tab-actions">
+            <button onClick={actualizar}>Actualizar resultados</button>
+            <Link className="tab-primary" href="/importaciones">
+              Importar datos
+            </Link>
           </div>
         </header>
-
-        <main className="main-content">
-          <div className="page-heading">
-            <div>
-              <p className="eyebrow">Resumen ejecutivo</p>
-              <h1>Resumen de sobrecarga laboral</h1>
-              <p className="page-description">
-                Área de Operaciones y Desarrollo · Nexus Digital S.R.L. · 50 personas distribuidas en 4 células
-              </p>
-            </div>
-            <span className="status-line"><Icon>check_circle</Icon> Dataset actualizado</span>
+        <form
+          className="tab-card tab-filters"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            const comunes: FiltrosComunes = {};
+            for (const clave of [
+              "employeeId",
+              "teamId",
+              "periodStart",
+            ] as const) {
+              const valor = String(form.get(clave) ?? "").trim();
+              if (valor) comunes[clave] = valor;
+            }
+            cambiar({
+              comunes,
+              nivel: (form.get("nivel") || undefined) as Nivel | undefined,
+              page: 1,
+              pageSize: Number(form.get("pageSize")),
+              alertPage: 1,
+              revision: consulta.revision + 1,
+            });
+          }}
+        >
+          <label>
+            Empleado (ID)
+            <input
+              name="employeeId"
+              maxLength={64}
+              pattern={"[A-Za-z0-9_\\-]+"}
+              placeholder="Todos los empleados"
+            />
+          </label>
+          <label>
+            Equipo (ID)
+            <input
+              name="teamId"
+              maxLength={64}
+              pattern={"[A-Za-z0-9_\\-]+"}
+              placeholder="Todos los equipos"
+            />
+          </label>
+          <label>
+            Semana desde (lunes)
+            <input name="periodStart" type="date" />
+          </label>
+          <label>
+            Nivel de evaluación
+            <select name="nivel">
+              <option value="">Todos los niveles</option>
+              {niveles.map((n) => (
+                <option key={n}>{n}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Filas por página
+            <select name="pageSize" defaultValue="20">
+              <option>20</option>
+              <option>50</option>
+              <option>100</option>
+            </select>
+          </label>
+          <div className="tab-actions">
+            <button className="tab-primary" type="submit">
+              Aplicar filtros
+            </button>
+            <button
+              type="reset"
+              onClick={() =>
+                cambiar({ ...inicial, revision: consulta.revision + 1 })
+              }
+            >
+              Limpiar
+            </button>
           </div>
-
-          <section className="dataset-banner" aria-label="Estado del dataset">
-            <div className="dataset-icon"><Icon>verified</Icon></div>
-            <div className="dataset-copy">
-              <strong>Dataset activo: consolidado_octubre_v2.xlsx</strong>
-              <span>Validación de integridad completada sin inconsistencias críticas</span>
-            </div>
-            <span className="dataset-hash"><Icon>shield</Icon> Hash SHA-256: 7f8a92...e41c</span>
-          </section>
-
-          <aside className="method-note">
-            <Icon>info</Icon>
-            <div>
-              <strong>Marco Metodológico de Detección Objetiva</strong>
-              <div>
-                Indicador preventivo de sobrecarga laboral computado a partir de 4 factores cuantitativos:
-                horas extra acumuladas, días consecutivos sin descanso, volumen de tareas asignadas vs.
-                completadas y días de licencia pendientes acumulados. Esta métrica no constituye diagnóstico
-                médico ni evaluación psicológica; es una herramienta de soporte analítico para la gestión
-                preventiva de equipos.
-              </div>
-            </div>
-          </aside>
-
-          <section className="metrics-grid" aria-label="Indicadores principales">
-            {metrics.map((metric) => (
-              <article className={`metric-card ${metric.tone}`} key={metric.label}>
-                <div className="metric-top">
-                  <span className="metric-label">{metric.label}</span>
-                  <span className="metric-detail"><Icon>{metric.icon}</Icon></span>
-                </div>
-                <div className="metric-value-row">
-                  <span className="metric-value">{metric.value}</span>
-                  <span className="metric-detail">{metric.detail}</span>
-                </div>
-                <div className="metric-bottom">
-                  <span className={`metric-tag ${metric.tone}`}>
-                    {metric.tone === "danger" && <Icon>trending_up</Icon>}
-                    {metric.tone === "success" && <Icon>check</Icon>}
-                    {metric.tone === "" && metric.label === "Riesgo medio" && <Icon>horizontal_rule</Icon>}
-                    {metric.tag}
-                  </span>
-                  <span className="metric-caption">{metric.caption}</span>
-                </div>
-              </article>
-            ))}
-          </section>
-
-          <section className="analytics-grid" aria-label="Analítica de riesgo">
-            <article className="panel">
-              <div className="panel-header">
-                <div>
-                  <h2 className="panel-title">Evolución temporal del riesgo</h2>
-                  <p className="panel-subtitle">Proporción mensual mayo – octubre 2024</p>
-                </div>
-                <div className="legend" aria-label="Niveles de riesgo">
-                  <span className="legend-item"><span className="legend-dot" style={{ background: "#b4232d" }} /> Alto</span>
-                  <span className="legend-item"><span className="legend-dot" style={{ background: "#2457a7" }} /> Medio</span>
-                  <span className="legend-item"><span className="legend-dot" style={{ background: "#08764e" }} /> Bajo</span>
-                </div>
-              </div>
-
-              <svg className="chart" viewBox="0 0 540 160" preserveAspectRatio="none" role="img" aria-label="Tendencia de riesgos de mayo a octubre">
-                <line stroke="#edf1f8" strokeDasharray="3 3" x1="0" x2="540" y1="40" y2="40" />
-                <line stroke="#edf1f8" strokeDasharray="3 3" x1="0" x2="540" y1="80" y2="80" />
-                <line stroke="#edf1f8" strokeDasharray="3 3" x1="0" x2="540" y1="120" y2="120" />
-                <path d="M 0,90 Q 108,82 216,78 T 432,68 T 540,60 L 540,160 L 0,160 Z" fill="#08764e" fillOpacity=".08" />
-                <path d="M 0,90 Q 108,82 216,78 T 432,68 T 540,60" fill="none" stroke="#08764e" strokeWidth="2" />
-                <path d="M 0,128 Q 108,124 216,118 T 432,108 T 540,98 L 540,160 L 0,160 Z" fill="#2457a7" fillOpacity=".1" />
-                <path d="M 0,128 Q 108,124 216,118 T 432,108 T 540,98" fill="none" stroke="#2457a7" strokeWidth="2" />
-                <path d="M 0,152 Q 108,148 216,145 T 432,142 T 540,136 L 540,160 L 0,160 Z" fill="#b4232d" fillOpacity=".13" />
-                <path d="M 0,152 Q 108,148 216,145 T 432,142 T 540,136" fill="none" stroke="#b4232d" strokeWidth="2.5" />
-                <circle cx="540" cy="60" fill="#08764e" r="4" />
-                <circle cx="540" cy="98" fill="#2457a7" r="4" />
-                <circle cx="540" cy="136" fill="#b4232d" r="4" />
-              </svg>
-              <div className="chart-months">
-                <span>Mayo 24</span><span>Junio 24</span><span>Julio 24</span>
-                <span>Agosto 24</span><span>Septiembre 24</span><strong>Octubre 24 (Actual)</strong>
-              </div>
-              <div className="trend-note">
-                <span><Icon>insights</Icon> Tendencia semestral: El porcentaje de bajo riesgo se contrajo 6% desde agosto debido al release 3.0.</span>
-                <span className="trend-index">Índice global: 31.4 / 100</span>
-              </div>
-            </article>
-
-            <article className="panel">
-              <div className="panel-header">
-                <div>
-                  <h2 className="panel-title">Distribución por célula</h2>
-                  <p className="panel-subtitle">Dotación total desglosada por niveles ponderados</p>
-                </div>
-                <span className="panel-subtitle">4 células</span>
-              </div>
-              <div className="team-list">
-                {teams.map((team) => (
-                  <div key={team.name}>
-                    <div className="team-heading">
-                      <strong>{team.name} ({team.total} pers.)</strong>
-                      <span className="team-breakdown">
-                        <span className={team.high > 0 ? "text-danger" : ""}>{team.high} Alto</span>
-                        {" · "}{team.medium} Medio{" · "}{team.low} Bajo
-                      </span>
-                    </div>
-                    <div className="team-bar" aria-label={`${team.name}: ${team.high} alto, ${team.medium} medio, ${team.low} bajo`}>
-                      <span style={{ width: `${(team.high / team.total) * 100}%`, background: "#b4232d" }} />
-                      <span style={{ width: `${(team.medium / team.total) * 100}%`, background: "#2457a7" }} />
-                      <span style={{ width: `${(team.low / team.total) * 100}%`, background: "#08764e" }} />
-                    </div>
-                  </div>
+        </form>
+        {!actual && (
+          <p role="status" className="tab-card">
+            Cargando resultados…
+          </p>
+        )}
+        {actual?.error && (
+          <div role="alert" className="tab-card tab-warning">
+            <p>{actual.error}</p>
+            <button onClick={actualizar}>Reintentar consulta</button>
+          </div>
+        )}
+        {datos && (
+          <>
+            <section aria-label="Resumen de evaluaciones">
+              <p className="tab-context">
+                Alcance: empleado {consulta.comunes.employeeId ?? "todos"} ·
+                equipo {consulta.comunes.teamId ?? "todos"} · semana{" "}
+                {consulta.comunes.periodStart ?? "todas"}.
+              </p>
+              <p className="tab-context">
+                El resumen y las alertas usan empleado, equipo y semana. El
+                filtro de nivel solo afecta la tabla. Se cuentan evaluaciones
+                por semana; una persona puede figurar en varios períodos.
+              </p>
+              <div className="tab-metrics">
+                <article className="tab-card">
+                  <h2>Evaluaciones actualizadas</h2>
+                  <strong>{datos.resumen.totalEvaluaciones}</strong>
+                  <p>
+                    Sin evaluación actualizada: {datos.resumen.noProcesados}
+                  </p>
+                </article>
+                <article className="tab-card">
+                  <h2>Índice promedio</h2>
+                  <strong>{numero(datos.resumen.promedioIndice)}</strong>
+                  <p>
+                    Muestra: {datos.resumen.muestraPromedio} evaluaciones,
+                    incluido INCOMPLETO
+                  </p>
+                </article>
+                {niveles.map((n) => (
+                  <article className="tab-card" key={n}>
+                    <h2>
+                      <NivelTexto nivel={n} />
+                    </h2>
+                    <strong>{datos.resumen.conteo[n]}</strong>
+                    <p>
+                      {numero(datos.resumen.porcentajes[n])}% de las
+                      actualizadas
+                    </p>
+                  </article>
                 ))}
               </div>
-              <div className="team-alert">
-                <Icon>priority_high</Icon>
-                <span>Célula Alfa presenta la mayor concentración de riesgo derivado del sprint final de la versión 3.0.</span>
+            </section>
+            <section
+              id="evaluaciones"
+              className="tab-card"
+              aria-labelledby="evaluaciones-titulo"
+            >
+              <div className="tab-section-head">
+                <h2 id="evaluaciones-titulo">Evaluaciones por período</h2>
+                <span>{consulta.nivel ?? "Todos los niveles"}</span>
               </div>
-            </article>
-          </section>
-
-          <section className="panel cases-panel">
-            <div className="cases-header">
-              <div>
-                <h2 className="panel-title">Personas que requieren atención prioritaria</h2>
-                <p className="panel-subtitle">
-                  Casos identificados por umbrales de riesgo elevado o inconsistencia de registros de jornada
+              {!datos.filas.items.length ? (
+                <p>
+                  No hay evaluaciones para estos filtros. Importá un CSV o
+                  cambiá los filtros.
                 </p>
+              ) : (
+                <div
+                  className="tab-scroll"
+                  role="region"
+                  aria-label="Resultados de evaluaciones"
+                  tabIndex={0}
+                >
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Empleado</th>
+                        <th>Equipo</th>
+                        <th>Período</th>
+                        <th>Índice / 100</th>
+                        <th>Nivel</th>
+                        <th>Procesamiento</th>
+                        <th>Alerta</th>
+                        <th>Informe</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {datos.filas.items.map((fila) => (
+                        <tr key={`${fila.employeeId}-${fila.periodStart}`}>
+                          <th scope="row">
+                            {fila.nombre}
+                            <small>{fila.employeeId}</small>
+                          </th>
+                          <td>{fila.teamId}</td>
+                          <td className="tab-period">
+                            {fila.periodStart}
+                            <small>al {fila.periodEnd}</small>
+                          </td>
+                          <td>
+                            {fila.actualizado ? numero(fila.indice) : "—"}
+                          </td>
+                          <td>
+                            {fila.actualizado && fila.nivel ? (
+                              <NivelTexto nivel={fila.nivel} />
+                            ) : (
+                              <span>
+                                {fila.evaluationId
+                                  ? "Desactualizado"
+                                  : "Sin evaluación"}
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            {fila.processingState}
+                            <small>
+                              {fila.actualizado
+                                ? "Resultado actualizado"
+                                : "Sin resultado actualizado"}
+                            </small>
+                          </td>
+                          <td>
+                            {fila.actualizado && fila.alertId
+                              ? "Alerta interna"
+                              : "—"}
+                          </td>
+                          <td>
+                            {fila.evaluationId ? (
+                              <button
+                                onClick={() =>
+                                  setSeleccion({
+                                    id: fila.evaluationId!,
+                                    anterior: !fila.actualizado,
+                                  })
+                                }
+                              >
+                                {fila.actualizado
+                                  ? "Ver informe"
+                                  : "Ver resultado anterior"}
+                              </button>
+                            ) : (
+                              "No disponible"
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <Paginador
+                pagina={datos.filas}
+                nombre="evaluaciones"
+                cambiar={(page) => cambiar({ ...consulta, page })}
+              />
+              {datos.resumen.noProcesados > 0 && (
+                <p>
+                  Para consultar o recuperar un trabajo pendiente/fallido, abrí{" "}
+                  <Link href="/importaciones">Importación de datos</Link> con su
+                  identificador de procesamiento.
+                </p>
+              )}
+            </section>
+            {seleccion && (
+              <Detalle
+                key={`${seleccion.id}-${seleccion.anterior}`}
+                seleccion={seleccion}
+                cerrar={() => setSeleccion(null)}
+              />
+            )}
+            <section
+              id="alertas"
+              className="tab-card"
+              aria-labelledby="alertas-titulo"
+            >
+              <div className="tab-section-head">
+                <h2 id="alertas-titulo">Alertas internas vigentes</h2>
+                <span>{datos.alertas.total} activas</span>
               </div>
-              <div className="cases-controls" aria-label="Controles visuales">
-                <span className="visual-control"><Icon>search</Icon> Buscar por colaborador...</span>
-                <span className="visual-control">Todas las células <Icon>expand_more</Icon></span>
-                <span className="visual-control">Todos los niveles <Icon>expand_more</Icon></span>
-                <span className="visual-control"><Icon>download</Icon> Exportar vista</span>
+              {!datos.alertas.items.length && (
+                <p>No hay alertas activas para estos filtros.</p>
+              )}
+              <div className="tab-alerts">
+                {datos.alertas.items.map((alerta) => (
+                  <article key={alerta.alertId}>
+                    <h3>{alerta.employeeId}</h3>
+                    <AlertaContenido alerta={alerta} />
+                    <button
+                      onClick={() =>
+                        setSeleccion({
+                          id: alerta.evaluationId,
+                          anterior: false,
+                        })
+                      }
+                    >
+                      Ver informe de alerta
+                    </button>
+                  </article>
+                ))}
               </div>
-            </div>
-
-            <div className="table-wrap">
-              <table className="cases-table">
-                <thead>
-                  <tr>
-                    <th>Colaborador / Rol</th><th>Célula</th><th>Índice</th><th>Nivel</th>
-                    <th>Factores críticos detectados</th><th>Última eval.</th>
-                    <th>Acción recomendada</th><th>Detalle</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cases.map((person) => (
-                    <tr key={person.initials}>
-                      <td>
-                        <div className="case-person">
-                          <span className={`avatar${person.tone === "incomplete" || person.tone === "medium" ? " neutral" : ""}`}>{person.initials}</span>
-                          <span><strong>{person.name}</strong><small>{person.role}</small></span>
-                        </div>
-                      </td>
-                      <td>Célula {person.team}</td>
-                      <td className={`risk-score ${person.tone === "high" ? "high" : person.tone === "medium" ? "medium" : ""}`}>{person.score}</td>
-                      <td><span className={`risk-pill ${person.tone}`}><span className="risk-dot" />{person.level}</span></td>
-                      <td>
-                        <div className="factor-list">
-                          {person.factors.map((factor) => <span className="factor" key={factor}>{factor}</span>)}
-                        </div>
-                      </td>
-                      <td className="evaluation-date">24/10 09:30</td>
-                      <td><span className="recommendation">{person.recommendation}</span></td>
-                      <td><Icon className="detail-mark">{person.tone === "incomplete" ? "edit_note" : "chevron_right"}</Icon></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section className="panel alerts-panel">
-            <div className="panel-header">
-              <div className="topbar-context">
-                <Icon>notifications_active</Icon>
-                <h2 className="panel-title">Últimas alertas automáticas generadas</h2>
-              </div>
-              <span className="topbar-context">Ver centro de alertas completo <Icon>arrow_forward</Icon></span>
-            </div>
-            <div className="alerts-grid">
-              {alerts.map((alert) => (
-                <article className="alert-card" key={alert.time}>
-                  <div className="alert-meta">
-                    <span className={`alert-type ${alert.tone}`}>{alert.type}</span>
-                    <span className="alert-time">{alert.time}</span>
-                  </div>
-                  <p>{alert.message}</p>
-                  <div className="alert-footer">
-                    <span>{alert.notified}</span>
-                    <span className="delivery-status">
-                      <Icon>{alert.status === "Enviado" ? "done_all" : "hourglass_top"}</Icon>
-                      {alert.status}
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        </main>
-      </div>
+              <Paginador
+                pagina={datos.alertas}
+                nombre="alertas"
+                cambiar={(alertPage) => cambiar({ ...consulta, alertPage })}
+              />
+            </section>
+          </>
+        )}
+        <footer className="tab-footer">
+          Parámetros demostrativos. Estos indicadores no diagnostican burnout.
+          Las sugerencias requieren revisión humana.
+        </footer>
+      </main>
     </div>
   );
 }

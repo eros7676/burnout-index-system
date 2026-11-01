@@ -4,7 +4,7 @@ Construye el `InformeDTO` desde una evaluación ya guardada por T08. No calcula 
 
 ## Estado de integración
 
-El servicio está implementado y verificado con evaluaciones persistidas, incluidos historial y alertas de T11. Puede integrarse a `main` junto con T11 para que T04 los utilice. Queda pendiente que T04 solicite el informe al procesar cada par, que T13 exponga el detalle y que T14 lo muestre. La demostración de comprensión en el tablero se verifica al integrar T13/T14/T16; las pruebas actuales cubren el DTO y su contenido.
+El servicio está implementado y verificado con evaluaciones persistidas, incluidos historial y alertas de T11. T04 solicita el informe al procesar cada par y T13 expone el detalle. El [tablero T14](t14-tablero.md), implementado localmente en `t14-feature`, muestra su ranking, reglas, persistencia y alerta. La aceptación integral y la prueba de comprensión por un operador siguen en T16.
 
 ## Uso
 

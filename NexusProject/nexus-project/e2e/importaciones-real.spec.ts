@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { sembrarBase } from "../prisma/seed-base";
 
-test("T06 real: CSV inválido, válido, repetido y cancelación desde Chromium con MySQL", async ({
+test("T06/T14 real: importar, consultar tablero/informe/alerta y repetir CSV desde Chromium con MySQL", async ({
   page,
 }) => {
   test.skip(
@@ -59,7 +59,49 @@ test("T06 real: CSV inválido, válido, repetido y cancelación desde Chromium c
     expect(evaluaciones.map((e) => e.nivel)).toEqual(["INCOMPLETO", "ALTO"]);
     expect(evaluaciones.map((e) => Number(e.indice))).toEqual([83.71, 91.21]);
     expect(await db.alerta.count()).toBe(1);
-    await page.getByRole("button", { name: "Nueva importación" }).click();
+    await page.goto("/home");
+    const tabla = page.getByRole("region", {
+      name: "Resultados de evaluaciones",
+    });
+    await expect(
+      tabla.getByRole("row").filter({ hasText: "INCOMPLETO" }),
+    ).toContainText("83,71");
+    await expect(
+      tabla.getByRole("row").filter({ hasText: "ALTO" }),
+    ).toContainText("91,21");
+    await expect(
+      page.getByText("Destinatario: TL-01", { exact: true }),
+    ).toBeVisible();
+    await tabla
+      .getByRole("row")
+      .filter({ hasText: "ALTO" })
+      .getByRole("button", { name: "Ver informe", exact: true })
+      .click();
+    const detalle = page.getByRole("region", {
+      name: "Informe individual",
+      exact: true,
+    });
+    await expect(detalle).toContainText("91,21");
+    await expect(detalle).toContainText("SOSTENIDO");
+    await expect(detalle).toContainText("NO_APLICA");
+    await expect(
+      detalle.getByRole("table").getByRole("row").nth(1),
+    ).toContainText("HE · Horas extra");
+    await page.getByLabel("Semana desde (lunes)").fill("2026-10-12");
+    await page.getByLabel("Empleado (ID)").fill("EMP-001");
+    await page.getByRole("button", { name: "Aplicar filtros" }).click();
+    await expect(tabla.getByRole("row")).toHaveCount(2);
+    const resumen = page.getByRole("region", {
+      name: "Resumen de evaluaciones",
+    });
+    await expect(resumen).toContainText("100% de las actualizadas");
+    await page.screenshot({
+      path: "test-results/t14-real.png",
+      fullPage: true,
+    });
+    await page
+      .getByRole("link", { name: "Importar datos", exact: true })
+      .click();
     await page
       .getByLabel("Archivo CSV", { exact: true })
       .setInputFiles("templates/ejemplo-dos-semanas.csv");
@@ -74,6 +116,13 @@ test("T06 real: CSV inválido, válido, repetido y cancelación desde Chromium c
     expect(await db.registroLaboral.count()).toBe(2);
     expect(await db.evaluacion.count()).toBe(2);
     expect(await db.alerta.count()).toBe(1);
+    await page.goto("/home");
+    await expect(
+      page
+        .getByRole("region", { name: "Resultados de evaluaciones" })
+        .getByRole("row"),
+    ).toHaveCount(3);
+    await expect(page.getByText("1 activas", { exact: true })).toBeVisible();
   } finally {
     await Promise.all(lecturas);
     const importId = { in: imports };

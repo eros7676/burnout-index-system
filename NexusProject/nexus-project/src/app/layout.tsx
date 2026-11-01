@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Nexo Laboral | Resumen",
   description:
-    "Maqueta del sistema de indicadores de posible sobrecarga laboral.",
+    "Indicadores de posible sobrecarga laboral, evaluaciones y alertas internas.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -25,9 +25,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <aside role="status" style={{ padding: "12px 20px", background: "#fff3cd", color: "#4d3800", fontWeight: 600 }}>
-          Demo local con datos ficticios · Importación CSV disponible. El resumen
-          sigue siendo una maqueta con valores fijos; no representa las cargas realizadas.
+        <aside
+          role="status"
+          style={{
+            padding: "12px 20px",
+            background: "#fff3cd",
+            color: "#4d3800",
+            fontWeight: 600,
+          }}
+        >
+          Demo local con datos ficticios · Parámetros demostrativos. No
+          diagnostica burnout.
         </aside>
         {children}
       </body>

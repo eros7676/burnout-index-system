@@ -3,6 +3,7 @@ import {
   vistaPreviaMock,
   resultadoImportacionMock,
   jobMock,
+  cuerposExitoMock,
 } from "../src/shared/mocks";
 
 const archivo = {
@@ -96,6 +97,13 @@ test("selección vacía, vista previa, cancelación y bloqueo de doble confirmac
   let confirmar = 0;
   await page.route("**/api/**", async (route) => {
     const url = route.request().url();
+    const pathname = new URL(url).pathname;
+    if (pathname === "/api/evaluaciones")
+      return route.fulfill({ json: cuerposExitoMock.listarEvaluaciones });
+    if (pathname === "/api/resumen")
+      return route.fulfill({ json: cuerposExitoMock.obtenerResumen });
+    if (pathname === "/api/alertas")
+      return route.fulfill({ json: cuerposExitoMock.listarAlertas });
     if (url.endsWith("/validar")) return route.fulfill({ json: vista });
     if (route.request().method() === "DELETE")
       return route.fulfill({

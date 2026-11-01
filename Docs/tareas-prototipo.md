@@ -117,7 +117,7 @@ Listo cuando: el detalle sale de evaluaciones guardadas, se entiende en el table
 
 ### T13 · API de consultas y resultados
 
-Implementada localmente en `t13-feature`: cuatro GET con filtros, paginación, vigencia/actualización, resumen y detalle histórico. Ver [guía T13](t13-consultas.md). El tablero T14 y la aceptación integral T16 siguen pendientes.
+Integrada en `main`: cuatro GET con filtros, paginación, vigencia/actualización, resumen y detalle histórico. Ver [guía T13](t13-consultas.md). T14 conecta el tablero en la rama local `t14-feature`; la aceptación integral sigue en T16.
 
 Responsable: Gonzalo. Depende de: T02, T08, T10; T11 para mostrar alertas.
 
@@ -134,6 +134,8 @@ Aplicar CU03. Un nivel ALTO vigente crea una alerta única, canal INTERNO / NO_A
 Listo cuando: dos ejecuciones con el mismo `evaluationId` generan una sola alerta, queda persistida y se puede ver. Gonzalo revisa las pruebas.
 
 ### T14 · Tablero web con índices, factores y alertas
+
+Implementado localmente en `t14-feature`: `/` y `/home` consumen T13 con filtros, paginación, estados de vigencia/procesamiento, informe individual/ranking y alertas internas. Ver [guía T14 y pruebas](t14-tablero.md). Revisión e integración remota pendientes; la aceptación integral sigue en T16.
 
 Responsable: Francisco · revisa Gonzalo. Depende de: T13; T11 para mostrar alertas. La tabla pide T01 y T13 completo.
 

@@ -15,7 +15,7 @@ npm run build
 npm run dev
 ```
 
-Abrir `http://localhost:3000` o `/home` para ver la maqueta existente. Para T01 no hace falta levantar MySQL. Los `.env.example` de raíz y aplicación ya contienen valores ficticios de desarrollo: copiar cada uno a `.env` antes de trabajar con Docker/Prisma según el README. No versionar secretos. Las variables de MySQL nunca llevan prefijo `NEXT_PUBLIC_`.
+Abrir `http://localhost:3000` o `/home` para ver el tablero T14, que requiere MySQL y consume T13. Para las pruebas de contratos T01 no hace falta levantar MySQL. Los `.env.example` de raíz y aplicación ya contienen valores ficticios de desarrollo: copiar cada uno a `.env` antes de trabajar con Docker/Prisma según el README. No versionar secretos. Las variables de MySQL nunca llevan prefijo `NEXT_PUBLIC_`.
 
 La CI ejecuta instalación limpia, lint, typecheck, pruebas, build y validación del esquema Prisma. `npm test` compila y descubre pruebas TypeScript usando el runner de Node; no instala otro framework. La carpeta generada `.test-build` se ignora y no se publica.
 
@@ -40,7 +40,7 @@ if (respuesta.status === 200) {
 }
 ```
 
-`crearRespuestaMock` devuelve una copia independiente y serializable. No hace fetch, no valida un CSV, no persiste y no simula efectos de confirmación/cancelación entre llamadas. Sus fechas e identificadores `mock-*` son fijos: no sirven como importaciones reales ni como huellas SHA-256. Las pantallas funcionales deberán reemplazar este proveedor explícito por la API de T04/T13. La maqueta actual conserva sus propios datos visuales y sigue identificada como tal.
+`crearRespuestaMock` devuelve una copia independiente y serializable. No hace fetch, no valida un CSV, no persiste y no simula efectos de confirmación/cancelación entre llamadas. Sus fechas e identificadores `mock-*` son fijos: no sirven como importaciones reales ni como huellas SHA-256. Las pantallas T06/T14 consumen las API reales T04/T13; estos mocks se reservan para pruebas.
 
 Mocks disponibles: éxito para cada operación; `validacionRechazadaMock` (422 con vista previa); `confirmacionFallidaMock` (200, carga confirmada y job fallido); `importacionRepetidaMock` (sin nuevos afectados); `filasEscenarioMock` (cuatro niveles más pendiente/fallido); `resumenVacioMock`; y `errorContratoMock`. Los escenarios de presentación adicionales son independientes del ejemplo integral y no se suman a su resumen.
 
