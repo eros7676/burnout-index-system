@@ -1,6 +1,12 @@
 // Contrato del prototipo. Fuente: DOCUMENTACION, pestaña «Contratos y pruebas».
 // Estos tipos no validan datos en ejecución; CU01 y CU02 deben hacerlo en servidor.
 export type FechaISO = string; // YYYY-MM-DD validado en servidor
+export type UsuarioDemoDTO = {
+  userId: string; nombre: string;
+  rol: 'RRHH' | 'GERENCIA' | 'TEAM_LEAD' | 'EMPLEADO';
+  employeeId: string | null; teamId: string | null;
+};
+export type SesionDemoDTO = { usuario: UsuarioDemoDTO | null; usuarios: readonly UsuarioDemoDTO[] };
 export type EventoAuditoria = {
   eventoId: string;
   accion: string;

@@ -1,3 +1,4 @@
 import { prisma } from "@/lib/db";
 import { crearHttpAuditoria } from "@/server/http/auditoria";
-export const GET = crearHttpAuditoria(prisma);
+import { proteger } from "@/server/http/permisos-demo";
+export const GET = proteger(prisma, "AUDITORIA", crearHttpAuditoria(prisma));

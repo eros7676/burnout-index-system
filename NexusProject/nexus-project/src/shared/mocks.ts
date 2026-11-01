@@ -240,6 +240,16 @@ export const intentoNotificacionMock = {
   completedAt: null,
 } satisfies import("./contracts").IntentoNotificacion;
 export const cuerposExitoMock = {
+  consultarSesionDemo: { usuario: null, usuarios: [] },
+  seleccionarUsuarioDemo: {
+    usuario: {
+      userId: "demo-rrhh",
+      nombre: "RRHH",
+      rol: "RRHH",
+      employeeId: null,
+      teamId: null,
+    },
+  },
   listarAuditoria: { items: [], total: 0, page: 1, pageSize: 50 },
   validarImportacion: vistaPreviaMock,
   confirmarImportacion: resultadoImportacionMock,

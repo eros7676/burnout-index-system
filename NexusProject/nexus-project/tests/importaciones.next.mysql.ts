@@ -96,6 +96,20 @@ async function comprobarNext() {
       });
     });
     const base = `http://127.0.0.1:${address.port}`;
+    const sesion = await globalThis.fetch(`${base}/api/demo/sesion`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: "demo-rrhh" }),
+    });
+    const cookie = sesion.headers.get("set-cookie")!.split(";")[0];
+    const fetch: typeof globalThis.fetch = (input, init) =>
+      globalThis.fetch(input, {
+        ...init,
+        headers: {
+          ...Object.fromEntries(new Headers(init?.headers)),
+          Cookie: cookie,
+        },
+      });
     const csv = readFileSync("templates/ejemplo-dos-semanas.csv", "utf8");
     async function validar() {
       const form = new FormData();
@@ -107,9 +121,17 @@ async function comprobarNext() {
         method: "POST",
         body: form,
       });
-      assert.equal(response.status, 200);
+      assert.equal(response.status, 200, await response.clone().text());
       const vista: VistaPrevia = await response.json();
       imports.push(vista.importId);
+      assert.equal(
+        (
+          await db.importacion.findUniqueOrThrow({
+            where: { importId: vista.importId },
+          })
+        ).uploadedBy,
+        "demo-rrhh",
+      );
       return vista;
     }
     async function confirmar(id: string): Promise<ResultadoImportacion> {
@@ -231,6 +253,87 @@ async function comprobarNext() {
     assert.equal(await db.alerta.count(), 1);
     console.log(
       "T12: historial, pendiente, fallo, reintento e idempotencia verificados por HTTP real.",
+    );
+    async function como(userId: string, ruta: string, method = "GET") {
+      const login = await globalThis.fetch(`${base}/api/demo/sesion`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const Cookie = login.headers.get("set-cookie")!.split(";")[0];
+      return globalThis.fetch(`${base}/api/${ruta}`, {
+        method,
+        headers: { Cookie },
+      });
+    }
+    assert.equal(
+      (await globalThis.fetch(`${base}/api/evaluaciones`)).status,
+      401,
+    );
+    for (const ruta of [
+      "evaluaciones",
+      "alertas",
+      "resumen",
+      `evaluaciones/${informe.evaluacion.evaluationId}`,
+    ])
+      assert.equal((await como("demo-empleado", ruta)).status, 403);
+    assert.equal(
+      (await como("demo-tl-01", "evaluaciones?teamId=EQ-02")).status,
+      403,
+    );
+    assert.equal(
+      (await como("demo-tl-01", "evaluaciones?employeeId=EMP-002")).status,
+      403,
+    );
+    assert.equal(
+      (
+        await como(
+          "demo-tl-02",
+          `evaluaciones/${informe.evaluacion.evaluationId}`,
+        )
+      ).status,
+      403,
+    );
+    assert.equal(
+      (
+        await como(
+          "demo-tl-01",
+          `evaluaciones/${informe.evaluacion.evaluationId}`,
+        )
+      ).status,
+      200,
+    );
+    const alcance = await como("demo-tl-02", "evaluaciones");
+    assert.equal((await alcance.json()).total, 0);
+    assert.equal((await (await como("demo-tl-02", "alertas")).json()).total, 0);
+    assert.equal(
+      (await (await como("demo-tl-02", "resumen")).json()).totalEvaluaciones,
+      0,
+    );
+    assert.equal(
+      (await (await como("demo-tl-01", "evaluaciones")).json()).total,
+      2,
+    );
+    assert.equal(
+      (
+        await globalThis.fetch(`${base}/api/auditoria`, {
+          headers: { "x-role": "RRHH", "x-demo-actor-interno": "demo-rrhh" },
+        })
+      ).status,
+      401,
+    );
+    assert.equal(
+      (await como("demo-gerencia", "importaciones/validar", "POST")).status,
+      403,
+    );
+    assert.equal((await como("demo-gerencia", "resumen")).status, 200);
+    assert.equal((await como("demo-tl-01", "auditoria")).status, 403);
+    assert.equal(
+      (await como("demo-tl-01", "importaciones/validar", "POST")).status,
+      403,
+    );
+    console.log(
+      "T15a: sesiones, empleado bloqueado, roles y ámbito del equipo verificados por HTTP real.",
     );
     const repetida = await validar();
     const auditoria = await consultar(

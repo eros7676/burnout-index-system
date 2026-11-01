@@ -22,6 +22,7 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 - [Guía T11](Docs/t11-alertas.md)
 - [Guía T12: correo simulado e intentos](Docs/t12-notificaciones.md)
 - [Guía T15b: auditoría de importaciones y reglas](Docs/t15b-auditoria.md)
+- [Guía T15a: usuarios demo y permisos](Docs/t15a-permisos.md)
 - [Guía T05: validaciones CSV y duplicados](Docs/t05-validaciones.md)
 - [Guía T04: API CSV, confirmación y recuperación](Docs/t04-importaciones.md)
 - [Guía T06: pantalla CSV y pruebas de navegador](Docs/t06-pantalla-carga.md)
@@ -48,7 +49,17 @@ T12 incorpora el correo simulado P1, su historial persistido y controles de prep
 
 Una primera semana válida conserva su índice y produce INCOMPLETO por falta de historial. Una falla técnica pertenece al trabajo de procesamiento, no al nivel de riesgo. CU02 se ejecuta en servidor tras confirmar la importación.
 
+## Usuarios demo y auditoría (T15a/T15b)
+
+Seleccionar **Usuario de demostración** en la barra superior. RRHH puede importar y gestionar notificaciones; Gerencia consulta resultados y auditoría; cada Team Lead solo consulta su equipo; el empleado no accede a índices ni alertas. Las restricciones se verifican en el servidor, también al pedir un informe por ID. Sin sesión se responde 401; sin permiso, 403. La selección pública de identidades ficticias no es autenticación productiva.
+
+T15b agrega eventos transaccionales de validación aceptada/rechazada, confirmación, cancelación y publicación de reglas. `GET /api/auditoria` permite filtrar y paginar el historial para RRHH/Gerencia. Los eventos incluyen actor, fecha y referencias, sin copiar CSV ni credenciales. Repetir confirmación/cancelación no duplica eventos y un fallo de auditoría revierte la operación. No hay una pantalla nueva de auditoría; la consulta es HTTP.
+
+Aplicar las tres migraciones T02/T12/T15b con `npm run db:deploy` y generar el cliente Prisma. T15a no necesita otra migración. Las sesiones demo duran ocho horas y, sin `DEMO_SESSION_SECRET`, se invalidan al reiniciar el servidor. Ver [T15a](Docs/t15a-permisos.md) y [T15b](Docs/t15b-auditoria.md).
+
 ## Instalación de la base actual
+
+T15a requiere seleccionar un **Usuario de demostración** en la barra superior antes de consultar datos. RRHH habilita el circuito completo de importación; Team Lead queda limitado a su equipo y el empleado no puede acceder a índices/alertas. Ver [guía T15a](Docs/t15a-permisos.md).
 
 Requisitos: Node.js >=20.9 (se recomienda Node 22), npm, Git y Docker Compose para MySQL.
 
@@ -70,9 +81,11 @@ npm run dev
 
 Abrir http://localhost:3000. Docker toma DB_NAME/DB_USER/DB_PASSWORD y DB_PORT del .env de la raíz. El puerto publicado por defecto es 3306; si está ocupado, cambiar DB_PORT (por ejemplo, a 3307) y usar el mismo puerto en DATABASE_URL del .env de la aplicación. Esperar a que MySQL esté listo antes de aplicar migraciones. No subir archivos .env. El tablero y la importación necesitan MySQL; contratos y pruebas unitarias pueden ejecutarse sin la base. Sin registros importados, el tablero muestra el estado vacío.
 
-Para demostrar T14: abrir **Importar datos**, validar y confirmar `templates/ejemplo-dos-semanas.csv` y esperar procesamiento COMPLETADO. Volver a **Resumen**: aparecen 83,71 INCOMPLETO y 91,21 ALTO, con una alerta interna para TL-01. **Ver informe** muestra ranking, umbrales, reglas y persistencia. Los filtros por empleado/equipo usan sus IDs; la semana comienza un lunes. **Actualizar resultados** consulta nuevamente la API. Ver [guía T14](Docs/t14-tablero.md).
+Para demostrar T14: seleccionar **RRHH** y abrir **Importar datos**, validar y confirmar `templates/ejemplo-dos-semanas.csv` y esperar procesamiento COMPLETADO. Volver a **Resumen**: aparecen 83,71 INCOMPLETO y 91,21 ALTO, con una alerta interna para TL-01. **Ver informe** muestra ranking, umbrales, reglas y persistencia. Los filtros por empleado/equipo usan sus IDs; la semana comienza un lunes. **Actualizar resultados** consulta nuevamente la API. Ver [guía T14](Docs/t14-tablero.md).
 
 ## Comprobaciones y base de datos
+
+Revisión conjunta T15a/T15b (01/11/2026): lint, typecheck, build y Prisma correctos; 68 pruebas sin MySQL, 80 con MySQL, HTTP real y 19 escenarios de navegador aprobados sin omisiones. La evidencia cubre permisos demo, ámbito de equipos, actor verificado, auditoría e integridad transaccional. Ver [guía de pruebas](NexusProject/nexus-project/tests/README.md). No certifica autenticación productiva ni repite el rendimiento T16.
 
 Ejecutar desde NexusProject/nexus-project:
 
@@ -88,15 +101,17 @@ npm run db:validate
 
 El seed puede repetirse sin sobrescribir filas existentes: cuatro equipos, 45 técnicos, cuatro Team Leads y un gerente (50 personas, 49 evaluables según los tipos P0). Conserva EMP-001 → TL-01 → GER-01. No precarga registros laborales, evaluaciones ni alertas: el CSV del ejemplo debe poder importarse desde cero. Los archivos y escenarios T03 ya están en `templates/` y `tests/data/`. Las versiones posteriores a v1 se publican con el script de [T09](Docs/t09-reglas.md).
 
-`npm test` ejecuta las pruebas sin MySQL de contratos T01, catálogo/fechas T02, archivos T03, transporte HTTP T04, validación T05, cálculo T07, huellas/JSON T08, reglas T09, informes T10, alertas T11 y filtros/errores T13. `npm run db:test` ejecuta exclusivamente las pruebas MySQL y exige TEST_DATABASE_URL para una base migrada cuyo nombre termine en `_test`; ver la guía T02. Incluye importación por HTTP, persistencia, validación, reglas, informes y alertas reales, con comprobaciones de historial, rollback y concurrencia. Después de `npm run build`, `npm run db:test:http` verifica las cinco rutas T04 y cuatro consultas T13 del servidor Next.js real sobre esa base aislada. T16 debe verificar el circuito completo con el tablero.
+`npm test` incluye además sesiones/permisos T15a, filtros de auditoría T15b y simulación T12. Ejecuta las pruebas sin MySQL de contratos T01, catálogo/fechas T02, archivos T03, transporte HTTP T04, validación T05, cálculo T07, huellas/JSON T08, reglas T09, informes T10, alertas T11 y filtros/errores T13. `npm run db:test` ejecuta exclusivamente las pruebas MySQL y exige TEST_DATABASE_URL para una base migrada cuyo nombre termine en `_test`; ver la guía T02. Incluye importación por HTTP, persistencia, validación, reglas, informes y alertas reales, con comprobaciones de historial, rollback y concurrencia. Después de `npm run build`, `npm run db:test:http` verifica las cinco rutas T04 y cuatro consultas T13 del servidor Next.js real sobre esa base aislada. T16 debe verificar el circuito completo con el tablero.
 
-La evidencia local de T04 y sus comandos reproducibles están en [la guía de importaciones](Docs/t04-importaciones.md). Las pruebas SQL usan una base aislada con la migración T02. `npm run test:ui` verifica T06/T14 con respuestas interceptadas; con TEST_DATABASE_URL incluye importación, tablero, informe y alerta reales desde Chromium. `npm run test:acceptance` ejecuta T16 con API/MySQL reales en Chrome/Firefox y conserva los incumplimientos RNF como pruebas fallidas.
+La evidencia local de T04 y sus comandos reproducibles están en [la guía de importaciones](Docs/t04-importaciones.md). Las pruebas SQL usan una base aislada con las tres migraciones T02/T12/T15b. `npm run test:ui` verifica T06/T14 con respuestas interceptadas; con TEST_DATABASE_URL incluye importación, tablero, informe y alerta reales desde Chromium. `npm run test:acceptance` ejecuta T16 con API/MySQL reales en Chrome/Firefox y conserva los incumplimientos RNF como pruebas fallidas.
 
 ## Trabajo en equipo
 
 T16 agrega `npm run verify:p0`: verificación secuencial desde migración/seed hasta aceptación con MySQL real, Chrome y Firefox. Exige TEST_DATABASE_URL de una base exclusiva vacía terminada en `_test`. No usar la base de la aplicación. Ver [guía T16](Docs/t16-integracion.md) para instalación limpia, comandos, mediciones y protocolo humano de usabilidad. Los cambios de esta tarea permanecen locales en `t16-feature`.
 
-La falla de rendimiento T16 está corregida: el lote máximo de 1.000 filas/5 MiB pasó en **53,75 s en Chrome y 53,68 s en Firefox**, frente a 106–110 s iniciales y con el límite original de 60 s. `npm run verify:p0` aprobó todas las comprobaciones automatizadas. La confirmación usa bloques atómicos y el procesamiento reduce consultas/transacciones manteniendo historial, alertas y recuperación. Ver [evidencia T16](Docs/t16-integracion.md). RNF03 sigue requiriendo una prueba con operador humano; la aceptación humana de T16 no se da por cerrada.
+En la verificación histórica de T16, la corrección de rendimiento logró lo siguiente: el lote máximo de 1.000 filas/5 MiB pasó en **53,75 s en Chrome y 53,68 s en Firefox**, frente a 106–110 s iniciales y con el límite original de 60 s. `npm run verify:p0` aprobó todas las comprobaciones automatizadas. La confirmación usa bloques atómicos y el procesamiento reduce consultas/transacciones manteniendo historial, alertas y recuperación. Ver [evidencia T16](Docs/t16-integracion.md). RNF03 sigue requiriendo una prueba con operador humano; la aceptación humana de T16 no se da por cerrada.
+
+La medición posterior de T12 mostró variabilidad en Chrome: 60,92 s en una ejecución y repetición aislada aprobada. Los tiempos históricos de T16 no certifican cumplimiento estable actual; ver [evidencia T12](Docs/t12-notificaciones.md). La verificación de T15a/T15b no repite esa medición de rendimiento.
 
 Crear ramas feature/TXX-descripcion desde main y abrir PR a main para revisión. No se presupone una rama develop ni protección configurada. Una tarea se completa con contrato respetado, pruebas relevantes y revisión; compilar la maqueta no completa P0.
 

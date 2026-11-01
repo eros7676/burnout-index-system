@@ -171,6 +171,8 @@ Listo cuando: fallar o repetir un envío simulado no elimina ni duplica la alert
 
 ### T15a · Usuarios de demostración y permisos
 
+Implementación local en `t15-feature`: sesión demo firmada, selector de identidades y autorización en todas las rutas de datos, con filtro obligatorio del equipo para Team Leads. Ver [guía T15a](t15a-permisos.md) para la matriz de permisos y la evidencia de pruebas.
+
 Responsable: Eros + Gonzalo. Depende de: T02, T04, T13.
 
 Usuarios demo de RRHH, Team Lead y Gerencia. Los controles de autorización corren en el servidor. El Team Lead solo ve su equipo. El empleado no accede a índices ni alertas. Esta demo no es autenticación productiva.

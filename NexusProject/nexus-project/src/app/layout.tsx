@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { UsuarioDemo } from "@/components/usuario-demo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Demo local con datos ficticios · Parámetros demostrativos. No
           diagnostica burnout.
         </aside>
+        <UsuarioDemo />
         {children}
       </body>
     </html>

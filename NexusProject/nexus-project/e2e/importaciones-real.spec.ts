@@ -25,6 +25,9 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
   try {
     await db.$transaction((tx) => sembrarBase(tx));
     expect(await db.registroLaboral.count()).toBe(0); // Nunca borra ni reutiliza datos existentes.
+    await page.request.post("/api/demo/sesion", {
+      data: { userId: "demo-rrhh" },
+    });
     await page.goto("/importaciones");
     await page
       .getByLabel("Archivo CSV", { exact: true })
