@@ -325,7 +325,9 @@ export function Importaciones() {
             }
             onCancelar={() =>
               ejecutar("Cancelando la vista previa…", async () => {
-                await api.cancelar(vista.importId);
+                // A rejected preview cannot be cancelled server-side (409); it just expires.
+                if (vista.status === "VALIDADA")
+                  await api.cancelar(vista.importId);
                 nueva();
                 setMensaje(
                   "Vista previa cancelada. No se guardaron registros laborales.",

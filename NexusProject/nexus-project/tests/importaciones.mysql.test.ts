@@ -290,6 +290,12 @@ test("MySQL T04: CU01 por HTTP, atomicidad y recuperación", async (t) => {
             ),
           );
           assert.equal((await s.confirmar(v.vista.importId)).status, 409);
+          // Only VALIDADA may become CANCELADA (contract §4).
+          assert.equal(
+            (await s.llamar(`importaciones/${v.vista.importId}`, "DELETE"))
+              .status,
+            409,
+          );
           assert.equal(
             await db.registroLaboral.count({
               where: { employeeId: s.employeeId },
