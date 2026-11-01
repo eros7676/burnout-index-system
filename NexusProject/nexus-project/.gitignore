@@ -14,6 +14,7 @@
 /coverage
 /playwright-report/
 /test-results/
+/.test-browsers/
 /.test-build/
 /.seed-build/
 

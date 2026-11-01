@@ -145,6 +145,10 @@ Listo cuando: después de importar un CSV, el tablero muestra los resultados alm
 
 ### T16 · Integración integral y pruebas de punta a punta
 
+Implementación local en `t16-feature`: verificador P0 secuencial y aceptación con MySQL real en Chrome/Firefox, plantilla completa y límite de carga. Ver [guía T16](t16-integracion.md) para comandos y evidencia; la usabilidad con operador y la revisión humana se registran por separado.
+
+Aceptación pendiente: el circuito funcional pasó, pero RNF01 falla en 1.000 filas/5 MiB (106–110 s frente a 60 s) y la prueba humana RNF03 no fue ejecutada. No marcar T16 terminada hasta resolver/verificar esos criterios.
+
 Responsable: Eros + Gonzalo coordinan · todos prueban. Depende de: T02, T04, T06, T08, T09, T10, T11, T13 y T14. La tabla la cierra con todas las P0: T01 a T11, T13 y T14.
 
 Integrar por contratos y pull requests: importar y validar CSV, guardar, evaluar, elaborar el informe, generar la alerta ALTO y mostrar el tablero. Ejecutar los escenarios válido, inválido, duplicado, historial insuficiente, ALTO sostenido y alerta sin duplicar. Resolver conflictos de integración y documentar la ejecución.

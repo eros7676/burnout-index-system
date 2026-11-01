@@ -10,6 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "tsc -p tsconfig.test.json && node scripts/test.mjs",
     "test:ui": "playwright test",
+    "test:acceptance": "playwright test --config playwright.acceptance.config.ts",
+    "verify:p0": "node scripts/verify-p0.mjs",
     "db:validate": "prisma validate",
     "db:compile-seed": "node scripts/seed.mjs --compile-only",
     "db:generate": "prisma generate",

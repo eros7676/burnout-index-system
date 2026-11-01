@@ -1,5 +1,7 @@
 # Pruebas de servicios, persistencia e integración
 
+T16 agrega `acceptance/` y `playwright.acceptance.config.ts`: cuatro escenarios reales por navegador (Chrome/Firefox), sin interceptar la API. `npm run verify:p0` ejecuta todas las comprobaciones en secuencia y exige una base TEST_DATABASE_URL exclusiva; `npm run test:acceptance` requiere además el build previo. Reportes y mediciones en `test-results/`. Ver [guía T16](../../../Docs/t16-integracion.md).
+
 T14 agrega siete escenarios de navegador en `e2e/tablero.spec.ts`, ejecutados por `npm run test:ui` después del build. Cubren estados, niveles/ranking, vigencia, filtros/paginación, errores/recuperación y móvil. La prueba real de `e2e/importaciones-real.spec.ts` extiende T06 con tablero, informe, alerta y repetición sin duplicados usando TEST_DATABASE_URL aislada; sin esa variable se omite. Ver [guía T14](../../../Docs/t14-tablero.md).
 
 Desde la raíz de la aplicación: `npm test`. Usa TypeScript y el runner nativo de Node, sin dependencias adicionales ni MySQL. Compila contratos y pruebas en `.test-build/` (ignorado por Git/ESLint), luego descubre recursivamente los archivos `*.test.js`. No depende de globs del shell y funciona con Node 22 en Windows y Linux. Las nuevas pruebas se escriben como `*.test.ts` dentro de esta carpeta; deben usar imports relativos para ejecutarse fuera de Next.js.

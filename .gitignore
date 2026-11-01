@@ -2,3 +2,4 @@
 .env.*
 !.env.example
 node_modules/
+/.t16-clean/
