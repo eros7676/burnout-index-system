@@ -117,6 +117,8 @@ Listo cuando: el detalle sale de evaluaciones guardadas, se entiende en el table
 
 ### T13 · API de consultas y resultados
 
+Implementada localmente en `t13-feature`: cuatro GET con filtros, paginación, vigencia/actualización, resumen y detalle histórico. Ver [guía T13](t13-consultas.md). El tablero T14 y la aceptación integral T16 siguen pendientes.
+
 Responsable: Gonzalo. Depende de: T02, T08, T10; T11 para mostrar alertas.
 
 Rutas GET de Contratos y pruebas para evaluaciones vigentes, detalle, resumen y alertas. Filtros, paginación y estados de proceso separados del nivel. Puede empezar sin T11 y se termina al consultar sus alertas reales. Los roles de demostración entran en T15a.

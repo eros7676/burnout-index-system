@@ -4,7 +4,7 @@ Prototipo para identificar indicadores de posible sobrecarga laboral. Next.js + 
 
 ## Estado y referencias
 
-Existe una base de Next.js y una **maqueta visual con datos fijos**, disponible en / y /home. T02 agrega el esquema Prisma, migración inicial, conexión y seed. Están implementados los servicios de validación CSV y duplicados T05, cálculo T07, persistencia de evaluaciones T08, reglas versionadas T09, informes T10 y alertas internas T11. T04 agrega la API de importación/confirmación y los jobs recuperables. T06 conecta la pantalla CSV en /importaciones con validación, vista previa, confirmación, cancelación y recuperación. Quedan pendientes las consultas HTTP T13 y la conexión del tablero T14. No confundir carpetas reservadas con funcionalidades terminadas.
+Existe una base de Next.js y una **maqueta visual con datos fijos**, disponible en / y /home. T02 agrega el esquema Prisma, migración inicial, conexión y seed. Están implementados los servicios de validación CSV y duplicados T05, cálculo T07, persistencia de evaluaciones T08, reglas versionadas T09, informes T10 y alertas internas T11. T04 agrega la API de importación/confirmación y los jobs recuperables. T06 conecta la pantalla CSV en /importaciones con validación, vista previa, confirmación, cancelación y recuperación. T13 expone las consultas HTTP de evaluaciones, informe, resumen y alertas. Queda pendiente la conexión del tablero T14. No confundir carpetas reservadas con funcionalidades terminadas.
 
 T01 incorpora contratos TypeScript, catálogo HTTP, errores de dominio, mocks tipados y pruebas base sin base de datos. La guía de uso está en [Docs/t01-base.md](Docs/t01-base.md). Los mocks no implementan los endpoints ni el motor del índice.
 
@@ -23,13 +23,14 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 - [Guía T05: validaciones CSV y duplicados](Docs/t05-validaciones.md)
 - [Guía T04: API CSV, confirmación y recuperación](Docs/t04-importaciones.md)
 - [Guía T06: pantalla CSV y pruebas de navegador](Docs/t06-pantalla-carga.md)
+- [Guía T13: consultas, filtros y vigencia](Docs/t13-consultas.md)
 - [Diagnóstico de Turbopack y conexión local de sus workers](Docs/turbopack-diagnostico.md)
 
 T03 incorpora la plantilla de 138 filas para 49 personas evaluables, archivos de errores y escenarios, resultados esperados y pruebas de datos. Ver [guía T03](NexusProject/nexus-project/tests/data/README.md). Estos archivos preparan la integración; no implementan importación ni cálculo.
 
 T07 implementa `calcularEvaluacion`: fórmula, ranking, clasificación pura y persistencia semanal matemática, sin acceso a base de datos. Ver [guía T07](Docs/t07-calculo.md). T08 agrega persistencia de evaluaciones, snapshots, historial, vigencia, reintentos y protección frente a cálculos obsoletos; ver [guía T08](Docs/t08-evaluaciones.md). T10 arma el informe individual desde esa evaluación guardada, sin recalcular ni crear alertas; ver [guía T10](Docs/t10-informes.md). T11 crea la alerta interna única cuando el nivel vigente es ALTO; ver [guía T11](Docs/t11-alertas.md). T04 integra estos servicios desde la confirmación HTTP.
 
-T04 publica con `alPublicar: alPublicarAlerta` y propietario de job tanto al confirmar como al reintentar. La integración HTTP con T08/T10/T11 tiene pruebas locales de atomicidad, alertas, idempotencia y recuperación; ver [guía T04](Docs/t04-importaciones.md) y [criterios de integración](Docs/t11-alertas.md#integración-con-t04). T13/T14 deben exponer y mostrar los resultados, y T16 verificar el circuito completo con la interfaz.
+T04 publica con `alPublicar: alPublicarAlerta` y propietario de job tanto al confirmar como al reintentar. La integración HTTP con T08/T10/T11 tiene pruebas locales de atomicidad, alertas, idempotencia y recuperación; ver [guía T04](Docs/t04-importaciones.md) y [criterios de integración](Docs/t11-alertas.md#integración-con-t04). T13 expone los resultados; T14 debe mostrarlos, y T16 verificar el circuito completo con la interfaz.
 
 ## Alcance
 
@@ -79,9 +80,9 @@ npm run db:validate
 
 El seed puede repetirse sin sobrescribir filas existentes: cuatro equipos, 45 técnicos, cuatro Team Leads y un gerente (50 personas, 49 evaluables según los tipos P0). Conserva EMP-001 → TL-01 → GER-01. No precarga registros laborales, evaluaciones ni alertas: el CSV del ejemplo debe poder importarse desde cero. Los archivos y escenarios T03 ya están en `templates/` y `tests/data/`. Las versiones posteriores a v1 se publican con el script de [T09](Docs/t09-reglas.md).
 
-`npm test` ejecuta las pruebas sin MySQL de contratos T01, catálogo/fechas T02, archivos T03, transporte HTTP T04, validación T05, cálculo T07, huellas/JSON T08, reglas T09, informes T10 y alertas T11. `npm run db:test` ejecuta exclusivamente las pruebas MySQL y exige TEST_DATABASE_URL para una base migrada cuyo nombre termine en `_test`; ver la guía T02. Incluye importación por HTTP, persistencia, validación, reglas, informes y alertas reales, con comprobaciones de historial, rollback y concurrencia. Después de `npm run build`, `npm run db:test:http` verifica las cinco rutas T04 del servidor Next.js real sobre esa base aislada. T16 debe verificar el circuito completo con el tablero.
+`npm test` ejecuta las pruebas sin MySQL de contratos T01, catálogo/fechas T02, archivos T03, transporte HTTP T04, validación T05, cálculo T07, huellas/JSON T08, reglas T09, informes T10, alertas T11 y filtros/errores T13. `npm run db:test` ejecuta exclusivamente las pruebas MySQL y exige TEST_DATABASE_URL para una base migrada cuyo nombre termine en `_test`; ver la guía T02. Incluye importación por HTTP, persistencia, validación, reglas, informes y alertas reales, con comprobaciones de historial, rollback y concurrencia. Después de `npm run build`, `npm run db:test:http` verifica las cinco rutas T04 y cuatro consultas T13 del servidor Next.js real sobre esa base aislada. T16 debe verificar el circuito completo con el tablero.
 
-La evidencia local de T04 y sus comandos reproducibles están en [la guía de importaciones](Docs/t04-importaciones.md). Las pruebas SQL usan una base aislada con la migración T02; T06 permite demostrar la carga CSV desde el navegador; el tablero y la aceptación integral siguen pendientes de T13/T14/T16.
+La evidencia local de T04 y sus comandos reproducibles están en [la guía de importaciones](Docs/t04-importaciones.md). Las pruebas SQL usan una base aislada con la migración T02; T06 permite demostrar la carga CSV desde el navegador; el tablero y la aceptación integral siguen pendientes de T14/T16.
 
 ## Trabajo en equipo
 

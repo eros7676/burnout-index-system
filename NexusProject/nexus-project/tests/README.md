@@ -43,3 +43,7 @@ T16 debe registrar evidencia de los RNF01–RNF07 según [Contratos y pruebas, s
 ## Navegador T06
 
 npm run test:ui ejecuta Playwright sobre el build de producción (npm run build previo). Incluye interfaz con HTTP interceptado y un escenario optativo con API/MySQL reales mediante TEST_DATABASE_URL, base aislada migrada y sin registros laborales. Ver [guía T06](../../../Docs/t06-pantalla-carga.md) para comandos, cobertura y limpieza. No sustituye la aceptación del tablero T16.
+
+## Consultas T13
+
+consultas.test.ts comprueba filtros y errores HTTP sin MySQL. consultas.mysql.test.ts verifica resultados reales, paginación, niveles, resumen, historial, vigencia y estados por par, incluidos leases vencidos. db:test:http verifica además las cuatro rutas GET T13 del build real. Ver [guía T13](../../../Docs/t13-consultas.md).
