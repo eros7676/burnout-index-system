@@ -85,6 +85,8 @@ Responsable: Santiago · revisión Gonzalo. Depende de: T02, T03, T05. La tabla 
 
 Implementar las rutas de validación, confirmación, cancelación, job y reintento de Contratos y pruebas. Validar genera una vista previa temporal. Confirmar revalida y guarda en una transacción, y después solicita T08, T10 y T11. Rechazar conflictos y no sobrescribir. Procesar a los afectados y al sucesor inmediato si existe.
 
+T10/T11 están disponibles como servicios verificados. Al publicar cada par con T08, T04 debe pasar `alPublicar: alPublicarAlerta`, también en reintentos. La integración desde HTTP se acepta con las [pruebas pendientes de T04](t11-alertas.md#integración-pendiente-de-t04), además de los criterios de CU01; aceptar T10/T11 no da por implementada esa integración.
+
 Listo cuando: un CSV válido se confirma una sola vez, un CSV inválido no modifica la base y la API entrega estado y cantidades.
 
 ### T08 · Clasificación CU02, evaluación e historial
