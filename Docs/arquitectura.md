@@ -16,7 +16,7 @@ La raíz ejecutable de Next.js es NexusProject/nexus-project. Se conserva para a
 | src/components/ | Componentes React; dashboard-home es una maqueta. |
 | prisma/ | Esquema, migración inicial y seed T02. |
 | templates/ | Encabezado CSV y ejemplo contractual. |
-| tests/ | Contratos T01, catálogo/fechas T02, archivos/escenarios T03 y pruebas MySQL separadas; circuito completo pendiente. |
+| tests/ | Contratos, catálogo, fixtures, validación, cálculo, reglas, informes y alertas; pruebas MySQL separadas y circuito completo pendiente. |
 
 ## API acordada
 
@@ -46,4 +46,4 @@ No existe autenticación implementada por usar un grupo de rutas llamado (dashbo
 
 [Guía T01](t01-base.md): imports compartidos, ejemplos de mocks y comandos de verificación. Las adiciones HTTP describen el contrato existente; no agregan nuevas operaciones de negocio.
 
-[Guía T02](t02-persistencia.md): modelos, vigencia por período, migraciones, catálogo ficticio y pruebas MySQL preparadas. Los servicios funcionales siguen pendientes.
+[Guía T02](t02-persistencia.md): modelos, vigencia por período, migraciones, catálogo ficticio y pruebas MySQL. Los servicios implementados incluyen [validación CSV T05](t05-validaciones.md), [cálculo T07](t07-calculo.md), [persistencia de evaluaciones T08](t08-evaluaciones.md), [reglas T09](t09-reglas.md), [informes T10](t10-informes.md) y [alertas internas T11](t11-alertas.md). T04 integra la confirmación y el procesamiento; T13 expone las consultas y T14 conecta el tablero. Esas integraciones siguen pendientes.

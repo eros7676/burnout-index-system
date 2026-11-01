@@ -4,7 +4,7 @@ Prototipo para identificar indicadores de posible sobrecarga laboral. Next.js + 
 
 ## Estado y referencias
 
-Existe una base de Next.js y una **maqueta visual con datos fijos**, disponible en / y /home. T02 agrega el esquema Prisma, migración inicial, conexión y seed; CU02 ya cuenta con motor puro T07 y persistencia T08. La importación, las consultas y la integración HTTP siguen pendientes. CU03 interno queda en T11. No confundir carpetas reservadas con funcionalidades terminadas.
+Existe una base de Next.js y una **maqueta visual con datos fijos**, disponible en / y /home. T02 agrega el esquema Prisma, migración inicial, conexión y seed. Están implementados los servicios de validación CSV y duplicados T05, cálculo T07, persistencia de evaluaciones T08, reglas versionadas T09, informes T10 y alertas internas T11. Quedan pendientes la API de importación/confirmación T04, las consultas HTTP T13 y la conexión del tablero T14. No confundir carpetas reservadas con funcionalidades terminadas.
 
 T01 incorpora contratos TypeScript, catálogo HTTP, errores de dominio, mocks tipados y pruebas base sin base de datos. La guía de uso está en [Docs/t01-base.md](Docs/t01-base.md). Los mocks no implementan los endpoints ni el motor del índice.
 
@@ -20,6 +20,8 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 - [Guía T09](Docs/t09-reglas.md)
 - [Guía T10](Docs/t10-informes.md)
 - [Guía T11](Docs/t11-alertas.md)
+- [Guía T05: validaciones CSV y duplicados](Docs/t05-validaciones.md)
+- [Diagnóstico de Turbopack y conexión local de sus workers](Docs/turbopack-diagnostico.md)
 
 T03 incorpora la plantilla de 138 filas para 49 personas evaluables, archivos de errores y escenarios, resultados esperados y pruebas de datos. Ver [guía T03](NexusProject/nexus-project/tests/data/README.md). Estos archivos preparan la integración; no implementan importación ni cálculo.
 
@@ -73,7 +75,9 @@ npm run db:validate
 
 El seed puede repetirse sin sobrescribir filas existentes: cuatro equipos, 45 técnicos, cuatro Team Leads y un gerente (50 personas, 49 evaluables según los tipos P0). Conserva EMP-001 → TL-01 → GER-01. No precarga registros laborales, evaluaciones ni alertas: el CSV del ejemplo debe poder importarse desde cero. Los archivos y escenarios T03 ya están en `templates/` y `tests/data/`. Las versiones posteriores a v1 se publican con el script de [T09](Docs/t09-reglas.md).
 
-`npm test` ejecuta contratos/mocks T01 y comprobaciones de catálogo/fechas T02 y archivos/escenarios T03, sin MySQL. `npm run db:test` ejecuta exclusivamente las pruebas MySQL y exige TEST_DATABASE_URL para una base migrada cuyo nombre termine en `_test`; ver la guía T02. Las siete comprobaciones MySQL de T02 pasaron en `nexus_t02_test`. T07 incorpora el motor puro y sus pruebas; T08 agrega pruebas de persistencia del motor con MySQL; T16 debe verificar el circuito completo.
+`npm test` ejecuta las pruebas sin MySQL de contratos T01, catálogo/fechas T02, archivos T03, validación T05, cálculo T07, huellas/JSON T08, reglas T09, informes T10 y alertas T11. `npm run db:test` ejecuta exclusivamente las pruebas MySQL y exige TEST_DATABASE_URL para una base migrada cuyo nombre termine en `_test`; ver la guía T02. Incluye persistencia, validación, reglas, informes y alertas reales, con comprobaciones de historial, rollback y concurrencia. T16 debe verificar el circuito completo de importación, procesamiento y tablero.
+
+Verificación conjunta al integrar T10/T11 con T05: 54 pruebas sin MySQL y 40 con MySQL aprobadas; lint, typecheck y build predeterminado con Turbopack correctos. Las pruebas SQL usaron una base aislada con la migración T02. Esta evidencia cubre los servicios; la demostración HTTP y visual sigue pendiente de T04/T13/T14/T16.
 
 ## Trabajo en equipo
 
