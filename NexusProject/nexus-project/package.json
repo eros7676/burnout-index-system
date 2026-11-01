@@ -16,6 +16,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:test": "tsc -p tsconfig.test.json && node scripts/test.mjs --mysql",
+    "db:test:http": "tsc -p tsconfig.test.json && node .test-build/tests/importaciones.next.mysql.js",
     "rules:publish": "node scripts/rules-publish.mjs"
   },
   "dependencies": {
