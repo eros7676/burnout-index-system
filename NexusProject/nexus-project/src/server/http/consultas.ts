@@ -20,6 +20,8 @@ export async function respuesta(accion: () => Promise<unknown>) {
         : error instanceof ErrorDominio && error.codigo === "NO_ENCONTRADO"
           ? 404
           : 500;
+    // The client gets a generic body; the cause stays in the server log.
+    if (status === 500) console.error(error);
     body = {
       error: {
         codigo:
