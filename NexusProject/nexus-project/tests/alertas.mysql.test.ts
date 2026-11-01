@@ -144,7 +144,11 @@ async function crear(db: PrismaClient, opciones?: OpcionesEmpleado) {
   return { prefix, employeeId, importId: carga.importId, par, agregar };
 }
 
-async function ponerCeros(db: PrismaClient, registro: RegistroLaboral) {
+async function cambiarMetricas(
+  db: PrismaClient,
+  registro: RegistroLaboral,
+  metricas = cero,
+) {
   await db.$transaction(async (tx) => {
     const nueva = await tx.registroLaboral.create({
       data: {
@@ -152,9 +156,9 @@ async function ponerCeros(db: PrismaClient, registro: RegistroLaboral) {
         employeeId: registro.employeeId,
         sourceImportId: registro.sourceImportId,
         dataVersion: registro.dataVersion + 1,
-        fingerprint: hash(`${registro.fingerprint}/ceros`),
+        fingerprint: hash(`${registro.fingerprint}/${JSON.stringify(metricas)}`),
         supersedesRecordId: registro.recordId,
-        ...cero,
+        ...metricas,
       },
     });
     await tx.periodoEmpleado.update({
@@ -201,6 +205,32 @@ test("MySQL T11: alerta interna única para ALTO vigente", async (t) => {
         const repetida = await crearAlertaSiCorresponde(db, alta.evaluationId);
         await evaluarPeriodo(db, s.par(1), conAlerta);
         assert.equal(repetida?.alertId, informe.alerta?.alertId);
+        assert.equal(
+          await db.alerta.count({ where: { employeeId: s.employeeId } }),
+          1,
+        );
+      }),
+    );
+
+    await t.test("creaciones concurrentes devuelven la misma alerta sin fallar", () =>
+      escenario(db, async (s) => {
+        await s.agregar(0);
+        await s.agregar(1);
+        const alta = await evaluarPeriodo(db, s.par(1));
+        assert.equal(alta.nivel, "ALTO");
+        // Esperar a todas antes de limpiar, incluso si una rechaza por deadlock.
+        const resultados = await Promise.allSettled(
+          Array.from({ length: 6 }, () =>
+            crearAlertaSiCorresponde(db, alta.evaluationId),
+          ),
+        );
+        const ids = resultados.map((resultado) => {
+          if (resultado.status === "rejected") throw resultado.reason;
+          assert.ok(resultado.value);
+          assert.equal(resultado.value.vigencia, "ACTIVA");
+          return resultado.value.alertId;
+        });
+        assert.equal(new Set(ids).size, 1);
         assert.equal(
           await db.alerta.count({ where: { employeeId: s.employeeId } }),
           1,
@@ -273,7 +303,7 @@ test("MySQL T11: alerta interna única para ALTO vigente", async (t) => {
         const registro = await s.agregar(1);
         await evaluarPeriodo(db, s.par(0), conAlerta);
         const alta = await evaluarPeriodo(db, s.par(1), conAlerta);
-        await ponerCeros(db, registro);
+        await cambiarMetricas(db, registro);
         const nueva = await evaluarPeriodo(db, s.par(1), conAlerta);
         assert.equal(nueva.nivel, "BAJO");
         assert.equal(await crearAlertaSiCorresponde(db, nueva.evaluationId), null);
@@ -290,6 +320,80 @@ test("MySQL T11: alerta interna única para ALTO vigente", async (t) => {
           }),
           0,
         );
+        assert.equal(
+          await db.alerta.count({ where: { employeeId: s.employeeId } }),
+          1,
+        );
+      }),
+    );
+
+    await t.test("otro ALTO supera la alerta anterior y deja una sola ACTIVA", () =>
+      escenario(db, async (s) => {
+        await s.agregar(0);
+        const registro = await s.agregar(1);
+        const anterior = await evaluarPeriodo(db, s.par(1), conAlerta);
+        await cambiarMetricas(db, registro, {
+          horasExtra: 17,
+          diasConsecutivosSinDescanso: 16,
+          tareasActivas: 10,
+          tareasPendientes: 7,
+          tareasVencidas: 5,
+          vacacionesPendientesDias: 14,
+        });
+        const nueva = await evaluarPeriodo(db, s.par(1), conAlerta);
+        assert.equal(anterior.nivel, "ALTO");
+        assert.equal(nueva.nivel, "ALTO");
+        assert.notEqual(nueva.evaluationId, anterior.evaluationId);
+        const historica = await construirInforme(db, anterior.evaluationId);
+        const vigente = await construirInforme(db, nueva.evaluationId);
+        assert.equal(historica.alerta?.vigencia, "SUPERADA");
+        assert.equal(vigente.alerta?.vigencia, "ACTIVA");
+        assert.equal(
+          await db.alerta.count({ where: { employeeId: s.employeeId } }),
+          2,
+        );
+        assert.equal(
+          await db.alerta.count({
+            where: { employeeId: s.employeeId, vigencia: "ACTIVA" },
+          }),
+          1,
+        );
+      }),
+    );
+
+    await t.test("un ALTO histórico sin alerta no crea una alerta tardía", () =>
+      escenario(db, async (s) => {
+        await s.agregar(0);
+        const registro = await s.agregar(1);
+        const anterior = await evaluarPeriodo(db, s.par(1));
+        assert.equal(anterior.nivel, "ALTO");
+        await cambiarMetricas(db, registro);
+        await evaluarPeriodo(db, s.par(1), conAlerta);
+        assert.equal(
+          await crearAlertaSiCorresponde(db, anterior.evaluationId),
+          null,
+        );
+        assert.equal(
+          await db.alerta.count({ where: { employeeId: s.employeeId } }),
+          0,
+        );
+      }),
+    );
+
+    await t.test("publicaciones concurrentes con T08 comparten evaluación y alerta", () =>
+      escenario(db, async (s) => {
+        await s.agregar(0);
+        await s.agregar(1);
+        const resultados = await Promise.allSettled([
+          evaluarPeriodo(db, s.par(1), conAlerta),
+          evaluarPeriodo(db, s.par(1), conAlerta),
+        ]);
+        const ids = resultados.map((resultado) => {
+          if (resultado.status === "rejected") throw resultado.reason;
+          assert.equal(resultado.value.nivel, "ALTO");
+          return resultado.value.evaluationId;
+        });
+        assert.equal(new Set(ids).size, 1);
         assert.equal(
           await db.alerta.count({ where: { employeeId: s.employeeId } }),
           1,

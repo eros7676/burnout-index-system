@@ -1,7 +1,10 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import type { Alerta, Evaluacion } from "../../shared/contracts";
 import { ErrorDominio } from "../../shared/errors";
-import { guardarAlertaNueva } from "../repositories/alertas";
+import {
+  bloquearEvaluacionAlerta,
+  guardarAlertaNueva,
+} from "../repositories/alertas";
 import { evaluacionDesdeDb } from "../repositories/evaluaciones";
 import { leerAlertaEvaluacion } from "../repositories/informes";
 import { contenidoAlerta, resolverDestinatario } from "./destinatario-alerta";
@@ -20,7 +23,11 @@ async function serializable<T>(
     } catch (error) {
       if (
         !(error instanceof Prisma.PrismaClientKnownRequestError) ||
-        error.code !== "P2034" ||
+        // Las consultas SQL crudas conservan el código de deadlock de MySQL.
+        !(
+          error.code === "P2034" ||
+          (error.code === "P2010" && error.meta?.code === "1213")
+        ) ||
         intento >= 2
       )
         throw error;
@@ -82,6 +89,8 @@ export async function crearAlertaSiCorresponde(
   evaluationId: string,
 ): Promise<Alerta | null> {
   return serializable(db, async (tx) => {
+    // Serializa llamadas al mismo ID antes de adquirir locks compartidos.
+    await bloquearEvaluacionAlerta(tx, evaluationId);
     const fila = await tx.evaluacion.findUnique({
       where: { evaluationId },
       include: { periodo: { select: { evaluacionVigenteId: true } } },

@@ -19,6 +19,7 @@ const evaluacion = await evaluarPeriodo(db, par, {
 
 - Solo un nivel `ALTO` vigente inserta una fila en `Alerta`. `BAJO`, `MEDIO` e `INCOMPLETO` no insertan nada, aunque el índice supere 70.
 - La fila es única por `evaluationId`. Repetir la publicación o la función devuelve la misma alerta.
+- Las llamadas concurrentes al mismo ID se serializan con un bloqueo exclusivo antes de leer la evaluación y la alerta. Los conflictos `P2034` y los deadlocks MySQL `1213` expuestos como `P2010` reintentan la transacción completa, con un máximo de tres intentos; otros errores se propagan.
 - `canal` queda en `INTERNO` y `estadoEnvio` en `NO_APLICA`.
 - Un técnico avisa a su Team Lead (`EMP-001` → `TL-01`). Un Team Lead avisa a Gerencia (`TL-01` → `GER-01`).
 - Si no hay ese responsable, la alerta se guarda con `destinatarioId` null y `motivoDestinatario` `SIN_DESTINATARIO`. Esa fila es la incidencia visible.
@@ -41,3 +42,7 @@ npm run build
 ```
 
 `alertas.test.ts` entra en `npm test`. `alertas.mysql.test.ts` entra en `npm run db:test` y exige `TEST_DATABASE_URL` de una base cuyo nombre termine en `_test`.
+
+Las pruebas cubren seis creaciones concurrentes de la misma alerta, publicaciones concurrentes con T08, reemplazo ALTO por ALTO, ausencia de alertas tardías para evaluaciones históricas, rollback y los reintentos acotados de deadlock. La regresión concurrente reproduce `P2010`/`1213` con la implementación anterior.
+
+Verificación de la corrección: lint, typecheck y build predeterminado con Turbopack correctos; 45 pruebas sin MySQL y 39 con MySQL aprobadas. La suite SQL se ejecutó sobre una base aislada con la migración T02, sin modificar la base de la aplicación.

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { Prisma, type PrismaClient } from "@prisma/client";
 import { evaluacionAltaMock } from "../src/shared/mocks";
 import {
   causasDe,
@@ -7,6 +8,56 @@ import {
   resolverDestinatario,
 } from "../src/server/services/destinatario-alerta";
 import { recomendacionesDe } from "../src/server/services/recomendaciones";
+import { crearAlertaSiCorresponde } from "../src/server/services/alertas";
+
+function errorPrisma(code: string, codigoMysql?: string) {
+  return new Prisma.PrismaClientKnownRequestError("Fallo de prueba", {
+    code,
+    clientVersion: Prisma.prismaVersion.client,
+    meta: codigoMysql ? { code: codigoMysql } : undefined,
+  });
+}
+
+/** Simula resultados transaccionales para probar qué errores se reintentan. */
+function clienteConFallos(fallos: unknown[]) {
+  let intentos = 0;
+  return {
+    db: {
+      $transaction: async () => {
+        const fallo = fallos[intentos++];
+        if (fallo) throw fallo;
+        return null;
+      },
+    } as unknown as PrismaClient,
+    intentos: () => intentos,
+  };
+}
+
+test("T11 reintenta conflictos Prisma y deadlocks MySQL de SQL crudo", async () => {
+  for (const fallo of [errorPrisma("P2034"), errorPrisma("P2010", "1213")]) {
+    const cliente = clienteConFallos([fallo]);
+    assert.equal(await crearAlertaSiCorresponde(cliente.db, "evaluacion"), null);
+    assert.equal(cliente.intentos(), 2);
+  }
+});
+
+test("T11 no reintenta otros fallos y limita los reintentos de deadlock", async () => {
+  for (const fallo of [errorPrisma("P2010", "1064"), new Error("FALLO")]) {
+    const cliente = clienteConFallos([fallo]);
+    await assert.rejects(
+      crearAlertaSiCorresponde(cliente.db, "evaluacion"),
+      (error) => error === fallo,
+    );
+    assert.equal(cliente.intentos(), 1);
+  }
+  const fallo = errorPrisma("P2010", "1213");
+  const cliente = clienteConFallos([fallo, fallo, fallo]);
+  await assert.rejects(
+    crearAlertaSiCorresponde(cliente.db, "evaluacion"),
+    (error) => error === fallo,
+  );
+  assert.equal(cliente.intentos(), 3);
+});
 
 const teamLead = {
   employeeId: "TL-01",

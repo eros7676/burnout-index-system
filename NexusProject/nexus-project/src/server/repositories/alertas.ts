@@ -12,23 +12,28 @@ export type AlertaNueva = {
   sugerencias: string[];
 };
 
-/**
- * Inserta la alerta interna de una evaluación si todavía no existe.
- * El bloqueo de la evaluación evita dos filas cuando dos procesos llegan juntos.
- */
-export async function guardarAlertaNueva(
+/** Tomar antes de las lecturas compartidas para no convertir sus locks a exclusivos. */
+export async function bloquearEvaluacionAlerta(
   tx: Prisma.TransactionClient,
-  datos: AlertaNueva,
-): Promise<Alerta> {
+  evaluationId: string,
+): Promise<void> {
   const bloqueo = await tx.$queryRaw<{ evaluationId: string }[]>`
     SELECT evaluationId FROM Evaluacion
-    WHERE evaluationId = ${datos.evaluationId} FOR UPDATE`;
+    WHERE evaluationId = ${evaluationId} FOR UPDATE`;
   if (bloqueo.length !== 1) {
     throw new ErrorDominio(
       "NO_ENCONTRADO",
       "No existe una evaluación con ese identificador.",
     );
   }
+}
+
+/** Inserta una alerta única; también protege a los adaptadores transaccionales de T08. */
+export async function guardarAlertaNueva(
+  tx: Prisma.TransactionClient,
+  datos: AlertaNueva,
+): Promise<Alerta> {
+  await bloquearEvaluacionAlerta(tx, datos.evaluationId);
   const existente = await leerAlertaEvaluacion(tx, datos.evaluationId);
   if (existente) return existente;
   await tx.alerta.create({
