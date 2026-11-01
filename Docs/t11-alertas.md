@@ -4,7 +4,7 @@ Crea la alerta de CU03 cuando la evaluación vigente es `ALTO`. No recalcula el 
 
 ## Estado de integración
 
-El servicio está implementado y verificado con T08/T10 y MySQL, incluida la publicación atómica, el rollback y la concurrencia. Esta rama local T04 agrega la conexión desde confirmación y reintento HTTP, con pruebas de integración. La consulta y visualización corresponden a T13/T14; el circuito completo con interfaz sigue pendiente de T16.
+El servicio está implementado y verificado con T08/T10 y MySQL, incluida la publicación atómica, el rollback y la concurrencia. T04 (PR #11) agrega la conexión desde confirmación y reintento HTTP, con pruebas de integración. T13/T14 cubren consulta y visualización, y T16 verifica el circuito completo con interfaz.
 
 ## Uso
 
@@ -43,12 +43,12 @@ La confirmación de CU01 inserta registros y job en una transacción. Después, 
 Criterios de aceptación cubiertos por las pruebas locales de T04, sobre una base aislada con migración y seed:
 
 - Validar y confirmar por HTTP `templates/ejemplo-dos-semanas.csv`: dos registros y dos evaluaciones, primera INCOMPLETO con 83,71 y segunda ALTO con 91,21; job COMPLETADO.
-- Comprobar una sola alerta ACTIVA de la segunda evaluación, dirigida a TL-01, con canal INTERNO y estado NO_APLICA. El informe debe leer esa misma alerta. Hasta disponer de T13, las aserciones pueden consultar Prisma y `construirInforme` desde la prueba de integración.
+- Comprobar una sola alerta ACTIVA de la segunda evaluación, dirigida a TL-01, con canal INTERNO y estado NO_APLICA. El informe debe leer esa misma alerta.
 - Repetir el mismo `importId`: devolver el resultado original sin nuevos registros, evaluaciones ni alertas. Revalidar el archivo idéntico como otra carga debe omitir sus filas y confirmar sin trabajo nuevo.
 - Inyectar un fallo de T11 desde la prueba de integración: conservar la carga CONFIRMADA, dejar el job FALLIDO y revertir la publicación del par fallido. Reintentar por la API debe terminar el job sin duplicar resultados ni alertas.
 - Comprobar que T04 procesa también los sucesores inmediatos afectados y usa el mismo adaptador al reintentar. Si una evaluación sustituye otra, la alerta antigua queda SUPERADA y solo nace otra ACTIVA si la nueva es ALTO.
 
-En T10/T11, la comprobación del callback desde HTTP se registró como dependencia de T04. Esta rama aporta esa evidencia local; no implica integración remota ni aceptación del tablero.
+En T10/T11, la comprobación del callback desde HTTP se registró como dependencia de T04. T04 aporta esa evidencia (PR #11).
 
 ## Verificación
 

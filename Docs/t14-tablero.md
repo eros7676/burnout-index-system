@@ -1,6 +1,6 @@
 # T14 · Tablero web con índices, factores y alertas
 
-Implementación local en `t14-feature`, creada desde `main` con T13 integrado. `/` y `/home` reemplazan la maqueta por las consultas reales de T13. Los mocks se usan exclusivamente en las pruebas. No cambia contratos, motor, persistencia ni reglas.
+Integrado en `main` (PR #14); se desarrolló en `t14-feature` desde `main` con T13 integrado. `/` y `/home` reemplazan la maqueta por las consultas reales de T13. Los mocks se usan exclusivamente en las pruebas. No cambia contratos, motor, persistencia ni reglas.
 
 ## Uso
 
@@ -48,10 +48,10 @@ npm run test:ui
 
 La prueba Chromium T06/T14 siembra el catálogo y ejecuta CSV inválido/cancelación, CSV válido, tablero con índices/niveles persistidos, detalle/ranking/persistencia, alerta para TL-01, filtro semanal/resumen y reimportación sin duplicados. Limpia solo sus importaciones/resultados. No modifica `.env` ni la base de la aplicación.
 
-T16 conserva la aceptación integral de todos los escenarios P0, rendimiento, usabilidad y portabilidad entre navegadores. Esta implementación local no equivale a revisión humana ni integración remota.
+T16 conserva la aceptación integral de todos los escenarios P0, rendimiento, usabilidad y portabilidad entre navegadores.
 
 ## Evidencia local · 01/11/2026
 
 En `t14-feature`, desde `main` (`c678a1a`), con Node 24.20.0, Next.js 16.4.2, Chromium y MySQL 8.0.46 descartable en puerto 3314: lint, typecheck, build Turbopack y validación Prisma correctos; 60 pruebas sin MySQL, 65 con MySQL, nueve rutas HTTP reales y 15 escenarios de navegador aprobados. El build final y la suite de navegador incluyen la validación nativa de IDs y el diseño móvil. Se inspeccionaron capturas de escritorio, móvil (390 px) y tablero con datos reales; sin desbordes de página.
 
-El circuito real verificó 83,71 INCOMPLETO / 91,21 ALTO, ranking HE→DS→CT→VP, persistencia, destinatario TL-01, NO_APLICA y repetición sin duplicados. Al finalizar quedaron cero registros laborales, evaluaciones, alertas y jobs de prueba; se detuvo el contenedor. Las suites que usan la misma base se ejecutan en secuencia. No se modificaron `.env`, la base de la aplicación ni GitHub; no se hizo commit ni push.
+El circuito real verificó 83,71 INCOMPLETO / 91,21 ALTO, ranking HE→DS→CT→VP, persistencia, destinatario TL-01, NO_APLICA y repetición sin duplicados. Al finalizar quedaron cero registros laborales, evaluaciones, alertas y jobs de prueba; se detuvo el contenedor. Las suites que usan la misma base se ejecutan en secuencia. Evidencia registrada antes del merge: no se modificaron `.env` ni la base de la aplicación.

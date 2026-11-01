@@ -69,7 +69,9 @@ async function main() {
         `Versión ${resultado.version} publicada desde ${resultado.effectiveFrom}. Trabajo ${resultado.jobId}: ${resultado.semanas} semana(s), estado ${resultado.estado}.`,
       );
       if (resultado.estado === "PENDIENTE") {
-        console.log("El recálculo queda pendiente hasta T07 y T08.");
+        console.log(
+          `Para recalcular, consulte el trabajo ${resultado.jobId} en /importaciones y use «Reintentar procesamiento».`,
+        );
       }
     } finally {
       await prisma.$disconnect();

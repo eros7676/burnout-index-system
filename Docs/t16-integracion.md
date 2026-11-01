@@ -1,8 +1,8 @@
 # T16 · Integración y aceptación P0
 
-Rama local `t16-feature`, creada desde `main` con T14 integrado (`40c43a0`). La aceptación ejecuta el circuito CSV → validación → confirmación → evaluación → informe → alerta → tablero sobre el build de producción y MySQL real. No agrega endpoints de pruebas ni modifica los contratos, el motor o los fixtures T03.
+Integrado en `main` (PR #15); se desarrolló en `t16-feature` desde `main` con T14 integrado (`40c43a0`). La aceptación ejecuta el circuito CSV → validación → confirmación → evaluación → informe → alerta → tablero sobre el build de producción y MySQL real. No agrega endpoints de pruebas ni modifica los contratos, el motor o los fixtures T03.
 
-**Estado: falla de rendimiento corregida y verificación automatizada P0 aprobada.** La carga máxima de 1.000 filas/5 MiB pasó con el límite original de 60 s en Chrome y Firefox; `verify:p0` terminó correctamente. RNF03 sigue requiriendo una prueba con operador humano y la revisión de la tarea permanece pendiente. No se relajaron los límites ni se omitieron pruebas. La evidencia inicial fallida se conserva como referencia histórica y la medición corregida figura al final.
+**Estado: falla de rendimiento corregida y verificación automatizada P0 aprobada.** La carga máxima de 1.000 filas/5 MiB pasó con el límite original de 60 s en Chrome y Firefox; `verify:p0` terminó correctamente. RNF03 sigue requiriendo una prueba con operador humano; la revisión de código se cerró con el merge de PR #15. No se relajaron los límites ni se omitieron pruebas. La evidencia inicial fallida se conserva como referencia histórica y la medición corregida figura al final.
 
 ## Instalación limpia y verificación
 
@@ -99,4 +99,4 @@ Mediciones finales de validación más procesamiento, incluyendo interacción de
 
 La evidencia final está en `.t16-clean/test-results/t16-results.json`, con capturas y adjuntos en `test-results/acceptance/`. El máximo sigue usando métricas cero y espacios normalizables, con un operador local: las mediciones no certifican otros equipos, distribuciones de factores ni carga concurrente. Los objetivos y las pruebas no se modificaron para obtener el resultado.
 
-Al finalizar se comprobaron cero importaciones, registros laborales, evaluaciones, alertas y jobs en la base de pruebas, conservando solo v1. Se eliminó la base separada de diagnóstico y se detuvo el contenedor. Los cambios de esta corrección quedan locales en `t16-feature`, sin commit ni push. Para cerrar la aceptación humana T16 siguen pendientes el protocolo RNF03 y la revisión.
+Al finalizar se comprobaron cero importaciones, registros laborales, evaluaciones, alertas y jobs en la base de pruebas, conservando solo v1. Se eliminó la base separada de diagnóstico y se detuvo el contenedor. Esta corrección se integró en `main` con PR #15. Para cerrar la aceptación humana T16 sigue pendiente el protocolo RNF03.

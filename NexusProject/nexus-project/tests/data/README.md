@@ -16,7 +16,7 @@ Las semanas comienzan el 28/09, 05/10 y 12/10 de 2026. Fijar el reloj de prueba 
 - `EMP-020` a `EMP-045`: INCOMPLETO → BAJO → BAJO.
 - `TL-01` a `TL-04`: límites 39,99 / 40,00 / 69,99 / 70,00; la segunda semana queda BAJO / MEDIO / MEDIO / ALTO, respectivamente.
 
-`resultados_esperados.csv` tiene una fila por empleado/semana de la plantilla. Usa CU02 y reglas v1, sin redondear pasos intermedios; al final aplica `Math.round((I + Number.EPSILON) * 100) / 100`. `EMP-029` del 05/10 da 15,87 con las operaciones `number` de JavaScript del contrato. Son referencias para T07, no resultados de un motor ya implementado.
+`resultados_esperados.csv` tiene una fila por empleado/semana de la plantilla. Usa CU02 y reglas v1, sin redondear pasos intermedios; al final aplica `Math.round((I + Number.EPSILON) * 100) / 100`. `EMP-029` del 05/10 da 15,87 con las operaciones `number` de JavaScript del contrato. Son referencias contractuales; el motor T07 las reproduce en `calculo.test.ts`.
 
 ## Preparación y resultado de cada archivo
 
@@ -31,4 +31,4 @@ Las semanas comienzan el 28/09, 05/10 y 12/10 de 2026. Fijar el reloj de prueba 
 - `invalido_columna_faltante.csv` / `invalido_columna_desconocida.csv`: rechazo por formato de encabezados.
 - `invalido_fuera_cobertura.csv`: base con seed; `GER-01`, existente y fuera de cobertura, produce EMPLEADO_FUERA_COBERTURA. `EMP-999` en el archivo de varios errores cubre EMPLEADO_NO_EXISTE.
 
-Los resultados HTTP, persistencia, reevaluación y alertas son criterios para T04/T07/T08/T11. Las pruebas actuales verifican archivos y catálogo, sin implementar esos módulos ni cargar datos en MySQL.
+Los resultados HTTP, persistencia, reevaluación y alertas son criterios para T04/T07/T08/T11. Las suites MySQL y de aceptación los verifican sobre una base `_test` aislada.

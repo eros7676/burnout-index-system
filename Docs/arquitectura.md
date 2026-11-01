@@ -16,7 +16,7 @@ La raíz ejecutable de Next.js es NexusProject/nexus-project. Se conserva para a
 | src/components/ | Componentes React; dashboard-home consume las consultas T13 (T14). |
 | prisma/ | Esquema, migración inicial y seed T02. |
 | templates/ | Encabezado CSV y ejemplo contractual. |
-| tests/ | Contratos, catálogo, fixtures, validación, cálculo, reglas, informes y alertas; pruebas MySQL separadas y circuito completo pendiente. |
+| tests/ | Contratos, catálogo, fixtures, validación, cálculo, reglas, informes y alertas; pruebas MySQL separadas. El circuito completo está en `acceptance/` (T16) y las pruebas de UI en `e2e/`. |
 
 ## API acordada
 

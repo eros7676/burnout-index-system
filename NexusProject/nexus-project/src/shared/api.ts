@@ -24,7 +24,7 @@ import type {
   ReglasDTO,
 } from "./contracts";
 
-/** Catálogo acordado; no implica que existan Route Handlers. */
+/** Agreed catalog; each entry is served by a Route Handler under src/app/api. */
 export const API_ROUTES = {
   consultarSesionDemo: { method: "GET", path: "/api/demo/sesion" },
   seleccionarUsuarioDemo: { method: "POST", path: "/api/demo/sesion" },

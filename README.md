@@ -4,7 +4,7 @@ Prototipo para identificar indicadores de posible sobrecarga laboral. Next.js + 
 
 ## Estado y referencias
 
-Existe una base de Next.js con **tablero conectado a resultados persistidos**, disponible en / y /home (T14, rama local `t14-feature`). T02 agrega el esquema Prisma, migración inicial, conexión y seed. Están implementados los servicios de validación CSV y duplicados T05, cálculo T07, persistencia de evaluaciones T08, reglas versionadas T09, informes T10 y alertas internas T11. T04 agrega la API de importación/confirmación y los jobs recuperables. T06 conecta la pantalla CSV en /importaciones con validación, vista previa, confirmación, cancelación y recuperación. T13 expone las consultas HTTP de evaluaciones, informe, resumen y alertas. T14 las consume con filtros, paginación, estados e informe individual. No confundir carpetas reservadas con funcionalidades terminadas.
+Existe una base de Next.js con **tablero conectado a resultados persistidos**, disponible en / y /home (T14, integrado en `main`). T02 agrega el esquema Prisma, migración inicial, conexión y seed. Están implementados los servicios de validación CSV y duplicados T05, cálculo T07, persistencia de evaluaciones T08, reglas versionadas T09, informes T10 y alertas internas T11. T04 agrega la API de importación/confirmación y los jobs recuperables. T06 conecta la pantalla CSV en /importaciones con validación, vista previa, confirmación, cancelación y recuperación. T13 expone las consultas HTTP de evaluaciones, informe, resumen y alertas. T14 las consume con filtros, paginación, estados e informe individual. No confundir carpetas reservadas con funcionalidades terminadas.
 
 T01 incorpora contratos TypeScript, catálogo HTTP, errores de dominio, mocks tipados y pruebas base sin base de datos. La guía de uso está en [Docs/t01-base.md](Docs/t01-base.md). Los mocks no implementan los endpoints ni el motor del índice.
 
@@ -107,7 +107,7 @@ La evidencia local de T04 y sus comandos reproducibles están en [la guía de im
 
 ## Trabajo en equipo
 
-T16 agrega `npm run verify:p0`: verificación secuencial desde migración/seed hasta aceptación con MySQL real, Chrome y Firefox. Exige TEST_DATABASE_URL de una base exclusiva vacía terminada en `_test`. No usar la base de la aplicación. Ver [guía T16](Docs/t16-integracion.md) para instalación limpia, comandos, mediciones y protocolo humano de usabilidad. Los cambios de esta tarea permanecen locales en `t16-feature`.
+T16 agrega `npm run verify:p0`: verificación secuencial desde migración/seed hasta aceptación con MySQL real, Chrome y Firefox. Exige TEST_DATABASE_URL de una base exclusiva vacía terminada en `_test`. No usar la base de la aplicación. Ver [guía T16](Docs/t16-integracion.md) para instalación limpia, comandos, mediciones y protocolo humano de usabilidad. Integrado en `main` (PR #15); queda pendiente solo la prueba humana RNF03.
 
 En la verificación histórica de T16, la corrección de rendimiento logró lo siguiente: el lote máximo de 1.000 filas/5 MiB pasó en **53,75 s en Chrome y 53,68 s en Firefox**, frente a 106–110 s iniciales y con el límite original de 60 s. `npm run verify:p0` aprobó todas las comprobaciones automatizadas. La confirmación usa bloques atómicos y el procesamiento reduce consultas/transacciones manteniendo historial, alertas y recuperación. Ver [evidencia T16](Docs/t16-integracion.md). RNF03 sigue requiriendo una prueba con operador humano; la aceptación humana de T16 no se da por cerrada.
 
