@@ -1,6 +1,20 @@
 // Contrato del prototipo. Fuente: DOCUMENTACION, pestaña «Contratos y pruebas».
 // Estos tipos no validan datos en ejecución; CU01 y CU02 deben hacerlo en servidor.
 export type FechaISO = string; // YYYY-MM-DD validado en servidor
+export type EventoAuditoria = {
+  eventoId: string;
+  accion: string;
+  entidad: string;
+  recursoId: string;
+  actorId: string;
+  detalles: Record<string, unknown>;
+  createdAt: string;
+};
+export type FiltrosAuditoria = {
+  accion?: string; entidad?: 'IMPORTACION' | 'REGLAS';
+  recursoId?: string; actorId?: string; desde?: string; hasta?: string;
+  page?: number; pageSize?: number;
+};
 export type Factor = 'HE' | 'DS' | 'CT' | 'VP';
 export type Nivel = 'BAJO' | 'MEDIO' | 'ALTO' | 'INCOMPLETO';
 export type EstadoJob =

@@ -2,6 +2,21 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model EventoAuditoria {
+  eventoId  String   @id @default(cuid()) @db.VarChar(36)
+  clave     String   @unique @db.VarChar(180)
+  accion    String   @db.VarChar(40)
+  entidad   String   @db.VarChar(20)
+  recursoId String   @db.VarChar(64)
+  actorId   String   @db.VarChar(64)
+  detalles  Json
+  createdAt DateTime @default(now()) @db.DateTime(3)
+
+  @@index([createdAt, eventoId])
+  @@index([entidad, recursoId, createdAt])
+  @@index([actorId, createdAt])
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")

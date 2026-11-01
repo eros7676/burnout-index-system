@@ -1,5 +1,7 @@
 # Pruebas de servicios, persistencia e integración
 
+T15b agrega `auditoria.test.ts` y `auditoria.mysql.test.ts`, y amplía la prueba HTTP del build con la consulta paginada de eventos. Cubre transiciones, privacidad, idempotencia, rollback y persistencia. Ver [guía T15b](../../../Docs/t15b-auditoria.md) para el estado de ejecución: SQL requiere Docker/MySQL disponible; compilar estas pruebas no equivale a ejecutarlas.
+
 T12 agrega `notificaciones.test.ts`, `notificaciones.mysql.test.ts` y `e2e/notificaciones.spec.ts`. Amplía las pruebas HTTP del build y el escenario real de navegador con preparación persistida, recuperación tras recarga, fallo y reintento exitoso sin duplicar la alerta. Ver [guía T12](../../../Docs/t12-notificaciones.md). La limpieza de esas pruebas elimina primero sus intentos por la relación restrictiva con la alerta.
 
 T16 agrega `acceptance/` y `playwright.acceptance.config.ts`: cuatro escenarios reales por navegador (Chrome/Firefox), sin interceptar la API. `npm run verify:p0` ejecuta todas las comprobaciones en secuencia y exige una base TEST_DATABASE_URL exclusiva; `npm run test:acceptance` requiere además el build previo. Reportes y mediciones en `test-results/`. Ver [guía T16](../../../Docs/t16-integracion.md).

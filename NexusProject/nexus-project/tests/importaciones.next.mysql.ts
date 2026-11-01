@@ -233,6 +233,24 @@ async function comprobarNext() {
       "T12: historial, pendiente, fallo, reintento e idempotencia verificados por HTTP real.",
     );
     const repetida = await validar();
+    const auditoria = await consultar(
+      `auditoria?entidad=IMPORTACION&recursoId=${imports[0]}`,
+    );
+    assert.ok(
+      auditoria.items.some(
+        (e: { accion: string }) => e.accion === "IMPORTACION_VALIDADA",
+      ),
+    );
+    assert.ok(
+      auditoria.items.some(
+        (e: { accion: string }) => e.accion === "IMPORTACION_CONFIRMADA",
+      ),
+    );
+    assert.equal(
+      (await fetch(`${base}/api/auditoria?pageSize=101`)).status,
+      400,
+    );
+    console.log("T15b: consulta HTTP de auditoría de importación verificada.");
     assert.equal(repetida.omitidas, 2);
     const sinTrabajo = await confirmar(repetida.importId);
     assert.equal(sinTrabajo.insertados, 0);

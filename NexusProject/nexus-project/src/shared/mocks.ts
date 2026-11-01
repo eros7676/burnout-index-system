@@ -240,6 +240,7 @@ export const intentoNotificacionMock = {
   completedAt: null,
 } satisfies import("./contracts").IntentoNotificacion;
 export const cuerposExitoMock = {
+  listarAuditoria: { items: [], total: 0, page: 1, pageSize: 50 },
   validarImportacion: vistaPreviaMock,
   confirmarImportacion: resultadoImportacionMock,
   cancelarImportacion: { importId: "mock-import-1", status: "CANCELADA" },

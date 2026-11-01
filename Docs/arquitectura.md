@@ -42,6 +42,8 @@ T12 agrega tres operaciones P1: GET/POST `/api/alertas/[alertId]/notificaciones`
 
 ## Reservas para etapas posteriores
 
+T15b incorpora `GET /api/auditoria` y `EventoAuditoria`: importación y reglas registran las transiciones con sus eventos en la misma transacción. Ver [guía T15b](t15b-auditoria.md). La reserva de auditoría no representa ya ausencia total de funcionalidad; la consulta entregada es HTTP.
+
 Login/auth, audit, rules-config, employees, my-data e integrations se conservan como reservas. No bloquean P0. Eliminar archivos .gitkeep no equivale a eliminar una funcionalidad: las reservas antiguas de API se reemplazaron por los nombres acordados.
 
 No existe autenticación implementada por usar un grupo de rutas llamado (dashboard). P0 solo se usa localmente con datos ficticios.

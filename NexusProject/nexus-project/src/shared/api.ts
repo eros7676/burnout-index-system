@@ -1,5 +1,7 @@
 import type {
   Alerta,
+  EventoAuditoria,
+  FiltrosAuditoria,
   ApiError,
   ErrorValidacionImportacion,
   FilaTablero,
@@ -19,6 +21,7 @@ import type {
 
 /** Catálogo acordado; no implica que existan Route Handlers. */
 export const API_ROUTES = {
+  listarAuditoria: { method: "GET", path: "/api/auditoria" },
   validarImportacion: { method: "POST", path: "/api/importaciones/validar" },
   confirmarImportacion: {
     method: "POST",
@@ -54,6 +57,7 @@ export const API_ROUTES = {
 type CuerpoVacio = Record<string, never>;
 /** File se envía como campo `file` de multipart/form-data, nunca como JSON. */
 export type PeticionesApi = {
+  listarAuditoria: { query?: FiltrosAuditoria; body?: undefined };
   validarImportacion: { file: File };
   confirmarImportacion: { params: { id: string }; body: CuerpoVacio };
   cancelarImportacion: { params: { id: string }; body?: undefined };
@@ -74,6 +78,7 @@ export type PeticionesApi = {
   };
 };
 export type CuerposExito = {
+  listarAuditoria: Pagina<EventoAuditoria>;
   validarImportacion: VistaPrevia;
   confirmarImportacion: ResultadoImportacion;
   cancelarImportacion: ResultadoCancelacion;

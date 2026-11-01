@@ -21,6 +21,7 @@ T02 prepara la persistencia MySQL del P0 y sus pruebas de integración. La guía
 - [Guía T10](Docs/t10-informes.md)
 - [Guía T11](Docs/t11-alertas.md)
 - [Guía T12: correo simulado e intentos](Docs/t12-notificaciones.md)
+- [Guía T15b: auditoría de importaciones y reglas](Docs/t15b-auditoria.md)
 - [Guía T05: validaciones CSV y duplicados](Docs/t05-validaciones.md)
 - [Guía T04: API CSV, confirmación y recuperación](Docs/t04-importaciones.md)
 - [Guía T06: pantalla CSV y pruebas de navegador](Docs/t06-pantalla-carga.md)

@@ -179,6 +179,8 @@ Listo cuando: las pruebas bloquean a un usuario sin permiso y la consulta de un 
 
 ### T15b · Auditoría de importaciones y reglas
 
+Implementación local en `t15-feature`, desde T12: eventos transaccionales y consulta HTTP paginada con filtros. Ver [guía T15b](t15b-auditoria.md) para alcance y estado real de verificación. No incluye los permisos T15a.
+
 Responsable: Francisco + Santiago. Depende de: T02, T04, T09.
 
 Ampliar eventos y consultas de auditoría para validaciones rechazadas, cancelación, confirmación y cambios de reglas, versiones y usuario. Los metadatos de carga, los snapshots y las versiones ya son P0: T15b no los posterga. Los logs no guardan contraseñas ni datos innecesarios.
