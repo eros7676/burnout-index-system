@@ -99,6 +99,8 @@ Listo cuando: hay tests de BAJO, MEDIO, ALTO e INCOMPLETO, pico aislado, la mism
 
 ### T06 · Pantalla de carga y previsualización
 
+Implementada en `t06-feature`: pantalla `/importaciones` conectada a T04, con errores por fila, vencimiento, confirmación/cancelación y consulta/reintento/recuperación de jobs. Ver [guía T06 y pruebas de navegador](t06-pantalla-carga.md). La aceptación del circuito con tablero sigue en T16.
+
 Responsable: Alfonso + Francisco. Depende de: T01 y el contrato de T04.
 
 Desarrollar la interfaz Next.js para seleccionar el CSV, validar, mostrar la vista previa, los errores por fila y los botones Confirmar y Cancelar. Contemplar carga, vacío y fallo. Conectar la vista al endpoint real. El navegador no calcula ni guarda por su cuenta.

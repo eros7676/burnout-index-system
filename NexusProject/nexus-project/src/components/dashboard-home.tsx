@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const navigation = [
   { icon: "space_dashboard", label: "Resumen", active: true },
   { icon: "group", label: "Personas", count: "50" },
@@ -241,6 +243,7 @@ export default function DashboardHomeView() {
 
           <nav className="nav-list" aria-label="Secciones">
             {navigation.map((item) => (
+              item.label === "Importación de datos" ? <Link className="nav-item" key={item.label} href="/importaciones"><span className="nav-item-label"><Icon>{item.icon}</Icon><span>{item.label}</span></span></Link> :
               <div
                 className={`nav-item${item.active ? " active" : ""}`}
                 key={item.label}
@@ -272,7 +275,7 @@ export default function DashboardHomeView() {
           <div className="topbar-actions">
             <span className="topbar-date"><Icon>calendar_month</Icon> Octubre 2024 <Icon>arrow_drop_down</Icon></span>
             <span className="topbar-system"><Icon>memory</Icon> Motor v1.4.2 · 24/10/2024 09:30 hs</span>
-            <span className="button-visual"><Icon>file_upload</Icon> Importar datos</span>
+            <Link className="button-visual" href="/importaciones"><Icon>file_upload</Icon> Importar datos</Link>
           </div>
         </header>
 

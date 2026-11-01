@@ -20,6 +20,8 @@ La raíz ejecutable de Next.js es NexusProject/nexus-project. Se conserva para a
 
 ## API acordada
 
+T06 agrega `/importaciones`, enlazada desde la maqueta, con un componente cliente y transporte HTTP en `src/client/importaciones-api.ts`. Consume las cinco rutas T04 sin acceder a Prisma ni calcular índices en el navegador. Ver [guía T06](t06-pantalla-carga.md).
+
 | Método | Ruta | Operación |
 | --- | --- | --- |
 | POST | /api/importaciones/validar | CSV → vista previa temporal |
