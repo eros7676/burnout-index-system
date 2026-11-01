@@ -6,6 +6,16 @@ import {
 } from "../repositories/consultas";
 import type { Consulta } from "./filtros-consultas";
 
+/** Mean of two-decimal indices, summed in integer hundredths so halves round up exactly. */
+export function promedioIndices(indices: number[]): number | null {
+  if (!indices.length) return null;
+  const centesimos = indices.reduce(
+    (sum, indice) => sum + Math.round(indice * 100),
+    0,
+  );
+  return Math.round(centesimos / indices.length) / 100;
+}
+
 export async function consultarResultados(
   db: PrismaClient,
   filtros: Consulta,
@@ -35,13 +45,7 @@ export async function consultarResultados(
           conteo,
           porcentajes,
           noProcesados: resultados.length - vigentes.length,
-          promedioIndice: vigentes.length
-            ? Math.round(
-                (vigentes.reduce((sum, f) => sum + f.indice!, 0) /
-                  vigentes.length) *
-                  100,
-              ) / 100
-            : null,
+          promedioIndice: promedioIndices(vigentes.map((f) => f.indice!)),
           muestraPromedio: vigentes.length,
         };
         return resumen;

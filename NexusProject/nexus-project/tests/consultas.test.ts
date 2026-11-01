@@ -6,6 +6,7 @@ import {
   ErrorConsulta,
 } from "../src/server/services/filtros-consultas";
 import { crearHttpConsultas } from "../src/server/http/consultas";
+import { promedioIndices } from "../src/server/services/consultas";
 const request = (query = "") =>
   new Request(`http://localhost/api/evaluaciones${query}`);
 
@@ -83,4 +84,11 @@ test("T13: fallos inesperados no filtran detalles técnicos", async () => {
     JSON.stringify(await response.json()).includes("privados"),
     false,
   );
+});
+
+test("T13: el promedio del resumen redondea mitades hacia arriba sin error binario", () => {
+  assert.equal(promedioIndices([]), null);
+  assert.equal(promedioIndices([83.71, 91.21]), 87.46);
+  assert.equal(promedioIndices([40, 40.01]), 40.01);
+  assert.equal(promedioIndices([40.14, 40.15]), 40.15);
 });
