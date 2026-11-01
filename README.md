@@ -27,6 +27,8 @@ T03 incorpora la plantilla de 138 filas para 49 personas evaluables, archivos de
 
 T07 implementa `calcularEvaluacion`: fórmula, ranking, clasificación pura y persistencia semanal matemática, sin acceso a base de datos. Ver [guía T07](Docs/t07-calculo.md). T08 agrega persistencia de evaluaciones, snapshots, historial, vigencia, reintentos y protección frente a cálculos obsoletos; ver [guía T08](Docs/t08-evaluaciones.md). T10 arma el informe individual desde esa evaluación guardada, sin recalcular ni crear alertas; ver [guía T10](Docs/t10-informes.md). T11 crea la alerta interna única cuando el nivel vigente es ALTO; ver [guía T11](Docs/t11-alertas.md). La integración HTTP corresponde a las tarjetas siguientes.
 
+T10 y T11 se integran a `main` como servicios implementados y verificados con T08 y MySQL. Su aceptación en servidor permite comenzar T04; la demostración de punta a punta sigue pendiente. T04 debe publicar con `alPublicar: alPublicarAlerta` y verificar la creación de alertas desde la confirmación HTTP; el [plan de integración T04](Docs/t11-alertas.md#integración-pendiente-de-t04) detalla los criterios. T13/T14 deben exponer y mostrar los resultados, y T16 verificar el circuito completo.
+
 ## Alcance
 
 | Etapa | Incluye |

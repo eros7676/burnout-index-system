@@ -33,3 +33,7 @@ T16 debe registrar evidencia de los RNF01–RNF07 según [Contratos y pruebas, s
 ## T11
 
 `alertas.test.ts` cubre destinatarios, incidencia sin responsable, causas, sugerencias y reintentos acotados de deadlock. `alertas.mysql.test.ts` verifica creación e idempotencia reales, seis creaciones concurrentes, publicación concurrente con T08, reemplazo ALTO por ALTO o BAJO, rechazo de alertas tardías para evaluaciones históricas y rollback. Se ejecuta con `npm run db:test`; ver [guía T11](../../../Docs/t11-alertas.md).
+
+## Integración HTTP pendiente de T04
+
+Las suites T10/T11 prueban servicios con MySQL y pasan explícitamente `alPublicarAlerta` al publicar. Falta una prueba que recorra las rutas de T04 y compruebe que el procesamiento y el reintento usan ese adaptador. Los escenarios y resultados esperados están en el [plan de integración T04](../../../Docs/t11-alertas.md#integración-pendiente-de-t04). Esa evidencia se agrega al implementar T04; la API de consultas y la visualización se verifican después con T13/T14/T16.
