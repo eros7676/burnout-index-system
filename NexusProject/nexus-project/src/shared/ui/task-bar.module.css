@@ -1,0 +1,60 @@
+/* Neutrals only: tasks are a condition, not a level, so no level color here. */
+.part[data-parte="vencidas"],
+.key[data-parte="vencidas"] {
+  --fill: var(--ink);
+}
+.part[data-parte="pendientes"],
+.key[data-parte="pendientes"] {
+  --fill: var(--ink-3);
+}
+.part[data-parte="completadas"],
+.key[data-parte="completadas"] {
+  --fill: var(--line-strong);
+}
+
+.tasks {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  white-space: nowrap;
+}
+.frame {
+  display: block;
+  flex: none;
+  width: 80px;
+}
+.bar {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+}
+.part {
+  flex-basis: 0;
+  min-width: 3px;
+  background: var(--fill);
+}
+.label {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+}
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.key::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--fill);
+}

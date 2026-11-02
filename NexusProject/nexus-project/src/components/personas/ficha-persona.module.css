@@ -1,0 +1,63 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+/* The latest week first and narrow; its eight-week index beside it. */
+.top {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 1.9fr);
+  gap: var(--space-5);
+  align-items: stretch;
+}
+.week {
+  display: grid;
+  gap: var(--space-5);
+  justify-items: start;
+}
+.level {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+}
+.levelNote {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+}
+.report {
+  margin-top: var(--space-1);
+}
+/* A containing block for the hidden link text, so it scrolls with the table. */
+.weeks > [role="region"] {
+  position: relative;
+}
+.weeks thead th {
+  vertical-align: bottom;
+}
+.weeks thead th.wrap {
+  white-space: normal;
+  text-wrap: balance;
+  min-width: 112px;
+  max-width: 128px;
+}
+.index {
+  font-weight: var(--weight-strong);
+}
+.link {
+  color: var(--accent);
+  font-weight: var(--weight-strong);
+}
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 960px) {
+  .top {
+    grid-template-columns: 1fr;
+  }
+}
