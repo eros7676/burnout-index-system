@@ -1,45 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Sans } from "next/font/google";
+import { LenisProvider } from "@/shared/motion";
+import "lenis/dist/lenis.css";
 import "./globals.css";
-import { UsuarioDemo } from "@/components/usuario-demo";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Tabular digits by default, so figures line up in every table (DESIGN.md › Type).
+const plex = IBM_Plex_Sans({
+  variable: "--font-ui",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "Nexo Laboral | Resumen",
+  title: { default: "Nexo Laboral", template: "%s · Nexo Laboral" },
   description:
-    "Indicadores de posible sobrecarga laboral, evaluaciones y alertas internas.",
+    "Seguimiento semanal de indicadores de sobrecarga laboral para RRHH, gerencia y responsables de equipo.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <aside
-          role="status"
-          style={{
-            padding: "12px 20px",
-            background: "#fff3cd",
-            color: "#4d3800",
-            fontWeight: 600,
-          }}
-        >
-          Demo local con datos ficticios · Parámetros demostrativos. No
-          diagnostica burnout.
-        </aside>
-        <UsuarioDemo />
-        {children}
+    <html lang="es-AR" className={plex.variable}>
+      <body>
+        <LenisProvider>{children}</LenisProvider>
       </body>
     </html>
   );

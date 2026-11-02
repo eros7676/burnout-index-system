@@ -1,17 +1,25 @@
 import { API_ROUTES } from "../shared/api";
 import type { CuerposExito } from "../shared/api";
 import type {
+  FiltrosAuditoria,
   FiltrosAlertas,
   FiltrosComunes,
   FiltrosEvaluaciones,
 } from "../shared/contracts";
 
 type Consulta =
-  "listarEvaluaciones" | "obtenerResumen" | "listarAlertas" | "obtenerInforme";
+  | "listarEvaluaciones"
+  | "obtenerResumen"
+  | "listarAlertas"
+  | "obtenerInforme"
+  | "listarPersonas"
+  | "consultarMisDatos"
+  | "consultarReglas"
+  | "listarAuditoria";
 
 async function consultar<K extends Consulta>(
   operacion: K,
-  filtros: FiltrosEvaluaciones | FiltrosAlertas | FiltrosComunes,
+  filtros: FiltrosEvaluaciones | FiltrosAlertas | FiltrosComunes | FiltrosAuditoria,
   signal: AbortSignal,
   evaluationId?: string,
 ): Promise<CuerposExito[K]> {
@@ -61,4 +69,13 @@ export const tableroApi = {
     consultar("listarAlertas", filtros, signal),
   informe: (id: string, signal: AbortSignal) =>
     consultar("obtenerInforme", {}, signal, id),
+  personas: (
+    filtros: Pick<FiltrosComunes, "employeeId" | "teamId">,
+    signal: AbortSignal,
+  ) => consultar("listarPersonas", filtros, signal),
+  misDatos: (signal: AbortSignal) =>
+    consultar("consultarMisDatos", {}, signal),
+  reglas: (signal: AbortSignal) => consultar("consultarReglas", {}, signal),
+  auditoria: (filtros: FiltrosAuditoria, signal: AbortSignal) =>
+    consultar("listarAuditoria", filtros, signal),
 };

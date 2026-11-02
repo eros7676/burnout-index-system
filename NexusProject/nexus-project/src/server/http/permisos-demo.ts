@@ -18,7 +18,7 @@ export const USUARIOS_DEMO = [
   },
   ...[1, 2, 3, 4].map((n) => ({
     userId: `demo-tl-0${n}`,
-    nombre: `Team Lead EQ-0${n}`,
+    nombre: `Team Lead · Célula ficticia ${n}`,
     rol: "TEAM_LEAD",
     employeeId: `TL-0${n}`,
     teamId: `EQ-0${n}`,

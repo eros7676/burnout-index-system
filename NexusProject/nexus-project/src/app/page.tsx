@@ -1,5 +1,8 @@
-import DashboardHomeView from "../components/dashboard-home";
+import type { Metadata } from "next";
+import { Ingreso } from "@/components/ingreso/ingreso";
 
-export default function Home() {
-  return <DashboardHomeView />;
+export const metadata: Metadata = { title: "Ingreso" };
+
+export default function Page() {
+  return <Ingreso />;
 }

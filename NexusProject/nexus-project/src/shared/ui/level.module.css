@@ -1,0 +1,100 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+  line-height: 1.4;
+  white-space: nowrap;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+}
+/* A leading mark repeats the meaning in shape, not only in color. */
+.tag[data-nivel]::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  background: currentColor;
+}
+.tag[data-nivel="BAJO"] {
+  background: var(--level-bajo-soft);
+  color: var(--level-bajo);
+  border-color: transparent;
+}
+.tag[data-nivel="MEDIO"] {
+  background: var(--level-medio-soft);
+  color: var(--level-medio);
+  border-color: transparent;
+}
+.tag[data-nivel="ALTO"] {
+  background: var(--level-alto-soft);
+  color: var(--level-alto);
+  border-color: transparent;
+}
+.tag[data-nivel="ALTO"]::before {
+  transform: rotate(45deg);
+}
+.tag[data-nivel="INCOMPLETO"] {
+  background: var(--level-incompleto-soft);
+  color: var(--level-incompleto);
+  border-color: transparent;
+}
+.tag[data-nivel="INCOMPLETO"]::before,
+.tag[data-nivel="desactualizado"]::before {
+  background: transparent;
+  border: 1.5px solid currentColor;
+}
+
+.strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  vertical-align: middle;
+}
+.cell {
+  width: 14px;
+  height: 18px;
+  border-radius: var(--radius-xs);
+  background: var(--level-bajo);
+  opacity: 0.55;
+}
+.cell[data-vacia] {
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+  opacity: 1;
+}
+.cell[data-nivel="ninguno"] {
+  background: var(--line);
+  opacity: 1;
+}
+.cell[data-nivel="MEDIO"] {
+  background: var(--level-medio);
+  opacity: 0.85;
+}
+.cell[data-nivel="ALTO"] {
+  background: var(--level-alto);
+  opacity: 1;
+}
+.cell[data-nivel="INCOMPLETO"] {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--level-incompleto) 0 2px,
+    var(--level-incompleto-soft) 2px 5px
+  );
+  opacity: 1;
+}
+/* Sustained: the gap closes so two Alto weeks read as one bar. */
+.cell[data-unida] {
+  margin-left: -3px;
+  width: 17px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.cell:has(+ .cell[data-unida]) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}

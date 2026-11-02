@@ -1,5 +1,8 @@
-import DashboardHomeView from "../../../components/dashboard-home";
+import type { Metadata } from "next";
+import { Resumen } from "@/components/resumen/resumen";
 
-export default function DashboardHome() {
-  return <DashboardHomeView />;
+export const metadata: Metadata = { title: "Resumen" };
+
+export default function Page() {
+  return <Resumen />;
 }

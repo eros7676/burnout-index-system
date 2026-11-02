@@ -1,0 +1,206 @@
+/* Level fills shared by every chart. */
+.lvl[data-nivel="BAJO"] {
+  --fill: var(--level-bajo);
+}
+.lvl[data-nivel="MEDIO"] {
+  --fill: var(--level-medio);
+}
+.lvl[data-nivel="ALTO"] {
+  --fill: var(--level-alto);
+}
+.lvl[data-nivel="INCOMPLETO"] {
+  --fill: repeating-linear-gradient(
+    -45deg,
+    var(--level-incompleto) 0 2px,
+    var(--level-incompleto-soft) 2px 5px
+  );
+}
+.lvl[data-nivel="ninguno"] {
+  --fill: var(--line-strong);
+}
+
+.distribution {
+  display: grid;
+  gap: var(--space-4);
+}
+.bar {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.bar span {
+  flex-basis: 0;
+  min-width: 4px;
+  background: var(--fill);
+}
+.legend {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+.legend li {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding-left: var(--space-3);
+}
+.legend li::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--fill);
+}
+.legendLabel,
+.legendShare {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.legend strong {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-strong);
+  line-height: 1.1;
+}
+
+.columns {
+  margin: 0;
+}
+.columnsPlot {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  height: 200px;
+  align-items: end;
+}
+.column {
+  display: grid;
+  grid-template-rows: 18px 1fr auto;
+  height: 100%;
+  gap: var(--space-1);
+  text-align: center;
+}
+.columnTop {
+  font-size: var(--text-xs);
+  color: var(--level-alto);
+  font-weight: var(--weight-strong);
+}
+.stack {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  gap: 1px;
+  min-height: 0;
+  border-bottom: 1px solid var(--line-strong);
+}
+.stack span {
+  display: block;
+  background: var(--fill);
+  min-height: 2px;
+}
+.stack span:last-child {
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+}
+.column:not([data-actual]) .stack {
+  opacity: 0.6;
+}
+.columnLabel {
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.column[data-actual] .columnLabel {
+  color: var(--ink);
+  font-weight: var(--weight-strong);
+}
+
+.index {
+  margin: 0;
+}
+.indexPlot {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  height: 220px;
+  padding-left: var(--space-8);
+}
+.limits {
+  position: absolute;
+  inset: 0 0 20px var(--space-8);
+  pointer-events: none;
+}
+.limit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--line-strong);
+}
+.limit span {
+  position: absolute;
+  left: calc(-1 * var(--space-8));
+  top: -0.7em;
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+.indexColumn {
+  display: grid;
+  grid-template-rows: 1fr 20px;
+  min-width: 0;
+}
+.indexTrack {
+  position: relative;
+  border-bottom: 1px solid var(--line-strong);
+}
+.indexBar {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 0;
+  background: var(--fill);
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+}
+.indexValue {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding-bottom: 2px;
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.bullet {
+  display: block;
+  min-width: 120px;
+}
+.bulletTrack {
+  position: relative;
+  display: block;
+  height: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+}
+.bulletFill {
+  position: absolute;
+  inset: 1px auto 1px 0;
+  background: var(--ink-3);
+  border-radius: 1px;
+}
+.bullet[data-excedido] .bulletFill {
+  background: var(--level-alto);
+}
+.bulletMark {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--ink);
+}
