@@ -148,3 +148,18 @@ test("Mis datos: PROPIOS solo para quien tiene legajo vigente", async () => {
   registro = { activo: true, tipo: "TEAM_LEAD", teamId: "EQ-01" };
   assert.equal((await propios(req("demo-empleado"))).status, 403);
 });
+test("Reglas: un recurso global no recibe el equipo del Team Lead", async () => {
+  const db = {
+    empleado: {
+      findUnique: async () => ({ activo: true, tipo: "TEAM_LEAD", teamId: "EQ-01" }),
+    },
+  } as unknown as PrismaClient;
+  const get = proteger(
+    db,
+    "LEER",
+    async (request) => Response.json({ query: new URL(request.url).search }),
+    "global",
+  );
+  assert.equal((await (await get(req("demo-tl-01"))).json()).query, "");
+  assert.equal((await get(req("demo-empleado"))).status, 403);
+});

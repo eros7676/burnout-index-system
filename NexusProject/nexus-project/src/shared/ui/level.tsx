@@ -77,7 +77,7 @@ export function WeekStrip({
             data-nivel={n ?? "ninguno"}
             data-unida={unida || undefined}
             title={`${textoSemana(c.periodStart, c.periodEnd)}: ${
-              n ? `${NIVEL[n]} · ${decimal(c.indice)}` : "sin dato vigente"
+              n ? `${NIVEL[n]}, ${decimal(c.indice)}` : "sin dato vigente"
             }`}
           />
         );

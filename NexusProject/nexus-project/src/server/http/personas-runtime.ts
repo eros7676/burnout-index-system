@@ -7,5 +7,5 @@ export const httpPersonas = {
   misDatos: proteger(prisma, "PROPIOS", (request) =>
     personas.misDatos(request, usuarioDemo(request).employeeId!),
   ),
-  reglas: proteger(prisma, "LEER", personas.reglas),
+  reglas: proteger(prisma, "LEER", personas.reglas, "global"),
 };

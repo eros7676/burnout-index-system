@@ -18,7 +18,7 @@ export const USUARIOS_DEMO = [
   },
   ...[1, 2, 3, 4].map((n) => ({
     userId: `demo-tl-0${n}`,
-    nombre: `Team Lead · Célula ficticia ${n}`,
+    nombre: `Team Lead, Célula ficticia ${n}`,
     rol: "TEAM_LEAD",
     employeeId: `TL-0${n}`,
     teamId: `EQ-0${n}`,
@@ -160,7 +160,8 @@ export function proteger<T extends string[]>(
   db: PrismaClient,
   permiso: Permiso,
   accion: (request: Request, ...ids: T) => Promise<Response>,
-  recurso?: "informe",
+  /** "informe": one report checked against the team; "global": company-wide data a Team Lead may read unscoped. */
+  recurso?: "informe" | "global",
 ) {
   return async (request: Request, ...ids: T): Promise<Response> => {
     try {
@@ -196,7 +197,11 @@ export function proteger<T extends string[]>(
             "El usuario demo no tiene una asignación vigente.",
           );
       }
-      if (usuario.rol === "TEAM_LEAD" && permiso !== "PROPIOS") {
+      if (
+        usuario.rol === "TEAM_LEAD" &&
+        permiso !== "PROPIOS" &&
+        recurso !== "global"
+      ) {
         if (recurso === "informe") {
           const fila = await db.evaluacion.findFirst({
             where: {

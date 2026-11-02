@@ -1,4 +1,6 @@
 .scroll {
+  /* Positioned, so visually hidden text inside clips here and not on the page. */
+  position: relative;
   max-width: 100%;
   overflow-x: auto;
   /* Rows enter with a transform; keep it from creating a vertical scrollbar. */
