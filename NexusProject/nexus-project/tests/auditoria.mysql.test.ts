@@ -55,16 +55,27 @@ test("T15b MySQL: trazabilidad atómica, rechazos, reintentos y consultas", asyn
           csv.replace(",0,0,0,0,0,0", ",-1,0,0,0,0,0"),
         );
         assert.equal(rechazada.status, "RECHAZADA");
-        await cancelarImportacion(db, rechazada.importId, actorId);
-        await cancelarImportacion(db, rechazada.importId, actorId);
-        const filas = (await eventos()).filter(
-          (e) => e.recursoId === rechazada.importId,
+        // Contract: only VALIDADA may become CANCELADA; a refused cancel adds no event.
+        await assert.rejects(
+          cancelarImportacion(db, rechazada.importId, actorId),
+          { codigo: "ESTADO_INCOMPATIBLE" },
         );
-        assert.deepEqual(
-          filas.map((e) => e.accion),
-          ["IMPORTACION_RECHAZADA", "IMPORTACION_CANCELADA"],
-        );
-        assert.ok(filas.every((e) => e.actorId === actorId));
+        const validada = await validar();
+        assert.equal(validada.status, "VALIDADA");
+        await cancelarImportacion(db, validada.importId, actorId);
+        await cancelarImportacion(db, validada.importId, actorId);
+        const acciones = async (importId: string) =>
+          (await eventos())
+            .filter((e) => e.recursoId === importId)
+            .map((e) => e.accion);
+        assert.deepEqual(await acciones(rechazada.importId), [
+          "IMPORTACION_RECHAZADA",
+        ]);
+        assert.deepEqual(await acciones(validada.importId), [
+          "IMPORTACION_VALIDADA",
+          "IMPORTACION_CANCELADA",
+        ]);
+        assert.ok((await eventos()).every((e) => e.actorId === actorId));
       },
     );
     await t.test(
