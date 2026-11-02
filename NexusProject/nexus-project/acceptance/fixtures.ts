@@ -2,6 +2,12 @@ import { test as base, expect, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { sembrarBase } from "../prisma/seed-base";
 
+/** Audit events of the acceptance rule versions (T15b), cleaned with them. */
+const reglasT16 = {
+  entidad: "REGLAS",
+  recursoId: { startsWith: "t16-" },
+} as const;
+
 export const test = base.extend<{ db: PrismaClient }>({
   db: async ({ page }, ejecutarPrueba) => {
     const db = new PrismaClient({
@@ -32,6 +38,12 @@ export const test = base.extend<{ db: PrismaClient }>({
         await db.configuracionIndice.count({
           where: { version: { startsWith: "t16-" } },
         }),
+      ).toBe(0);
+      // T15b audits each published version under a unique key: a leftover
+      // t16-* event would reject the next publication of the same version.
+      expect(
+        await db.eventoAuditoria.count({ where: reglasT16 }),
+        "T16 requiere una base sin eventos de reglas t16-*",
       ).toBe(0);
       preparada = true;
       await db.$transaction((tx) => sembrarBase(tx));
@@ -84,6 +96,7 @@ export const test = base.extend<{ db: PrismaClient }>({
               await tx.configuracionIndice.deleteMany({
                 where: { version: { startsWith: "t16-" } },
               });
+              await tx.eventoAuditoria.deleteMany({ where: reglasT16 });
             },
             { timeout: 30_000 },
           );
@@ -105,7 +118,7 @@ export async function importar(
   const previa = page.waitForResponse(
     (r) => new URL(r.url()).pathname === "/api/importaciones/validar",
   );
-  await page.getByRole("button", { name: "Validar CSV" }).click();
+  await page.getByRole("button", { name: "Validar archivo" }).click();
   const response = await previa;
   const body = await response.json();
   expect(response.status()).toBe(200);
@@ -118,7 +131,7 @@ export async function importar(
   const resultado = await confirmada.json();
   expect(resultado.procesamiento?.estado ?? "COMPLETADO").toBe("COMPLETADO");
   await expect(
-    page.getByRole("heading", { name: "Datos confirmados" }),
+    page.getByRole("heading", { name: "Importación confirmada" }),
   ).toBeVisible();
   return { previa: body, resultado, ms: performance.now() - start };
 }

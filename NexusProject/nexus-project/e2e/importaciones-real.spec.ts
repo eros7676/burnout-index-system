@@ -22,39 +22,43 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
       );
     }
   });
+  const archivo = page.getByLabel("Archivo CSV", { exact: true });
+  const validar = page.getByRole("button", { name: "Validar archivo" });
+  const confirmar = page.getByRole("button", { name: "Confirmar importación" });
+  const previa = page.getByRole("region", { name: "Vista previa" });
+  const confirmada = page.getByRole("region", {
+    name: "Importación confirmada",
+  });
+  const procesamiento = page.getByRole("region", { name: "Procesamiento" });
   try {
     await db.$transaction((tx) => sembrarBase(tx));
     expect(await db.registroLaboral.count()).toBe(0); // Nunca borra ni reutiliza datos existentes.
     await page.request.post("/api/demo/sesion", {
       data: { userId: "demo-rrhh" },
     });
+
+    // T06: a rejected file saves nothing and cannot be confirmed.
     await page.goto("/importaciones");
-    await page
-      .getByLabel("Archivo CSV", { exact: true })
-      .setInputFiles("tests/data/invalido_una_fila.csv");
-    await page.getByRole("button", { name: "Validar CSV" }).click();
+    await archivo.setInputFiles("tests/data/invalido_una_fila.csv");
+    await validar.click();
+    await expect(previa).toContainText("Rechazada");
     await expect(
-      page.getByRole("heading", { name: "Vista previa · Rechazada" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Confirmar importación" }),
-    ).toBeDisabled();
+      page.getByRole("region", { name: "Errores del archivo" }),
+    ).toContainText("Tareas vencidas");
+    await expect(confirmar).toBeDisabled();
     expect(await db.registroLaboral.count()).toBe(0);
-    await page.getByRole("button", { name: "Cancelar vista previa" }).click();
-    await page
-      .getByLabel("Archivo CSV", { exact: true })
-      .setInputFiles("templates/ejemplo-dos-semanas.csv");
-    await page.getByRole("button", { name: "Validar CSV" }).click();
+    await previa.getByRole("button", { name: "Cancelar" }).click();
     await expect(
-      page.getByRole("heading", { name: "Vista previa · Validada" }),
+      page.getByText("Vista previa cancelada.", { exact: false }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Confirmar importación" }).click();
-    await expect(
-      page.getByText("Procesamiento: COMPLETADO", { exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByText("Insertados: 2 · Omitidos: 0", { exact: true }),
-    ).toBeVisible();
+
+    await archivo.setInputFiles("templates/ejemplo-dos-semanas.csv");
+    await validar.click();
+    await expect(previa).toContainText("Validada");
+    await confirmar.click();
+    await expect(procesamiento.getByRole("status")).toContainText("Terminado");
+    await expect(confirmada).toContainText(/Guardadas\s*2\s*filas nuevas/);
+    await expect(confirmada).toContainText(/Omitidas\s*0/);
     expect(await db.registroLaboral.count()).toBe(2);
     const evaluaciones = await db.evaluacion.findMany({
       orderBy: { periodo: { periodStart: "asc" } },
@@ -62,100 +66,116 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
     expect(evaluaciones.map((e) => e.nivel)).toEqual(["INCOMPLETO", "ALTO"]);
     expect(evaluaciones.map((e) => Number(e.indice))).toEqual([83.71, 91.21]);
     expect(await db.alerta.count()).toBe(1);
-    await page.goto("/home");
-    const tabla = page.getByRole("region", {
-      name: "Resultados de evaluaciones",
+
+    // T14: the persisted results, read back through the new screens.
+    await page.getByRole("link", { name: "Ver resumen" }).click();
+    await expect(page).toHaveURL(/\/home$/);
+    const enAlto = page.getByRole("region", { name: "Personas en nivel Alto" });
+    await expect(enAlto).toContainText("Persona ficticia 001");
+    await expect(enAlto.getByRole("link", { name: "91,21" })).toBeVisible();
+    await expect(
+      page.getByText(/^Índice promedio 91,21 en 1 evaluaciones/),
+    ).toBeVisible();
+    await page
+      .getByRole("combobox", { name: "Semana" })
+      .selectOption("2026-10-05");
+    await expect(page.getByText("Nadie en Alto esta semana")).toBeVisible();
+
+    await page.goto("/employees/EMP-001");
+    const semanas = page.getByRole("region", {
+      name: "Semanas de Persona ficticia 001",
     });
     await expect(
-      tabla.getByRole("row").filter({ hasText: "INCOMPLETO" }),
-    ).toContainText("83,71");
+      semanas.getByRole("row").filter({ hasText: "12–18 oct 2026" }),
+    ).toContainText(/Alto\s*91,21/);
     await expect(
-      tabla.getByRole("row").filter({ hasText: "ALTO" }),
+      semanas.getByRole("row").filter({ hasText: "5–11 oct 2026" }),
+    ).toContainText(/Incompleto\s*83,71/);
+    await semanas
+      .getByRole("link", { name: "Ver informe de 12–18 oct 2026" })
+      .click();
+    await expect(
+      page.getByRole("region", { name: "Resultado de la semana" }),
     ).toContainText("91,21");
     await expect(
-      page.getByText("Destinatario: TL-01", { exact: true }),
-    ).toBeVisible();
-    await tabla
-      .getByRole("row")
-      .filter({ hasText: "ALTO" })
-      .getByRole("button", { name: "Ver informe", exact: true })
-      .click();
-    const detalle = page.getByRole("region", {
-      name: "Informe individual",
-      exact: true,
-    });
-    await expect(detalle).toContainText("91,21");
-    await expect(detalle).toContainText("SOSTENIDO");
-    await expect(detalle).toContainText("NO_APLICA");
+      page
+        .getByRole("region", { name: "Factores, por aporte al índice" })
+        .getByRole("rowheader")
+        .first(),
+    ).toContainText("Horas extra");
     await expect(
-      detalle.getByRole("table").getByRole("row").nth(1),
-    ).toContainText("HE · Horas extra");
-    await page.getByLabel("Semana desde (lunes)").fill("2026-10-12");
-    await page.getByLabel("Empleado (ID)").fill("EMP-001");
-    await page.getByRole("button", { name: "Aplicar filtros" }).click();
-    await expect(tabla.getByRole("row")).toHaveCount(2);
-    const resumen = page.getByRole("region", {
-      name: "Resumen de evaluaciones",
-    });
-    await expect(resumen).toContainText("100% de las actualizadas");
+      page.getByRole("region", { name: "Semana anterior" }),
+    ).toContainText("La carga alta se sostiene dos semanas seguidas");
+    const seccionAlerta = page.getByRole("region", { name: "Alerta" });
+    await expect(seccionAlerta).toContainText("Team Lead ficticio 1");
+    await expect(seccionAlerta).toContainText("Solo aviso interno");
     await page.screenshot({
       path: "test-results/t14-real.png",
       fullPage: true,
     });
-    await page
-      .getByRole("link", { name: "Importar datos", exact: true })
-      .click();
-    await page
-      .getByLabel("Archivo CSV", { exact: true })
-      .setInputFiles("templates/ejemplo-dos-semanas.csv");
-    await page.getByRole("button", { name: "Validar CSV" }).click();
+
+    // T06: the same file again inserts nothing and needs no calculation.
+    await page.goto("/importaciones");
+    await archivo.setInputFiles("templates/ejemplo-dos-semanas.csv");
+    await validar.click();
     await expect(
       page.getByText("Todos los registros ya existen.", { exact: false }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Confirmar importación" }).click();
-    await expect(
-      page.getByText("Insertados: 0 · Omitidos: 2", { exact: true }),
-    ).toBeVisible();
+    await confirmar.click();
+    await expect(confirmada).toContainText(/Guardadas\s*0/);
+    await expect(confirmada).toContainText(/Omitidas\s*2/);
+    await expect(confirmada).toContainText(
+      "No hay semanas nuevas para calcular.",
+    );
     expect(await db.registroLaboral.count()).toBe(2);
     expect(await db.evaluacion.count()).toBe(2);
     expect(await db.alerta.count()).toBe(1);
-    await page.goto("/home");
+
+    // T12: the answer to processing is lost; the pending attempt lives in the database.
+    await page.goto("/alerts");
     await expect(
-      page
-        .getByRole("region", { name: "Resultados de evaluaciones" })
-        .getByRole("row"),
-    ).toHaveCount(3);
-    await expect(page.getByText("1 activas", { exact: true })).toBeVisible();
-    const correo = page.getByLabel("Correo simulado", { exact: true });
-    await correo
-      .getByRole("button", { name: "Preparar fallo simulado" })
-      .click();
-    await expect(correo.getByRole("listitem")).toContainText("PENDIENTE");
+      page.getByText("1 alerta activa de 1 persona", { exact: true }),
+    ).toBeVisible();
+    const correo = page.getByRole("region", { name: "Correo simulado" });
+    const historial = correo.getByRole("list", {
+      name: "Historial de envíos simulados",
+    });
+    const abrir = () =>
+      page.getByRole("button", { name: /^Sugerencias y correo/ }).click();
+    await abrir();
+    await page.route("**/procesar", (route) => route.abort());
+    await correo.getByRole("button", { name: "Simular fallo" }).click();
+    await expect(correo.getByRole("alert")).toContainText(
+      "No se pudo conectar",
+    );
+    await page.unroute("**/procesar");
     // Recargar demuestra que el pendiente se recupera desde la base.
     await page.reload();
-    await correo
-      .getByRole("button", { name: "Ver / actualizar intentos" })
-      .click();
-    await correo
-      .getByRole("button", { name: "Procesar envío pendiente" })
-      .click();
-    await expect(correo.getByRole("listitem")).toContainText("FALLIDO");
-    await correo
-      .getByRole("button", { name: "Reintentar correo simulado" })
-      .click();
+    await abrir();
+    await expect(historial.getByRole("listitem")).toHaveText([
+      /Intento 1.*Pendiente de procesar/,
+    ]);
     await correo
       .getByRole("button", { name: "Procesar envío pendiente" })
       .click();
-    await expect(correo.getByRole("listitem").first()).toContainText(
+    await expect(historial.getByRole("listitem")).toHaveText([
+      /Intento 1.*Fallido \(simulado\)/,
+    ]);
+    await correo.getByRole("button", { name: "Simular envío exitoso" }).click();
+    await expect(historial.getByRole("listitem")).toHaveText([
+      /Intento 2.*Enviado \(simulado\)/,
+      /Intento 1.*Fallido \(simulado\)/,
+    ]);
+    await page.reload();
+    await expect(
+      page.getByRole("region", { name: "Alertas activas" }),
+    ).toContainText("Enviado (simulado)");
+    await abrir();
+    await expect(historial.getByRole("listitem").first()).toContainText(
       "Enviado (simulado)",
     );
-    await expect(correo.getByRole("listitem")).toHaveCount(2);
-    await page.reload();
-    await correo
-      .getByRole("button", { name: "Ver / actualizar intentos" })
-      .click();
-    await expect(correo.getByRole("listitem").first()).toContainText(
-      "Enviado (simulado)",
+    await expect(correo.getByRole("button", { name: /^Simular/ })).toHaveCount(
+      0,
     );
     expect(await db.alerta.count()).toBe(1);
     expect(await db.intentoNotificacion.count()).toBe(2);

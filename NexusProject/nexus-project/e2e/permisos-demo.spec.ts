@@ -2,18 +2,15 @@ import { test, expect } from "@playwright/test";
 test("T15a: selección real de usuario y empleado sin acceso a resultados", async ({
   page,
 }) => {
-  await page.goto("/home");
-  const selector = page.getByLabel("Usuario de demostración", { exact: true });
-  await expect(
-    selector.getByRole("option", { name: "Empleado", exact: true }),
-  ).toBeAttached();
   expect((await page.request.get("/api/evaluaciones")).status()).toBe(401);
-  await selector.selectOption("demo-empleado");
-  await expect(selector).toHaveValue("demo-empleado");
-  await expect(
-    page.getByRole("alert").filter({ hasText: "no tiene permiso" }),
-  ).toBeVisible();
+  await page.goto("/");
+  await page.getByRole("button", { name: /^Empleado/ }).click();
+  await expect(page).toHaveURL(/\/my-data$/);
+  await expect(page.getByLabel("Usuario de demostración")).toHaveValue(
+    "demo-empleado",
+  );
   expect((await page.request.get("/api/alertas")).status()).toBe(403);
+  expect((await page.request.get("/api/personas")).status()).toBe(403);
   expect((await page.request.post("/api/importaciones/validar")).status()).toBe(
     403,
   );
@@ -31,6 +28,9 @@ test("T15a: Team Lead no puede consultar equipo ajeno por HTTP real", async ({
   expect(
     (await page.request.get("/api/resumen?employeeId=EMP-002")).status(),
   ).toBe(403);
+  expect((await page.request.get("/api/personas?teamId=EQ-02")).status()).toBe(
+    403,
+  );
   expect((await page.request.get("/api/alertas?teamId=EQ-01")).status()).toBe(
     200,
   );

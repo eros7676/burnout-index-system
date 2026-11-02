@@ -1,10 +1,14 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page, type Route } from "@playwright/test";
 import {
-  vistaPreviaMock,
-  resultadoImportacionMock,
+  confirmacionFallidaMock,
   jobMock,
-  cuerposExitoMock,
+  resultadoImportacionMock,
+  vistaPreviaMock,
 } from "../src/shared/mocks";
+import { alerta, celda, demo, menu, sinDesbordeHorizontal } from "./demo";
+
+// T06 on the rebuilt import screen (/importaciones, RRHH only): choose a file,
+// validate, review the preview, confirm, then follow the calculation.
 
 const archivo = {
   name: "datos.csv",
@@ -13,11 +17,36 @@ const archivo = {
 };
 const vista = { ...vistaPreviaMock, expiresAt: "2099-01-01T00:00:00.000Z" };
 
-test("archivo no CSV, tamaño excesivo y respuesta no JSON muestran errores recuperables", async ({
+const elegir = (page: Page) =>
+  page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
+const validar = (page: Page) =>
+  page.getByRole("button", { name: "Validar archivo" });
+const confirmar = (page: Page) =>
+  page.getByRole("button", { name: "Confirmar importación" });
+const procesamiento = (page: Page) =>
+  page.getByRole("region", { name: "Procesamiento" });
+const confirmada = (page: Page) =>
+  page.getByRole("region", { name: "Importación confirmada" });
+
+/** Every import and processing request; the session and reads stay on `demo`. */
+async function importaciones(
+  page: Page,
+  responder: (route: Route, ruta: string) => unknown,
+) {
+  await demo(page, "demo-rrhh");
+  await page.route(
+    (url) =>
+      url.pathname.startsWith("/api/importaciones") ||
+      url.pathname.startsWith("/api/procesamientos"),
+    (route) => responder(route, new URL(route.request().url()).pathname),
+  );
+}
+
+test("T06: archivo no CSV, tamaño excesivo y respuesta no JSON muestran errores recuperables", async ({
   page,
 }) => {
   let status = 415;
-  await page.route("**/api/**", (route) =>
+  await importaciones(page, (route) =>
     status === 500
       ? route.fulfill({
           status,
@@ -28,7 +57,7 @@ test("archivo no CSV, tamaño excesivo y respuesta no JSON muestran errores recu
           status,
           json: {
             error: {
-              codigo: "ARCHIVO",
+              codigo: status === 413 ? "ARCHIVO_EXCESIVO" : "FORMATO_NO_CSV",
               mensaje:
                 status === 413
                   ? "El archivo supera 5 MiB"
@@ -39,79 +68,55 @@ test("archivo no CSV, tamaño excesivo y respuesta no JSON muestran errores recu
         }),
   );
   await page.goto("/importaciones");
-  await page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText(
-    "Se requiere un archivo CSV",
-  );
+  await elegir(page);
+  await validar(page).click();
+  await expect(alerta(page)).toContainText("Se requiere un archivo CSV");
   status = 413;
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText(
-    "supera 5 MiB",
-  );
+  await validar(page).click();
+  await expect(alerta(page)).toContainText("supera 5 MiB");
   status = 500;
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText(
-    "respuesta JSON válida",
+  await validar(page).click();
+  await expect(alerta(page)).toContainText("respuesta JSON válida");
+  await expect(validar(page)).toBeEnabled();
+  await expect(page.getByRole("region", { name: "Vista previa" })).toHaveCount(
+    0,
   );
-  await expect(page.getByRole("button", { name: "Validar CSV" })).toBeEnabled();
 });
 
-test("pantalla móvil mantiene formularios accesibles y muestra sin desbordar la página", async ({
+test("T06: en pantalla angosta la vista previa se lee sin desbordar la página", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.route("**/api/**", (route) => route.fulfill({ json: vista }));
+  await importaciones(page, (route) => route.fulfill({ json: vista }));
   await page.goto("/importaciones");
-  await page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
-  await page.getByRole("button", { name: "Validar CSV" }).click();
+  await elegir(page);
+  await validar(page).click();
+  await expect(confirmar(page)).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Confirmar importación" }),
+    page.getByRole("region", { name: "Muestra de filas válidas" }),
   ).toBeVisible();
   await page.screenshot({ path: "test-results/t06-movil.png", fullPage: true });
-  const desbordes = await page.evaluate(() =>
-    [...document.querySelectorAll("body *")]
-      .filter(
-        (el) =>
-          el.getBoundingClientRect().right > window.innerWidth &&
-          getComputedStyle(el).overflowX !== "auto",
-      )
-      .map((el) => ({
-        tag: el.tagName,
-        clase: el.className,
-        width: el.getBoundingClientRect().width,
-      }))
-      .slice(0, 8),
-  );
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-    JSON.stringify(desbordes),
-  ).toBe(true);
+  await sinDesbordeHorizontal(page);
 });
 
-test("selección vacía, vista previa, cancelación y bloqueo de doble confirmación", async ({
+test("T06: sin archivo no se valida; la vista previa se cancela y la confirmación no se duplica", async ({
   page,
 }) => {
-  let confirmar = 0;
-  await page.route("**/api/**", async (route) => {
-    const url = route.request().url();
-    const pathname = new URL(url).pathname;
-    if (pathname === "/api/evaluaciones")
-      return route.fulfill({ json: cuerposExitoMock.listarEvaluaciones });
-    if (pathname === "/api/resumen")
-      return route.fulfill({ json: cuerposExitoMock.obtenerResumen });
-    if (pathname === "/api/alertas")
-      return route.fulfill({ json: cuerposExitoMock.listarAlertas });
-    if (url.endsWith("/validar")) return route.fulfill({ json: vista });
-    if (route.request().method() === "DELETE")
+  let confirmaciones = 0;
+  const cancelaciones: string[] = [];
+  let liberar!: () => void;
+  const retenida = new Promise<void>((resolve) => (liberar = resolve));
+  await importaciones(page, async (route, ruta) => {
+    if (ruta.endsWith("/validar")) return route.fulfill({ json: vista });
+    if (route.request().method() === "DELETE") {
+      cancelaciones.push(ruta);
       return route.fulfill({
         json: { importId: vista.importId, status: "CANCELADA" },
       });
-    if (url.endsWith("/confirmar")) {
-      confirmar++;
-      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    if (ruta.endsWith("/confirmar")) {
+      confirmaciones++;
+      await retenida;
       return route.fulfill({
         json: {
           ...resultadoImportacionMock,
@@ -122,148 +127,170 @@ test("selección vacía, vista previa, cancelación y bloqueo de doble confirmac
     return route.fulfill({ json: { ...jobMock, estado: "COMPLETADO" } });
   });
   await page.goto("/home");
-  await page.getByRole("link", { name: "Importar datos", exact: true }).click();
+  await menu(page).getByRole("link", { name: "Importar datos" }).click();
+  await expect(page).toHaveURL(/\/importaciones$/);
+  await expect(validar(page)).toBeDisabled();
+  await elegir(page);
+  await validar(page).click();
+  const previa = page.getByRole("region", { name: "Vista previa" });
+  await expect(previa).toContainText("Validada");
+  await expect(previa.getByRole("button", { name: "Cancelar" })).toBeEnabled();
+  await previa.getByRole("button", { name: "Cancelar" }).click();
   await expect(
-    page.getByRole("button", { name: "Validar CSV" }),
-  ).toBeDisabled();
-  await page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Vista previa · Validada" }),
+    page.getByText(
+      "Vista previa cancelada. No se guardaron registros laborales.",
+    ),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Cancelar vista previa" }).click();
-  await expect(
-    page.getByText("Vista previa cancelada.", { exact: false }),
-  ).toBeVisible();
-  await page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await page.getByRole("button", { name: "Confirmar importación" }).click();
-  await expect(
-    page.getByRole("button", { name: "Confirmar importación" }),
-  ).toBeDisabled();
-  await expect(
-    page.getByRole("heading", { name: "Datos confirmados" }),
-  ).toBeVisible();
-  await expect(
-    page.getByText("Procesamiento: COMPLETADO", { exact: true }),
-  ).toBeVisible();
-  expect(confirmar).toBe(1);
+  expect(cancelaciones).toEqual([`/api/importaciones/${vista.importId}`]);
+
+  await elegir(page);
+  await validar(page).click();
+  await confirmar(page).dblclick();
+  // While the confirmation runs every action is locked.
+  await expect(confirmar(page)).toBeDisabled();
+  await expect(previa.getByRole("button", { name: "Cancelar" })).toBeDisabled();
+  liberar();
+  await expect(confirmada(page)).toContainText(/Guardadas\s*2\s*filas nuevas/);
+  await expect(procesamiento(page).getByRole("status")).toContainText(
+    "Terminado",
+  );
+  await expect(procesamiento(page)).toContainText(
+    "El cálculo terminó para todas las semanas.",
+  );
+  await expect(page.getByRole("link", { name: "Ver resumen" })).toBeVisible();
+  expect(confirmaciones).toBe(1);
 });
 
-test("422 muestra fila/campo, advertencias y bloquea confirmación; vista vencida exige revalidación", async ({
+test("T06: un archivo rechazado muestra fila y campo, no se confirma, y una vista vencida exige validar otra vez", async ({
   page,
 }) => {
-  await page.route("**/api/**", (route) =>
-    route.fulfill({
-      status: 422,
-      json: {
-        vistaPrevia: {
-          ...vista,
-          status: "RECHAZADA",
-          errores: [
-            {
-              fila: 2,
-              campo: "horas_extra",
-              codigo: "OBLIGATORIO",
-              detalle: "Falta horas extra",
+  let modo = "rechazada";
+  await importaciones(page, (route) =>
+    modo === "rechazada"
+      ? route.fulfill({
+          status: 422,
+          json: {
+            vistaPrevia: {
+              ...vista,
+              status: "RECHAZADA",
+              nuevas: 0,
+              muestra: [],
+              errores: [
+                {
+                  fila: 2,
+                  campo: "horas_extra",
+                  codigo: "OBLIGATORIO",
+                  detalle: "Falta horas extra",
+                },
+              ],
+              warnings: [
+                {
+                  fila: 3,
+                  campo: "horas_extra",
+                  codigo: "HORAS_EXTREMAS",
+                  detalle: "Revisar horas extremas",
+                },
+              ],
             },
-          ],
-          warnings: [
-            {
-              fila: 3,
-              campo: "horas_extra",
-              codigo: "HORAS_EXTREMAS",
-              detalle: "Revisar horas extremas",
+            error: {
+              codigo: "FILAS_INVALIDAS",
+              mensaje: "CSV inválido",
+              detalles: [],
             },
-          ],
-        },
-        error: {
-          codigo: "FILAS_INVALIDAS",
-          mensaje: "CSV inválido",
-          detalles: [],
-        },
-      },
-    }),
+          },
+        })
+      : route.fulfill({
+          json: { ...vista, expiresAt: "2020-01-01T00:00:00.000Z" },
+        }),
   );
   await page.goto("/importaciones");
-  await page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await expect(page.getByText("Falta horas extra")).toBeVisible();
-  await expect(page.getByText("Revisar horas extremas")).toBeVisible();
+  await elegir(page);
+  await validar(page).click();
   await expect(
-    page.getByRole("button", { name: "Confirmar importación" }),
-  ).toBeDisabled();
-  await page
-    .getByRole("button", {
-      name: "Seleccionar CSV corregido / volver a validar",
-    })
-    .click();
-  await page.unroute("**/api/**");
-  await page.route("**/api/**", (route) =>
-    route.fulfill({ json: { ...vista, expiresAt: "2020-01-01T00:00:00Z" } }),
+    page.getByRole("region", { name: "Vista previa" }),
+  ).toContainText("Rechazada");
+  const errores = page.getByRole("region", { name: "Errores del archivo" });
+  const fila = "Falta horas extra";
+  await expect(await celda(errores, fila, "Fila")).toHaveText("2");
+  await expect(await celda(errores, fila, "Campo")).toHaveText("Horas extra");
+  await expect(await celda(errores, fila, "Problema")).toContainText(
+    "Falta el dato",
   );
-  await page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
-  await page.getByRole("button", { name: "Validar CSV" }).click();
   await expect(
-    page.getByText("La vista previa venció.", { exact: false }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Confirmar importación" }),
-  ).toBeDisabled();
+    page.getByRole("region", { name: "Advertencias del archivo" }),
+  ).toContainText("Revisar horas extremas");
+  await expect(confirmar(page)).toBeDisabled();
+
+  await page.getByRole("button", { name: "Elegir otro archivo" }).click();
+  modo = "vencida";
+  await elegir(page);
+  await validar(page).click();
+  await expect(alerta(page)).toContainText(
+    "La vista previa venció. Volvé a validar el archivo.",
+  );
+  await expect(confirmar(page)).toBeDisabled();
 });
 
-test("200 con job FALLIDO conserva datos, permite reintento y recuperación tras recarga", async ({
+test("T06: HTTP 200 con el cálculo FALLIDO conserva los datos, no se muestra como éxito y se reintenta tras recargar", async ({
   page,
 }) => {
   let estado = "FALLIDO";
-  await page.route("**/api/**", (route) => {
-    const url = route.request().url();
-    if (url.endsWith("/validar")) return route.fulfill({ json: vista });
-    if (url.endsWith("/confirmar"))
-      return route.fulfill({
-        json: {
-          ...resultadoImportacionMock,
-          procesamiento: { ...jobMock, estado },
-        },
-      });
-    if (url.endsWith("/reintentar")) estado = "COMPLETADO";
-    return route.fulfill({ json: { ...jobMock, estado } });
+  const fallido = confirmacionFallidaMock.body.procesamiento;
+  await importaciones(page, (route, ruta) => {
+    if (ruta.endsWith("/validar")) return route.fulfill({ json: vista });
+    if (ruta.endsWith("/confirmar"))
+      return route.fulfill({ json: confirmacionFallidaMock.body });
+    if (ruta.endsWith("/reintentar")) estado = "COMPLETADO";
+    return route.fulfill({
+      json:
+        estado === "FALLIDO"
+          ? fallido
+          : { ...jobMock, estado: "COMPLETADO", completados: 2 },
+    });
   });
   await page.goto("/importaciones");
-  await page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await page.getByRole("button", { name: "Confirmar importación" }).click();
+  await elegir(page);
+  await validar(page).click();
+  await confirmar(page).click();
+  // The data is saved; the calculation is reported apart, as failed.
+  await expect(confirmada(page)).toContainText(/Guardadas\s*2\s*filas nuevas/);
+  await expect(procesamiento(page).getByRole("status")).toContainText(
+    "Falló el cálculo",
+  );
   await expect(
-    page.getByRole("heading", { name: "Datos confirmados" }),
-  ).toBeVisible();
+    page.getByRole("region", { name: "Semanas que no se pudieron calcular" }),
+  ).toContainText("Fallo simulado al guardar alerta.");
   await expect(
-    page.getByText("Procesamiento: FALLIDO", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByText("El cálculo de todos los pares terminó correctamente."),
+    page.getByText("El cálculo terminó para todas las semanas."),
   ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Ver resumen" })).toHaveCount(0);
+
   await page.reload();
   await expect(page.getByLabel("ID del procesamiento")).toHaveValue(
     jobMock.jobId,
   );
   await page.getByRole("button", { name: "Consultar estado" }).click();
+  await expect(procesamiento(page).getByRole("status")).toContainText(
+    "Falló el cálculo",
+  );
   await page.getByRole("button", { name: "Reintentar procesamiento" }).click();
-  await expect(
-    page.getByText("Procesamiento: COMPLETADO", { exact: true }),
-  ).toBeVisible();
+  await expect(procesamiento(page).getByRole("status")).toContainText(
+    "Terminado",
+  );
+  await expect(procesamiento(page)).toContainText(
+    "El cálculo terminó para todas las semanas.",
+  );
 });
 
-test("conexión perdida al confirmar recupera el mismo ID sin duplicar la carga", async ({
+test("T06: si se pierde la respuesta al confirmar, se recupera con el mismo ID sin duplicar la carga", async ({
   page,
 }) => {
-  let intentos = 0;
-  await page.route("**/api/**", (route) => {
-    const url = route.request().url();
-    if (url.endsWith("/validar")) return route.fulfill({ json: vista });
-    if (url.endsWith("/confirmar")) {
-      intentos++;
-      if (intentos === 1) return route.abort();
-      expect(url).toContain(encodeURIComponent(vista.importId));
+  const confirmaciones: string[] = [];
+  await importaciones(page, (route, ruta) => {
+    if (ruta.endsWith("/validar")) return route.fulfill({ json: vista });
+    if (ruta.endsWith("/confirmar")) {
+      confirmaciones.push(ruta);
+      if (confirmaciones.length === 1) return route.abort();
       return route.fulfill({
         json: { ...resultadoImportacionMock, procesamiento: null },
       });
@@ -271,27 +298,39 @@ test("conexión perdida al confirmar recupera el mismo ID sin duplicar la carga"
     return route.abort();
   });
   await page.goto("/importaciones");
-  await page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await page.getByRole("button", { name: "Confirmar importación" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText(
-    "Se perdió la conexión",
-  );
-  await page.reload();
-  await page.getByRole("button", { name: "Recuperar confirmación" }).click();
+  await elegir(page);
+  await validar(page).click();
+  await confirmar(page).click();
+  await expect(alerta(page)).toContainText("Se perdió la conexión");
+  const pendiente = page.getByRole("region", {
+    name: "Confirmación sin respuesta",
+  });
+  await expect(pendiente).toBeVisible();
+  // No other file can start while the confirmation is unresolved.
   await expect(
-    page.getByRole("heading", { name: "Datos confirmados" }),
-  ).toBeVisible();
-  expect(intentos).toBe(2);
+    page.getByRole("button", { name: "Nueva importación" }),
+  ).toHaveCount(0);
+
+  await page.reload();
+  await pendiente
+    .getByRole("button", { name: "Recuperar confirmación" })
+    .click();
+  await expect(confirmada(page)).toContainText(/Guardadas\s*2\s*filas nuevas/);
+  await expect(confirmada(page)).toContainText(
+    "No hay semanas nuevas para calcular. No se duplicó ningún dato.",
+  );
+  expect(confirmaciones).toEqual([
+    `/api/importaciones/${vista.importId}/confirmar`,
+    `/api/importaciones/${vista.importId}/confirmar`,
+  ]);
 });
 
-test("conflicto al confirmar exige validar otra vez; job activo no permite reintento", async ({
+test("T06: un conflicto al confirmar exige validar otra vez y un cálculo en curso no se reintenta", async ({
   page,
 }) => {
-  await page.route("**/api/**", (route) => {
-    if (route.request().url().endsWith("/validar"))
-      return route.fulfill({ json: vista });
-    if (route.request().url().endsWith("/confirmar"))
+  await importaciones(page, (route, ruta) => {
+    if (ruta.endsWith("/validar")) return route.fulfill({ json: vista });
+    if (ruta.endsWith("/confirmar"))
       return route.fulfill({
         status: 409,
         json: {
@@ -305,18 +344,39 @@ test("conflicto al confirmar exige validar otra vez; job activo no permite reint
     return route.fulfill({ json: { ...jobMock, estado: "PROCESANDO" } });
   });
   await page.goto("/importaciones");
-  await page.getByLabel("Archivo CSV", { exact: true }).setInputFiles(archivo);
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await page.getByRole("button", { name: "Confirmar importación" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText(
-    "El histórico cambió",
-  );
+  await elegir(page);
+  await validar(page).click();
+  await confirmar(page).click();
+  await expect(alerta(page)).toContainText("El histórico cambió");
   await expect(
     page.getByRole("button", { name: "Recuperar confirmación" }),
   ).toHaveCount(0);
+  await expect(validar(page)).toBeVisible();
+
+  // Recovery by a typed id.
+  await page.getByText("¿Se cortó un procesamiento?").click();
   await page.getByLabel("ID del procesamiento").fill(jobMock.jobId);
   await page.getByRole("button", { name: "Consultar estado" }).click();
+  await expect(procesamiento(page).getByRole("status")).toContainText(
+    "Calculando",
+  );
   await expect(
     page.getByRole("button", { name: "Reintentar procesamiento" }),
   ).toBeDisabled();
+});
+
+test("T06/T15a: solo RRHH abre la importación", async ({ page }) => {
+  for (const [usuario, inicio] of [
+    ["demo-gerencia", /\/home$/],
+    ["demo-tl-01", /\/home$/],
+    ["demo-empleado", /\/my-data$/],
+  ] as const) {
+    await page.unrouteAll({ behavior: "ignoreErrors" });
+    await demo(page, usuario);
+    await page.goto("/importaciones");
+    await expect(page).toHaveURL(inicio);
+    await expect(
+      menu(page).getByRole("link", { name: "Importar datos" }),
+    ).toHaveCount(0);
+  }
 });

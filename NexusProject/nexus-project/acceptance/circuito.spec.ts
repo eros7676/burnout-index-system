@@ -2,32 +2,59 @@ import { readFile, writeFile } from "node:fs/promises";
 import { hostname, cpus, totalmem } from "node:os";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import type { Page } from "@playwright/test";
 import { test, expect, importar } from "./fixtures";
 import type { FilaTablero, Pagina, ResumenDTO } from "../src/shared/contracts";
 import { reglasMock } from "../src/shared/mocks";
+
+/** One week's row in a person's page (/employees/[employeeId]). */
+async function semanaDe(page: Page, employeeId: string, semana: string) {
+  await page.goto(`/employees/${employeeId}`);
+  const tabla = page.getByRole("region", { name: /^Semanas de / });
+  await expect(tabla).toBeVisible();
+  return tabla.getByRole("row").filter({ hasText: semana });
+}
+/** Opens the report of one week from the person's page. */
+async function informeDe(page: Page, employeeId: string, semana: string) {
+  const fila = await semanaDe(page, employeeId, semana);
+  await fila.getByRole("link", { name: `Ver informe de ${semana}` }).click();
+  await expect(
+    page.getByRole("region", { name: "Resultado de la semana" }),
+  ).toBeVisible();
+}
+const procesamiento = (page: Page) =>
+  page.getByRole("region", { name: "Procesamiento" }).getByRole("status");
+const archivo = (page: Page) => page.getByLabel("Archivo CSV", { exact: true });
+const validar = (page: Page) =>
+  page.getByRole("button", { name: "Validar archivo" });
+const confirmar = (page: Page) =>
+  page.getByRole("button", { name: "Confirmar importación" });
+const previa = (page: Page) =>
+  page.getByRole("region", { name: "Vista previa" });
 
 test("fallo técnico posterior al commit y recuperación desde la interfaz sin duplicados", async ({
   page,
   db,
 }) => {
   await page.goto("/importaciones");
-  await page
-    .getByLabel("Archivo CSV", { exact: true })
-    .setInputFiles("templates/ejemplo-dos-semanas.csv");
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Vista previa · Validada" }),
-  ).toBeVisible();
+  await archivo(page).setInputFiles("templates/ejemplo-dos-semanas.csv");
+  await validar(page).click();
+  await expect(previa(page)).toContainText("Validada");
   // Fallo controlado exclusivo de esta base: nunca se añade una puerta de fallo a la API.
   try {
     await db.configuracionIndice.update({
       where: { version: "v1" },
       data: { weights: {} },
     });
-    await page.getByRole("button", { name: "Confirmar importación" }).click();
+    await confirmar(page).click();
+    await expect(procesamiento(page)).toContainText("Falló el cálculo");
+    // The data is confirmed even though its calculation failed.
     await expect(
-      page.getByText("Procesamiento: FALLIDO", { exact: true }),
-    ).toBeVisible();
+      page.getByRole("region", { name: "Importación confirmada" }),
+    ).toContainText(/Guardadas\s*2/);
+    await expect(page.getByRole("link", { name: "Ver resumen" })).toHaveCount(
+      0,
+    );
     expect(await db.registroLaboral.count()).toBe(2);
     expect(await db.evaluacion.count()).toBe(0);
     expect(await db.alerta.count()).toBe(0);
@@ -41,18 +68,16 @@ test("fallo técnico posterior al commit y recuperación desde la interfaz sin d
   await page
     .getByRole("button", { name: "Consultar estado", exact: true })
     .click();
+  await expect(procesamiento(page)).toContainText("Falló el cálculo");
   await page
     .getByRole("button", { name: "Reintentar procesamiento", exact: true })
     .click();
-  await expect(
-    page.getByText("Procesamiento: COMPLETADO", { exact: true }),
-  ).toBeVisible();
+  await expect(procesamiento(page)).toContainText("Terminado");
   expect(await db.evaluacion.count()).toBe(2);
   expect(await db.alerta.count()).toBe(1);
-  await page.goto("/home");
-  await expect(
-    page.getByRole("region", { name: "Resultados de evaluaciones" }),
-  ).toContainText("91,21");
+  await expect(await semanaDe(page, "EMP-001", "12–18 oct 2026")).toContainText(
+    /Alto\s*91,21/,
+  );
 });
 
 test("plantilla completa: rechazo atómico, cuatro niveles, ranking, resumen e idempotencia", async ({
@@ -61,17 +86,15 @@ test("plantilla completa: rechazo atómico, cuatro niveles, ranking, resumen e i
   browser,
 }, info) => {
   await page.goto("/importaciones");
-  await page
-    .getByLabel("Archivo CSV", { exact: true })
-    .setInputFiles("tests/data/invalido_una_fila.csv");
-  await page.getByRole("button", { name: "Validar CSV" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Vista previa · Rechazada" }),
-  ).toBeVisible();
-  await expect(page.getByRole("main")).toContainText("tareas_vencidas");
-  await expect(
-    page.getByRole("button", { name: "Confirmar importación" }),
-  ).toBeDisabled();
+  await archivo(page).setInputFiles("tests/data/invalido_una_fila.csv");
+  await validar(page).click();
+  await expect(previa(page)).toContainText("Rechazada");
+  // The rejected row is named by row and field, in words.
+  const errores = page.getByRole("region", { name: "Errores del archivo" });
+  await expect(errores.getByRole("row").nth(1)).toContainText(
+    /^85\s*Tareas vencidas/,
+  );
+  await expect(confirmar(page)).toBeDisabled();
   expect(await db.registroLaboral.count()).toBe(0);
   const carga = await importar(page, "templates/indicadores.csv");
   expect(carga.resultado.insertados).toBe(138);
@@ -107,50 +130,74 @@ test("plantilla completa: rechazo atómico, cuatro niveles, ranking, resumen e i
     });
     expect(Boolean(fila.alertId)).toBe(alerta === "SI");
   }
-  await page.goto("/home");
-  await page.getByLabel("Semana desde (lunes)").fill("2026-10-12");
-  await page.getByLabel("Filas por página").selectOption("100");
-  await page.getByRole("button", { name: "Aplicar filtros" }).click();
-  const tabla = page.getByRole("region", {
-    name: "Resultados de evaluaciones",
-  });
+
+  // The four levels of the newest week, as the Personas list filters them.
   const semana = filas.filter((f) => f.periodStart === "2026-10-12");
-  await expect(tabla.getByRole("row")).toHaveCount(semana.length + 1);
-  for (const nivel of ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"])
-    await expect(tabla.getByText(nivel, { exact: true }).first()).toBeVisible();
-  // Pico aislado conserva 83,71 pero sigue MEDIO, sin alerta.
-  await page.getByLabel("Semana desde (lunes)").fill("2026-10-05");
-  await page.getByRole("button", { name: "Aplicar filtros" }).click();
-  const pico = tabla.getByRole("row").filter({ hasText: "EMP-016" });
-  await expect(pico).toContainText("83,71");
-  await expect(pico).toContainText("MEDIO");
-  await pico.getByRole("button", { name: "Ver informe", exact: true }).click();
-  const detalle = page.getByRole("region", {
-    name: "Informe individual",
-    exact: true,
-  });
-  await expect(detalle).toContainText("NO_SOSTENIDO");
-  await expect(detalle).toContainText("Sin alerta asociada");
-  await page.getByRole("button", { name: "Cerrar informe" }).click();
-  await page.getByLabel("Semana desde (lunes)").fill("2026-10-12");
-  await page.getByRole("button", { name: "Aplicar filtros" }).click();
-  await tabla
-    .getByRole("row")
-    .filter({ hasText: "EMP-017" })
-    .getByRole("button", { name: "Ver informe", exact: true })
-    .click();
-  await expect(detalle).toContainText("Historial insuficiente");
-  await page.getByRole("button", { name: "Cerrar informe" }).click();
-  await tabla
-    .getByRole("row")
-    .filter({ hasText: "EMP-001" })
-    .getByRole("button", { name: "Ver informe", exact: true })
-    .click();
-  await expect(detalle).toContainText("SOSTENIDO");
-  await expect(detalle).toContainText("TL-01");
+  await page.goto("/employees");
+  const lista = page.getByRole("region", { name: "Personas", exact: true });
+  await expect(page.getByRole("combobox", { name: "Semana" })).toHaveValue(
+    "2026-10-12",
+  );
+  await expect(lista.getByRole("row")).toHaveCount(49 + 1);
+  for (const [nivel, etiqueta] of [
+    ["BAJO", "Bajo"],
+    ["MEDIO", "Medio"],
+    ["ALTO", "Alto"],
+    ["INCOMPLETO", "Incompleto"],
+  ] as const) {
+    const cuantas = semana.filter((f) => f.nivel === nivel).length;
+    expect(cuantas, nivel).toBeGreaterThan(0);
+    await page
+      .getByRole("combobox", { name: "Nivel" })
+      .selectOption({ label: etiqueta });
+    await expect(lista.getByRole("row")).toHaveCount(cuantas + 1);
+  }
+  await page.goto("/home");
   await expect(
-    detalle.getByRole("table").getByRole("row").nth(1),
-  ).toContainText("HE · Horas extra");
+    page
+      .getByRole("region", { name: "Personas en nivel Alto" })
+      .getByRole("row"),
+  ).toHaveCount(semana.filter((f) => f.nivel === "ALTO").length + 1);
+
+  // Pico aislado conserva 83,71 pero sigue MEDIO, sin alerta.
+  await expect(await semanaDe(page, "EMP-016", "5–11 oct 2026")).toContainText(
+    /Medio\s*83,71/,
+  );
+  await informeDe(page, "EMP-016", "5–11 oct 2026");
+  await expect(
+    page.getByRole("region", { name: "Semana anterior" }),
+  ).toContainText(
+    "No se sostiene una carga alta dos semanas seguidas con causas en común.",
+  );
+  await expect(page.getByRole("region", { name: "Alerta" })).toContainText(
+    "Esta semana no generó una alerta.",
+  );
+  // A gap in history: Incompleto keeps its index and says why.
+  await informeDe(page, "EMP-017", "12–18 oct 2026");
+  await expect(
+    page.getByRole("region", { name: "Resultado de la semana" }),
+  ).toContainText(/89,34[\s\S]*Incompleto/);
+  await expect(
+    page.getByRole("region", { name: "Semana anterior" }),
+  ).toContainText(
+    "No hay semana anterior para confirmar si la carga se sostiene.",
+  );
+  await informeDe(page, "EMP-001", "12–18 oct 2026");
+  await expect(
+    page.getByRole("region", { name: "Semana anterior" }),
+  ).toContainText(
+    "La carga alta se sostiene dos semanas seguidas, con causas en común.",
+  );
+  await expect(page.getByRole("region", { name: "Alerta" })).toContainText(
+    "Team Lead ficticio 1",
+  );
+  await expect(
+    page
+      .getByRole("region", { name: "Factores, por aporte al índice" })
+      .getByRole("rowheader")
+      .first(),
+  ).toContainText("Horas extra");
+
   const resumen: ResumenDTO = await (
     await page.request.get("/api/resumen?periodStart=2026-10-12")
   ).json();
@@ -191,10 +238,17 @@ test("plantilla completa: rechazo atómico, cuatro niveles, ranking, resumen e i
     await db.evaluacion.count(),
     await db.alerta.count(),
   ]).toEqual(antes);
+  // A complete read of the board: the people series the screens use, plus the
+  // evaluations, summary and alerts of the P0 contract.
   const tiempos: number[] = [];
   for (let i = 0; i < 40; i++) {
     const start = performance.now();
-    for (const ruta of ["evaluaciones?pageSize=100", "resumen", "alertas"])
+    for (const ruta of [
+      "evaluaciones?pageSize=100",
+      "resumen",
+      "alertas",
+      "personas",
+    ])
       expect((await page.request.get(`/api/${ruta}`)).ok()).toBe(true);
     tiempos.push(performance.now() - start);
   }
@@ -224,7 +278,7 @@ test("plantilla completa: rechazo atómico, cuatro niveles, ranking, resumen e i
   expect(p95).toBeLessThanOrEqual(3000);
   await page.goto("/home");
   await expect(
-    page.getByRole("region", { name: "Resultados de evaluaciones" }),
+    page.getByRole("region", { name: "Personas en nivel Alto" }),
   ).toBeVisible();
   await page.screenshot({
     path: info.outputPath("tablero.png"),
@@ -237,10 +291,9 @@ test("antecedente tardío y reglas por script preservan historial y superan aler
   db,
 }, info) => {
   await importar(page, "tests/data/fuera_de_orden_1_semana_2026-10-12.csv");
-  await page.goto("/home");
-  await expect(
-    page.getByRole("region", { name: "Resultados de evaluaciones" }),
-  ).toContainText("INCOMPLETO");
+  await expect(await semanaDe(page, "EMP-019", "12–18 oct 2026")).toContainText(
+    "Incompleto",
+  );
   await importar(page, "tests/data/fuera_de_orden_2_semana_2026-10-05.csv");
   expect(await db.evaluacion.count()).toBe(3);
   expect(await db.alerta.count({ where: { vigencia: "ACTIVA" } })).toBe(1);
@@ -254,6 +307,14 @@ test("antecedente tardío y reglas por script preservan historial y superan aler
     await page.request.get(`/api/evaluaciones/${historica.evaluationId}`)
   ).json();
   expect(historico.evaluacion.vigente).toBe(false);
+  // The superseded result keeps its level, labelled as historical.
+  await page.goto(`/reports/${historica.evaluationId}`);
+  await expect(
+    page.getByRole("region", { name: "Resultado de la semana" }),
+  ).toContainText("Resultado histórico");
+  await expect(
+    page.getByRole("link", { name: "Ver el resultado actual" }),
+  ).toBeVisible();
   const ruta = info.outputPath("reglas.json");
   const ejecutar = promisify(execFile);
   await writeFile(
@@ -289,29 +350,42 @@ test("antecedente tardío y reglas por script preservan historial y superan aler
   const job = await db.processingJob.findFirstOrThrow({
     where: { rulesVersion: "t16-nueva" },
   });
-  await page.goto("/home");
-  const tabla = page.getByRole("region", {
-    name: "Resultados de evaluaciones",
-  });
-  await expect(tabla).toContainText("Desactualizado");
-  await page.getByRole("link", { name: "Importar datos", exact: true }).click();
-  await page.getByLabel("ID del procesamiento").fill(job.jobId);
+  // Pending recalculation: the old Alto is never shown as the current level.
+  const desactualizada = await semanaDe(page, "EMP-019", "12–18 oct 2026");
+  await expect(desactualizada).toContainText("Desactualizado");
+  await expect(desactualizada).not.toContainText("Alto");
+  await page
+    .getByRole("navigation", { name: "Secciones" })
+    .getByRole("link", { name: "Importar datos" })
+    .click();
+  const campo = page.getByLabel("ID del procesamiento");
+  if (!(await campo.isVisible()))
+    await page.getByText("¿Se cortó un procesamiento?").click();
+  await campo.fill(job.jobId);
   await page
     .getByRole("button", { name: "Consultar estado", exact: true })
     .click();
   await page
     .getByRole("button", { name: "Reintentar procesamiento", exact: true })
     .click();
-  await expect(
-    page.getByText("Procesamiento: COMPLETADO", { exact: true }),
-  ).toBeVisible();
-  await page.goto("/home");
-  await expect(
-    tabla.getByRole("row").filter({ hasText: "2026-10-12" }),
-  ).toContainText("MEDIO");
+  await expect(procesamiento(page)).toContainText("Terminado");
+  await expect(await semanaDe(page, "EMP-019", "12–18 oct 2026")).toContainText(
+    "Medio",
+  );
   expect(await db.alerta.count({ where: { vigencia: "ACTIVA" } })).toBe(0);
   expect(await db.alerta.count({ where: { vigencia: "SUPERADA" } })).toBe(1);
   expect(await db.evaluacion.count()).toBe(4);
+  // The report of the superseded Alto shows its alert as superseded.
+  const alta = await db.evaluacion.findFirstOrThrow({
+    where: { nivel: "ALTO", periodo: { periodStart: new Date("2026-10-12") } },
+  });
+  await page.goto(`/reports/${alta.evaluationId}`);
+  await expect(
+    page.getByRole("region", { name: "Resultado de la semana" }),
+  ).toContainText("Resultado histórico");
+  await expect(page.getByRole("region", { name: "Alerta" })).toContainText(
+    "Superada",
+  );
 });
 
 test("límite P0: 1000 filas, 49 evaluables y archivo de 5 MiB", async ({
