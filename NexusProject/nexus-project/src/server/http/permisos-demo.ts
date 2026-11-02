@@ -32,7 +32,8 @@ export const USUARIOS_DEMO = [
   },
 ] as const;
 type Usuario = (typeof USUARIOS_DEMO)[number];
-type Permiso = "LEER" | "IMPORTAR" | "AUDITORIA" | "NOTIFICAR";
+/** PROPIOS: the signed-in person's own work data (RF10), never an index. */
+type Permiso = "LEER" | "IMPORTAR" | "AUDITORIA" | "NOTIFICAR" | "PROPIOS";
 const globalDemo = globalThis as typeof globalThis & { claveDemo?: Buffer };
 function clave() {
   return (
@@ -166,12 +167,14 @@ export function proteger<T extends string[]>(
       const usuario = usuarioDemo(request);
       if (request.method !== "GET") origen(request);
       if (
-        usuario.rol === "EMPLEADO" ||
-        ((permiso === "IMPORTAR" || permiso === "NOTIFICAR") &&
-          usuario.rol !== "RRHH") ||
-        (permiso === "AUDITORIA" &&
-          usuario.rol !== "RRHH" &&
-          usuario.rol !== "GERENCIA")
+        permiso === "PROPIOS"
+          ? !usuario.employeeId
+          : usuario.rol === "EMPLEADO" ||
+            ((permiso === "IMPORTAR" || permiso === "NOTIFICAR") &&
+              usuario.rol !== "RRHH") ||
+            (permiso === "AUDITORIA" &&
+              usuario.rol !== "RRHH" &&
+              usuario.rol !== "GERENCIA")
       )
         throw new ErrorPermiso(
           403,
@@ -183,7 +186,9 @@ export function proteger<T extends string[]>(
         });
         if (
           !empleado?.activo ||
-          empleado.tipo !== usuario.rol ||
+          // The demo "Empleado" is a technician in the catalog.
+          empleado.tipo !==
+            (usuario.rol === "EMPLEADO" ? "TECNICO" : usuario.rol) ||
           (usuario.rol === "TEAM_LEAD" && empleado.teamId !== usuario.teamId)
         )
           throw new ErrorPermiso(
@@ -191,7 +196,7 @@ export function proteger<T extends string[]>(
             "El usuario demo no tiene una asignación vigente.",
           );
       }
-      if (usuario.rol === "TEAM_LEAD") {
+      if (usuario.rol === "TEAM_LEAD" && permiso !== "PROPIOS") {
         if (recurso === "informe") {
           const fila = await db.evaluacion.findFirst({
             where: {

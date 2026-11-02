@@ -117,7 +117,10 @@ export async function leerResultados(
       nivel: evaluacion?.nivel ?? null,
       alertId: alerta?.alertId ?? null,
     };
-    return { fila, alerta };
+    const registro = p.registroVigente
+      ? registroDesdeDb(p.registroVigente, par)
+      : null;
+    return { fila, alerta, registro };
   });
 }
 

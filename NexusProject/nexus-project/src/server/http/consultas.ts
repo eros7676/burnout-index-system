@@ -8,7 +8,7 @@ import {
   identificador,
 } from "../services/filtros-consultas";
 
-async function respuesta(accion: () => Promise<unknown>) {
+export async function respuesta(accion: () => Promise<unknown>) {
   let status = 200;
   let body;
   try {

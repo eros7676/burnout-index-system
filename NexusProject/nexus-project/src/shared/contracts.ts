@@ -216,3 +216,27 @@ export type Paginacion = { page?: number; pageSize?: number };
 export type FiltrosEvaluaciones = FiltrosComunes & Paginacion & { nivel?: Nivel };
 export type FiltrosAlertas = FiltrosComunes & Paginacion;
 // FilaTablero usa indice/nivel null solo cuando no hay evaluación; Evaluacion siempre tiene índice numérico. processingState describe ese par, no todos los pares del job: uno ya completado sigue COMPLETADO aunque falle otro. actualizado compara datos, antecedente, reglas y engineVersion esperados con el snapshot vigente. Si es false, señalar pendiente/fallo y no presentar el nivel anterior como actualizado; el detalle histórico sí puede conservarlo identificado.
+
+/** One week of loaded work data, without any index: all the employee sees of themselves (RF10). */
+export type DatosSemana = Omit<DatosLaborales, 'employeeId'>;
+/** One week of a person: loaded data plus its current evaluation, with FilaTablero's vigencia rules. */
+export type SemanaPersona = DatosSemana & {
+  actualizado: boolean;
+  processingState: EstadoJob;
+  evaluationId: string | null;
+  indice: number | null;
+  nivel: Nivel | null;
+  alertId: string | null;
+};
+export type PersonaDTO = {
+  employeeId: string; nombre: string;
+  tipo: 'TECNICO' | 'TEAM_LEAD';
+  teamId: string; equipo: string; responsable: string | null;
+  semanas: SemanaPersona[]; // most recent first
+};
+export type PersonasDTO = { items: PersonaDTO[]; semanas: FechaISO[] };
+export type MisDatosDTO = { nombre: string; equipo: string | null; semanas: DatosSemana[] };
+export type ReglasDTO = {
+  vigente: ConfiguracionIndice;
+  versiones: { version: string; effectiveFrom: FechaISO; createdAt: string }[];
+};

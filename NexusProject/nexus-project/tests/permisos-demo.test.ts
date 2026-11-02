@@ -132,3 +132,19 @@ test("T15a: aplica el equipo del servidor y rechaza filtros ajenos y usuarios in
   activo = false;
   assert.equal((await get(req("demo-tl-01"))).status, 403);
 });
+test("Mis datos: PROPIOS solo para quien tiene legajo vigente", async () => {
+  let registro = { activo: true, tipo: "TECNICO", teamId: "EQ-01" };
+  const db = {
+    empleado: { findUnique: async () => registro },
+  } as unknown as PrismaClient;
+  const propios = proteger(db, "PROPIOS", async () => Response.json({ ok: true }));
+  assert.equal((await propios(req("demo-empleado"))).status, 200);
+  assert.equal((await propios(req("demo-rrhh"))).status, 403);
+  assert.equal((await propios(req())).status, 401);
+  registro = { activo: true, tipo: "TEAM_LEAD", teamId: "EQ-01" };
+  assert.equal((await propios(req("demo-tl-01"))).status, 200);
+  registro = { activo: false, tipo: "TECNICO", teamId: "EQ-01" };
+  assert.equal((await propios(req("demo-empleado"))).status, 403);
+  registro = { activo: true, tipo: "TEAM_LEAD", teamId: "EQ-01" };
+  assert.equal((await propios(req("demo-empleado"))).status, 403);
+});
