@@ -101,7 +101,12 @@ controls, 10 px sections. One elevation (`--shadow-pop`) for popovers only.
 | `DistributionBar`, `WeekColumns`, `IndexChart`, `FactorBullet` | SVG-free, dependency-free charts, each with a hidden data table or aria-label |
 | `DataTable` | scrollable region with a label; numbers right-aligned; row header is the person |
 | `SkeletonRows`, `Empty`, `ErrorBox`, `Notice` | loading inside the datum's box; empty says what would appear and the next step; errors say what failed and offer retry |
-| `SelectField`, `SearchField`, `Toolbar` | visible labels; selects carry names, values carry ids — nobody types an ID |
+| `SelectField`, `SearchField`, `Toolbar`, `DateField` | visible labels; selects carry names, values carry ids — nobody types an ID |
+| `TaskBar`, `TaskLegend`, `textoTareas` | a week's tasks as one bar (vencidas, pendientes, completadas) with the same counts in words; the legend once per block |
+| `HoursColumns` | hours per week with extra hours stacked; neutral, never a level |
+| `WeekDataTable` | loaded weekly data as loaded (7,5 h stays 7,5 h), no index or level |
+| `StatusTag` | the state of an action or record (neutral, aviso, éxito, incidencia); never a level |
+| `Stepper`, `Pagination` | a flow's steps with the current one marked; previous/next with "Página n de m" |
 
 A new pattern is added to the kit first, then used.
 
@@ -178,3 +183,6 @@ people are not shown (`GRUPO_MINIMO`).
 - 2026-11-02 — Wherever a person appears with history, the eight-week strip shows it. (held by owner)
 - 2026-11-02 — Filters are selects with names; no screen asks to type an ID. (held by owner)
 - 2026-11-02 — App code animates only through src/shared/motion; reduced motion is decided there. (held by the motion git-grep check)
+- 2026-11-02 — [provisional] Tasks are shown as the week's counts (activas, pendientes, vencidas), never as task items. (held by owner)
+- 2026-11-02 — [provisional] An action's or record's state uses StatusTag; a level only ever uses LevelTag. (held by owner)
+- 2026-11-02 — [provisional] The report page is the one detail of a week's result; lists link to it instead of opening inline panels. (held by owner)
