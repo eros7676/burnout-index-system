@@ -1,0 +1,89 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+.box {
+  display: grid;
+  gap: var(--space-4);
+}
+.note {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.week {
+  display: grid;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+.stale {
+  color: var(--notice);
+  font-size: var(--text-sm);
+}
+/* Causes are the reason for the alert: they read at body size, with the way into them below. */
+.causes {
+  min-width: 220px;
+}
+/* A long name may wrap on narrow screens; the delivery state never does. */
+.recipient {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+}
+.recipient > :first-child {
+  text-wrap: balance;
+}
+.recipient > :last-child {
+  white-space: nowrap;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-1);
+  /* Quiet buttons carry side padding; their text lines up with the causes above. */
+  margin: var(--space-1) 0 calc(-1 * var(--space-1)) calc(-1 * var(--space-2));
+  white-space: nowrap;
+}
+.actions > * {
+  min-height: 28px;
+}
+.toggle svg {
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.toggle[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+/* An open row and its detail read as one block. */
+.rows tr[data-abierta] > th,
+.rows tr[data-abierta] > td {
+  background: var(--surface-2);
+  border-bottom-color: transparent;
+}
+.rows .detailRow > td {
+  background: var(--surface-2);
+  padding: 0 var(--space-3) var(--space-4);
+}
+.detail {
+  display: grid;
+  gap: var(--space-5);
+  white-space: normal;
+}
+.detail[data-con-correo] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  align-items: start;
+}
+.detailTitle {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-md);
+}
+.suggestions {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-5);
+  list-style: disc;
+  color: var(--ink-2);
+}
+@media (max-width: 1100px) {
+  .detail[data-con-correo] {
+    grid-template-columns: 1fr;
+  }
+}
