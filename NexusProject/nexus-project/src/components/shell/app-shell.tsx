@@ -45,7 +45,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <p>
             <strong>Modo demo</strong> con datos ficticios. El índice señala
             posible sobrecarga; no es un diagnóstico.{" "}
-            <Link href="/rules-config">Cómo se calcula</Link>
+            {visible && puedeAbrir(visible.rol, "/rules-config") && (
+              <Link href="/rules-config">Cómo se calcula</Link>
+            )}
           </p>
           {sesion.estado === "error" && (
             <ErrorBox mensaje={sesion.mensaje} onRetry={sesion.reintentar} />
