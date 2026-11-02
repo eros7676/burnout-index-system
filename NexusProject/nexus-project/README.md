@@ -6,7 +6,7 @@ Instalación completa, requisitos y alcance en el [README principal](../../READM
 
 Copiar `.env.example` a `.env`, configurar `DATABASE_URL`, ejecutar `npm ci`, `npm run db:generate`, `npm run db:deploy` y `npm run db:seed`. Hay tres migraciones: persistencia T02, intentos de notificación T12 y auditoría T15b. El seed conserva el catálogo ficticio y las reglas v1 sin precargar resultados. No subir archivos `.env`.
 
-Iniciar con `npm run dev` y seleccionar **RRHH** en **Usuario de demostración** antes de importar `templates/ejemplo-dos-semanas.csv`. La pantalla `/importaciones` valida y confirma; `/` y `/home` muestran evaluaciones, informes, alertas y controles de simulación de correo.
+Iniciar con `npm run dev`, abrir `/` y entrar como **RRHH** para importar `templates/ejemplo-dos-semanas.csv` desde **Importar datos**. Cada perfil ve solo las secciones que puede abrir; pantallas, roles, tokens y reglas de diseño están en [DESIGN.md](DESIGN.md).
 
 ## Permisos y trazabilidad
 

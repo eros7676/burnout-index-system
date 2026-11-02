@@ -4,14 +4,13 @@ Implementado localmente en `t12-feature`, desde `main` (`f142172`). Extiende T11
 
 ## Demostración
 
-Aplicar las migraciones con `npm run db:deploy`, conservar el seed y abrir la aplicación. Importar `templates/ejemplo-dos-semanas.csv` si todavía no existen sus registros. En **Alertas internas vigentes**:
+Aplicar las migraciones con `npm run db:deploy`, conservar el seed y abrir la aplicación. Importar `templates/ejemplo-dos-semanas.csv` si todavía no existen sus registros. Como RRHH, en cada alerta de **Alertas** o del informe:
 
-1. **Preparar fallo simulado** guarda un intento `PENDIENTE` y pasa la misma alerta al canal `SIMULADO`.
-2. **Procesar envío pendiente** lo termina como `FALLIDO`; la alerta y la evaluación permanecen.
-3. **Reintentar correo simulado** agrega otro intento pendiente. Procesarlo termina como **Enviado (simulado)**.
-4. **Ver / actualizar intentos** consulta el historial, con número, destinatario, fecha y detalle. Después de recargar la página permite recuperar un pendiente y procesarlo.
+1. **Simular fallo** prepara un intento y lo procesa: termina como `FALLIDO` y la alerta pasa al canal `SIMULADO`; la alerta y la evaluación permanecen.
+2. **Simular envío exitoso** agrega otro intento y lo termina como **Enviado (simulado)**.
+3. **Actualizar historial** consulta los intentos, con número, destinatario, fecha y detalle. Si se perdió la respuesta de un procesamiento, después de recargar aparece **Procesar envío pendiente** para terminarlo.
 
-**Preparar correo simulado** usa el resultado exitoso desde el primer intento. Si no existe un responsable válido, el procesamiento devuelve `SIN_DESTINATARIO`. Después de corregir el catálogo se puede preparar otro intento, que vuelve a resolver técnico → Team Lead o Team Lead → Gerencia. No se implementa un editor de empleados en T12.
+Gerencia y Team Lead ven el historial sin estos controles. Si no existe un responsable válido, el procesamiento devuelve `SIN_DESTINATARIO`. Después de corregir el catálogo se puede preparar otro intento, que vuelve a resolver técnico → Team Lead o Team Lead → Gerencia. No se implementa un editor de empleados en T12.
 
 ## Persistencia y concurrencia
 

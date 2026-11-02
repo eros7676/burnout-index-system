@@ -1,18 +1,18 @@
 # T06 · Pantalla de carga CSV
 
-Disponible en `/importaciones`, desde «Importar datos» o «Importación de datos» en `/` y `/home`. Requiere la instalación de MySQL, migración y seed del README. T14 conecta el resumen a resultados persistidos de T13; ver [guía del tablero](t14-tablero.md).
+Disponible en `/importaciones`, desde **Importar datos** en el menú (solo RRHH). Requiere la instalación de MySQL, migración y seed del README. T14 conecta el resumen a resultados persistidos de T13; ver [guía del tablero](t14-tablero.md).
 
 ## Uso
 
-1. Seleccionar un CSV y pulsar **Validar CSV**. La API T04 comprueba formato, máximo 5 MiB/1.000 filas, catálogo, semanas y duplicados. El navegador no calcula ni persiste registros laborales.
+1. Seleccionar un CSV y pulsar **Validar archivo**. La API T04 comprueba formato, máximo 5 MiB/1.000 filas, catálogo, semanas y duplicados. El navegador no calcula ni persiste registros laborales.
 2. Revisar total, nuevas, omitidas, muestra de hasta diez filas (incluidos los campos opcionales), errores por fila/campo y advertencias. Un lote rechazado no se puede confirmar. Corregir y volver a validar; las advertencias no habilitan filas inválidas.
-3. **Confirmar importación** guarda el lote. **Cancelar vista previa** elimina el temporal sin guardar registros laborales. La vista vence a los treinta minutos y obliga a validar nuevamente. Un conflicto de confirmación también exige validar otra vez.
-4. Revisar por separado **Datos confirmados** y **Procesamiento**. HTTP 200 no significa que el cálculo haya terminado: un job FALLIDO conserva los datos y permite reintentar. Un archivo idéntico muestra filas omitidas y puede confirmar sin job.
+3. **Confirmar importación** guarda el lote. **Cancelar** elimina el temporal de una vista validada sin guardar registros laborales. La vista vence a los treinta minutos y obliga a validar nuevamente. Un conflicto de confirmación también exige validar otra vez.
+4. Revisar por separado **Importación confirmada** y **Procesamiento**. HTTP 200 no significa que el cálculo haya terminado: un job FALLIDO conserva los datos y permite reintentar. Un archivo idéntico muestra filas omitidas y puede confirmar sin job.
 5. **Consultar estado** lee el job actual. **Reintentar procesamiento** se habilita para PENDIENTE/FALLIDO; PROCESANDO debe consultarse hasta que termine o el servidor indique que es recuperable. No se hacen reintentos automáticos ni cálculos en el cliente.
 
 Los botones quedan bloqueados durante las peticiones. Si se pierde la respuesta al confirmar, se conserva el importId y se ofrece **Recuperar confirmación**: repite el mismo identificador idempotente. No iniciar otra carga para resolver una respuesta desconocida. La confirmación repetida puede devolver una instantánea antigua, por eso se consulta además el job actual.
 
-Se conserva únicamente el último importId pendiente de verificar o jobId en localStorage, sin el CSV ni los indicadores. Tras recargar, se puede recuperar la confirmación o consultar el job. También se admite escribir el jobId manualmente. Si el navegador bloquea el almacenamiento, conservar los IDs visibles antes de salir; no se garantiza recuperación automática entre navegadores/dispositivos. No hay listado de jobs en T06.
+Se conserva únicamente el último importId pendiente de verificar o jobId en localStorage, sin el CSV ni los indicadores. Tras recargar, se puede recuperar la confirmación o consultar el job. También se admite escribir el ID del procesamiento en **¿Se cortó un procesamiento?**. Si el navegador bloquea el almacenamiento, conservar los IDs visibles antes de salir; no se garantiza recuperación automática entre navegadores/dispositivos. No hay listado de jobs en T06.
 
 La interfaz usa etiquetas de formulario, estados anunciados, errores con texto, botones nativos, foco visible y tablas con desplazamiento horizontal en pantallas pequeñas. La fecha de vencimiento se presenta en la hora local del navegador; las semanas del CSV conservan sus fechas ISO.
 

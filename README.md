@@ -4,7 +4,7 @@ Prototipo para identificar indicadores de posible sobrecarga laboral. Next.js + 
 
 ## Estado y referencias
 
-Existe una base de Next.js con **tablero conectado a resultados persistidos**, disponible en / y /home (T14, integrado en `main`). T02 agrega el esquema Prisma, migración inicial, conexión y seed. Están implementados los servicios de validación CSV y duplicados T05, cálculo T07, persistencia de evaluaciones T08, reglas versionadas T09, informes T10 y alertas internas T11. T04 agrega la API de importación/confirmación y los jobs recuperables. T06 conecta la pantalla CSV en /importaciones con validación, vista previa, confirmación, cancelación y recuperación. T13 expone las consultas HTTP de evaluaciones, informe, resumen y alertas. T14 las consume con filtros, paginación, estados e informe individual. No confundir carpetas reservadas con funcionalidades terminadas.
+Existe una base de Next.js con **tablero conectado a resultados persistidos**, que se abre en `/` eligiendo un perfil de demostración (interfaz reconstruida; mapa de pantallas y roles en [DESIGN.md](NexusProject/nexus-project/DESIGN.md)). T02 agrega el esquema Prisma, migración inicial, conexión y seed. Están implementados los servicios de validación CSV y duplicados T05, cálculo T07, persistencia de evaluaciones T08, reglas versionadas T09, informes T10 y alertas internas T11. T04 agrega la API de importación/confirmación y los jobs recuperables. T06 conecta la pantalla CSV en /importaciones con validación, vista previa, confirmación, cancelación y recuperación. T13 expone las consultas HTTP de evaluaciones, informe, resumen y alertas. La interfaz las consume en Resumen, Personas (lista y ficha semanal con tareas), Equipos, Alertas e Informe, y suma Reglas, Auditoría y Mis datos. No confundir carpetas reservadas con funcionalidades terminadas.
 
 T01 incorpora contratos TypeScript, catálogo HTTP, errores de dominio, mocks tipados y pruebas base sin base de datos. La guía de uso está en [Docs/t01-base.md](Docs/t01-base.md). Los mocks no implementan los endpoints ni el motor del índice.
 
@@ -51,7 +51,7 @@ Una primera semana válida conserva su índice y produce INCOMPLETO por falta de
 
 ## Usuarios demo y auditoría (T15a/T15b)
 
-Seleccionar **Usuario de demostración** en la barra superior. RRHH puede importar y gestionar notificaciones; Gerencia consulta resultados y auditoría; cada Team Lead solo consulta su equipo; el empleado no accede a índices ni alertas. Las restricciones se verifican en el servidor, también al pedir un informe por ID. Sin sesión se responde 401; sin permiso, 403. La selección pública de identidades ficticias no es autenticación productiva.
+Elegir un perfil en `/`; después se cambia con **Viendo como** en la franja superior. RRHH puede importar y gestionar notificaciones; Gerencia consulta resultados y auditoría; cada Team Lead solo consulta su equipo; el empleado no accede a índices ni alertas. Las restricciones se verifican en el servidor, también al pedir un informe por ID. Sin sesión se responde 401; sin permiso, 403. La selección pública de identidades ficticias no es autenticación productiva.
 
 T15b agrega eventos transaccionales de validación aceptada/rechazada, confirmación, cancelación y publicación de reglas. `GET /api/auditoria` permite filtrar y paginar el historial para RRHH/Gerencia. Los eventos incluyen actor, fecha y referencias, sin copiar CSV ni credenciales. Repetir confirmación/cancelación no duplica eventos y un fallo de auditoría revierte la operación. No hay una pantalla nueva de auditoría; la consulta es HTTP.
 
@@ -59,7 +59,7 @@ Aplicar las tres migraciones T02/T12/T15b con `npm run db:deploy` y generar el c
 
 ## Instalación de la base actual
 
-T15a requiere seleccionar un **Usuario de demostración** en la barra superior antes de consultar datos. RRHH habilita el circuito completo de importación; Team Lead queda limitado a su equipo y el empleado no puede acceder a índices/alertas. Ver [guía T15a](Docs/t15a-permisos.md).
+T15a requiere elegir un perfil de demostración en `/` antes de consultar datos. RRHH habilita el circuito completo de importación; Team Lead queda limitado a su equipo y el empleado no puede acceder a índices/alertas. Ver [guía T15a](Docs/t15a-permisos.md).
 
 Requisitos: Node.js >=20.9 (se recomienda Node 22), npm, Git y Docker Compose para MySQL.
 
@@ -81,7 +81,7 @@ npm run dev
 
 Abrir http://localhost:3000. Docker toma DB_NAME/DB_USER/DB_PASSWORD y DB_PORT del .env de la raíz. El puerto publicado por defecto es 3306; si está ocupado, cambiar DB_PORT (por ejemplo, a 3307) y usar el mismo puerto en DATABASE_URL del .env de la aplicación. Esperar a que MySQL esté listo antes de aplicar migraciones. No subir archivos .env. El tablero y la importación necesitan MySQL; contratos y pruebas unitarias pueden ejecutarse sin la base. Sin registros importados, el tablero muestra el estado vacío.
 
-Para demostrar T14: seleccionar **RRHH** y abrir **Importar datos**, validar y confirmar `templates/ejemplo-dos-semanas.csv` y esperar procesamiento COMPLETADO. Volver a **Resumen**: aparecen 83,71 INCOMPLETO y 91,21 ALTO, con una alerta interna para TL-01. **Ver informe** muestra ranking, umbrales, reglas y persistencia. Los filtros por empleado/equipo usan sus IDs; la semana comienza un lunes. **Actualizar resultados** consulta nuevamente la API. Ver [guía T14](Docs/t14-tablero.md).
+Para demostrar T14: seleccionar **RRHH** y abrir **Importar datos**, validar y confirmar `templates/ejemplo-dos-semanas.csv` y esperar procesamiento COMPLETADO. En **Personas**, la ficha de EMP-001 muestra 83,71 Incompleto y 91,21 Alto, y **Alertas** una alerta interna para TL-01. **Ver informe** muestra ranking, umbrales, reglas y persistencia. Los filtros usan selectores con nombres; nadie escribe IDs. Ver [guía T14](Docs/t14-tablero.md).
 
 ## Comprobaciones y base de datos
 

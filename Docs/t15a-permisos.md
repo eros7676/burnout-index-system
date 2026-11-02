@@ -2,7 +2,7 @@
 
 Implementado en `t15-feature` después del commit T15b `5b11fcf`. No requiere una migración nueva. Las asignaciones de empleados/equipos usan el seed existente.
 
-En la barra superior de cualquier pantalla, seleccionar **Usuario de demostración**. El cambio crea una sesión y recarga la página para descartar los resultados del usuario anterior. Sin sesión, las consultas de datos devuelven 401. El selector de identidades es público porque se trata de una demo local, no de autenticación productiva.
+Elegir un perfil en `/` (ingreso de la demo) y cambiarlo con **Viendo como** en la franja superior de cualquier pantalla. El cambio crea una sesión y recarga la página para descartar los resultados del usuario anterior; el menú muestra solo las secciones del rol. Sin sesión, las consultas de datos devuelven 401. El selector de identidades es público porque se trata de una demo local, no de autenticación productiva.
 
 ## Roles y ámbito
 

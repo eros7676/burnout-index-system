@@ -135,7 +135,7 @@ Listo cuando: dos ejecuciones con el mismo `evaluationId` generan una sola alert
 
 ### T14 · Tablero web con índices, factores y alertas
 
-Integrado en `main` (PR #14): `/` y `/home` consumen T13 con filtros, paginación, estados de vigencia/procesamiento, informe individual/ranking y alertas internas. Ver [guía T14 y pruebas](t14-tablero.md). La aceptación integral está en T16.
+Integrado en `main` (PR #14) y después reconstruido con el resto de la interfaz (ver [DESIGN.md](../NexusProject/nexus-project/DESIGN.md)): Resumen, Personas, Alertas e Informe consumen T13 con estados de vigencia/procesamiento, informe individual/ranking y alertas internas. Ver [guía T14 y pruebas](t14-tablero.md). La aceptación integral está en T16.
 
 Responsable: Francisco · revisa Gonzalo. Depende de: T13; T11 para mostrar alertas. La tabla pide T01 y T13 completo.
 
