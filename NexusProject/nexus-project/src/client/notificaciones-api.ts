@@ -9,22 +9,37 @@ async function llamar<K extends Operacion>(
   solicitud?: SolicitudNotificacion,
 ): Promise<CuerposExito[K]> {
   const ruta = API_ROUTES[operacion];
-  const respuesta = await fetch(
-    ruta.path
-      .replace("{alertId}", encodeURIComponent(alertId))
-      .replace("{intentoId}", encodeURIComponent(intentoId ?? "")),
-    {
-      method: ruta.method,
-      cache: "no-store",
-      ...(solicitud
-        ? {
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(solicitud),
-          }
-        : {}),
-    },
-  );
-  const body = await respuesta.json();
+  let respuesta: Response;
+  try {
+    respuesta = await fetch(
+      ruta.path
+        .replace("{alertId}", encodeURIComponent(alertId))
+        .replace("{intentoId}", encodeURIComponent(intentoId ?? "")),
+      {
+        method: ruta.method,
+        cache: "no-store",
+        ...(solicitud
+          ? {
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(solicitud),
+            }
+          : {}),
+      },
+    );
+  } catch {
+    // The browser's own text ("Failed to fetch") says nothing to the user.
+    throw new Error(
+      "No se pudo conectar. Revisá la conexión y volvé a intentar.",
+    );
+  }
+  let body;
+  try {
+    body = await respuesta.json();
+  } catch {
+    throw new Error(
+      "El servidor no devolvió una respuesta JSON válida. Volvé a intentar.",
+    );
+  }
   if (!respuesta.ok)
     throw new Error(
       body?.error?.mensaje ?? "No se pudo completar la simulación.",

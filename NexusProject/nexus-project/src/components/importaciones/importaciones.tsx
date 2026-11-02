@@ -63,6 +63,8 @@ export function Importaciones() {
   const [jobId, setJobId] = useState("");
   const [recuperarAbierto, setRecuperarAbierto] = useState(false);
   const [caducada, setCaducada] = useState(false);
+  /** The preview's confirmation is in flight (its answer has not been lost). */
+  const [confirmando, setConfirmando] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -182,7 +184,9 @@ export function Importaciones() {
       recordar({ jobId: value.jobId });
     });
 
-  const pendiente = recuperacion.importId;
+  // The stored importId survives a reload while a confirmation runs, but only
+  // an unanswered one is "pending": one in flight keeps its locked preview.
+  const pendiente = confirmando ? undefined : recuperacion.importId;
   const paso = resultado || pendiente || job ? 3 : vista ? 2 : 1;
   // A new file is allowed unless a confirmation is unresolved or this
   // import's calculation is still unfinished (T06).
@@ -310,9 +314,14 @@ export function Importaciones() {
             ocupado={!!busy}
             pendiente={!!pendiente}
             onConfirmar={() =>
-              ejecutar("Confirmando y procesando…", () =>
-                confirmar(vista.importId),
-              )
+              ejecutar("Confirmando y procesando…", async () => {
+                setConfirmando(true);
+                try {
+                  await confirmar(vista.importId);
+                } finally {
+                  setConfirmando(false);
+                }
+              })
             }
             onCancelar={() =>
               ejecutar("Cancelando la vista previa…", async () => {

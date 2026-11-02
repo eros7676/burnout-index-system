@@ -198,10 +198,11 @@ export function Equipos() {
         <div ref={caja}>
           {consulta.estado === "error" ? (
             <ErrorBox mensaje={consulta.mensaje} onRetry={consulta.reintentar} />
-          ) : !vista ? (
+          ) : !datos ? (
             <SkeletonRows filas={4} />
-          ) : vista.equipos.length === 0 ? (
-            <Empty titulo="Todavía no hay personas cargadas">
+          ) : !vista || vista.equipos.length === 0 ? (
+            // No week loaded yet (no week to show) or nobody in scope.
+            <Empty titulo="Todavía no hay semanas cargadas">
               Cuando RRHH importe la primera semana, acá vas a ver cada equipo.
             </Empty>
           ) : (

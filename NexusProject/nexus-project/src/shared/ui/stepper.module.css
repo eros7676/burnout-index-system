@@ -57,3 +57,10 @@
   border-color: var(--accent);
   color: var(--accent);
 }
+
+/* Narrow screens: a label wraps rather than pushing the page sideways. */
+@media (max-width: 900px) {
+  .label {
+    white-space: normal;
+  }
+}
