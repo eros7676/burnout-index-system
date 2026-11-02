@@ -18,7 +18,7 @@ export const USUARIOS_DEMO = [
   },
   ...[1, 2, 3, 4].map((n) => ({
     userId: `demo-tl-0${n}`,
-    nombre: `Team Lead EQ-0${n}`,
+    nombre: `Team Lead, Célula ficticia ${n}`,
     rol: "TEAM_LEAD",
     employeeId: `TL-0${n}`,
     teamId: `EQ-0${n}`,
@@ -32,7 +32,8 @@ export const USUARIOS_DEMO = [
   },
 ] as const;
 type Usuario = (typeof USUARIOS_DEMO)[number];
-type Permiso = "LEER" | "IMPORTAR" | "AUDITORIA" | "NOTIFICAR";
+/** PROPIOS: the signed-in person's own work data (RF10), never an index. */
+type Permiso = "LEER" | "IMPORTAR" | "AUDITORIA" | "NOTIFICAR" | "PROPIOS";
 const globalDemo = globalThis as typeof globalThis & { claveDemo?: Buffer };
 function clave() {
   return (
@@ -159,19 +160,22 @@ export function proteger<T extends string[]>(
   db: PrismaClient,
   permiso: Permiso,
   accion: (request: Request, ...ids: T) => Promise<Response>,
-  recurso?: "informe",
+  /** "informe": one report checked against the team; "global": company-wide data a Team Lead may read unscoped. */
+  recurso?: "informe" | "global",
 ) {
   return async (request: Request, ...ids: T): Promise<Response> => {
     try {
       const usuario = usuarioDemo(request);
       if (request.method !== "GET") origen(request);
       if (
-        usuario.rol === "EMPLEADO" ||
-        ((permiso === "IMPORTAR" || permiso === "NOTIFICAR") &&
-          usuario.rol !== "RRHH") ||
-        (permiso === "AUDITORIA" &&
-          usuario.rol !== "RRHH" &&
-          usuario.rol !== "GERENCIA")
+        permiso === "PROPIOS"
+          ? !usuario.employeeId
+          : usuario.rol === "EMPLEADO" ||
+            ((permiso === "IMPORTAR" || permiso === "NOTIFICAR") &&
+              usuario.rol !== "RRHH") ||
+            (permiso === "AUDITORIA" &&
+              usuario.rol !== "RRHH" &&
+              usuario.rol !== "GERENCIA")
       )
         throw new ErrorPermiso(
           403,
@@ -183,7 +187,9 @@ export function proteger<T extends string[]>(
         });
         if (
           !empleado?.activo ||
-          empleado.tipo !== usuario.rol ||
+          // The demo "Empleado" is a technician in the catalog.
+          empleado.tipo !==
+            (usuario.rol === "EMPLEADO" ? "TECNICO" : usuario.rol) ||
           (usuario.rol === "TEAM_LEAD" && empleado.teamId !== usuario.teamId)
         )
           throw new ErrorPermiso(
@@ -191,7 +197,11 @@ export function proteger<T extends string[]>(
             "El usuario demo no tiene una asignación vigente.",
           );
       }
-      if (usuario.rol === "TEAM_LEAD") {
+      if (
+        usuario.rol === "TEAM_LEAD" &&
+        permiso !== "PROPIOS" &&
+        recurso !== "global"
+      ) {
         if (recurso === "informe") {
           const fila = await db.evaluacion.findFirst({
             where: {

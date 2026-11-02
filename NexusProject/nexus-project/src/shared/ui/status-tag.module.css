@@ -1,0 +1,42 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 1px 8px;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  white-space: nowrap;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.tag[data-tono="aviso"] {
+  color: var(--notice);
+  background: var(--notice-soft);
+  border-color: transparent;
+}
+.tag[data-tono="exito"] {
+  color: var(--success);
+  background: var(--success-soft);
+  border-color: transparent;
+}
+/* An incident carries a mark, so it does not rely on color alone. */
+.tag[data-tono="incidencia"] {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-color: transparent;
+  font-weight: var(--weight-strong);
+}
+.tag[data-tono="incidencia"]::before {
+  content: "!";
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: var(--text-xs);
+  line-height: 1;
+}

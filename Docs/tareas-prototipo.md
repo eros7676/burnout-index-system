@@ -85,7 +85,7 @@ Responsable: Santiago · revisión Gonzalo. Depende de: T02, T03, T05. La tabla 
 
 Implementar las rutas de validación, confirmación, cancelación, job y reintento de Contratos y pruebas. Validar genera una vista previa temporal. Confirmar revalida y guarda en una transacción, y después solicita T08, T10 y T11. Rechazar conflictos y no sobrescribir. Procesar a los afectados y al sucesor inmediato si existe.
 
-T10/T11 están disponibles como servicios verificados. Al publicar cada par con T08, T04 pasa `alPublicar: alPublicarAlerta`, también en reintentos. Esta rama local implementa CU01 y sus [pruebas de integración HTTP](t11-alertas.md#integración-con-t04); ver [guía T04](t04-importaciones.md). La aceptación del circuito con interfaz corresponde a T16.
+T10/T11 están disponibles como servicios verificados. Al publicar cada par con T08, T04 pasa `alPublicar: alPublicarAlerta`, también en reintentos. T04 (PR #11) implementa CU01 y sus [pruebas de integración HTTP](t11-alertas.md#integración-con-t04); ver [guía T04](t04-importaciones.md). La aceptación del circuito con interfaz está en T16 (`acceptance/`).
 
 Listo cuando: un CSV válido se confirma una sola vez, un CSV inválido no modifica la base y la API entrega estado y cantidades.
 
@@ -99,7 +99,7 @@ Listo cuando: hay tests de BAJO, MEDIO, ALTO e INCOMPLETO, pico aislado, la mism
 
 ### T06 · Pantalla de carga y previsualización
 
-Implementada en `t06-feature`: pantalla `/importaciones` conectada a T04, con errores por fila, vencimiento, confirmación/cancelación y consulta/reintento/recuperación de jobs. Ver [guía T06 y pruebas de navegador](t06-pantalla-carga.md). La aceptación del circuito con tablero sigue en T16.
+Integrada en `main` (PR #12): pantalla `/importaciones` conectada a T04, con errores por fila, vencimiento, confirmación/cancelación y consulta/reintento/recuperación de jobs. Ver [guía T06 y pruebas de navegador](t06-pantalla-carga.md). La aceptación del circuito con tablero está en T16.
 
 Responsable: Alfonso + Francisco. Depende de: T01 y el contrato de T04.
 
@@ -117,7 +117,7 @@ Listo cuando: el detalle sale de evaluaciones guardadas, se entiende en el table
 
 ### T13 · API de consultas y resultados
 
-Integrada en `main`: cuatro GET con filtros, paginación, vigencia/actualización, resumen y detalle histórico. Ver [guía T13](t13-consultas.md). T14 conecta el tablero en la rama local `t14-feature`; la aceptación integral sigue en T16.
+Integrada en `main`: cuatro GET con filtros, paginación, vigencia/actualización, resumen y detalle histórico. Ver [guía T13](t13-consultas.md). T14 conecta el tablero (PR #14) y T16 cubre la aceptación integral (PR #15).
 
 Responsable: Gonzalo. Depende de: T02, T08, T10; T11 para mostrar alertas.
 
@@ -135,7 +135,7 @@ Listo cuando: dos ejecuciones con el mismo `evaluationId` generan una sola alert
 
 ### T14 · Tablero web con índices, factores y alertas
 
-Implementado localmente en `t14-feature`: `/` y `/home` consumen T13 con filtros, paginación, estados de vigencia/procesamiento, informe individual/ranking y alertas internas. Ver [guía T14 y pruebas](t14-tablero.md). Revisión e integración remota pendientes; la aceptación integral sigue en T16.
+Integrado en `main` (PR #14) y después reconstruido con el resto de la interfaz (ver [DESIGN.md](../NexusProject/nexus-project/DESIGN.md)): Resumen, Personas, Alertas e Informe consumen T13 con estados de vigencia/procesamiento, informe individual/ranking y alertas internas. Ver [guía T14 y pruebas](t14-tablero.md). La aceptación integral está en T16.
 
 Responsable: Francisco · revisa Gonzalo. Depende de: T13; T11 para mostrar alertas. La tabla pide T01 y T13 completo.
 
@@ -145,9 +145,9 @@ Listo cuando: después de importar un CSV, el tablero muestra los resultados alm
 
 ### T16 · Integración integral y pruebas de punta a punta
 
-Implementación local en `t16-feature`: verificador P0 secuencial y aceptación con MySQL real en Chrome/Firefox, plantilla completa y límite de carga. Ver [guía T16](t16-integracion.md) para comandos y evidencia; la usabilidad con operador y la revisión humana se registran por separado.
+Integrada en `main` (PR #15): verificador P0 secuencial y aceptación con MySQL real en Chrome/Firefox, plantilla completa y límite de carga. Ver [guía T16](t16-integracion.md) para comandos y evidencia; la usabilidad con operador se registra por separado.
 
-Verificación automatizada aprobada: la corrección de RNF01 procesó 1.000 filas/5 MiB en 53,75 s en Chrome y 53,68 s en Firefox, dentro del límite original de 60 s. `verify:p0` pasó completo. La prueba humana RNF03 y la revisión siguen pendientes; no marcar la aceptación humana T16 como terminada sin ejecutarlas.
+Verificación automatizada aprobada: la corrección de RNF01 procesó 1.000 filas/5 MiB en 53,75 s en Chrome y 53,68 s en Firefox, dentro del límite original de 60 s. `verify:p0` pasó completo. La prueba humana RNF03 sigue pendiente; no marcar la aceptación humana T16 como terminada sin ejecutarla.
 
 Responsable: Eros + Gonzalo coordinan · todos prueban. Depende de: T02, T04, T06, T08, T09, T10, T11, T13 y T14. La tabla la cierra con todas las P0: T01 a T11, T13 y T14.
 

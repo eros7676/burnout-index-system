@@ -1,0 +1,28 @@
+/* A group header names the columns under it; its rule stops short of the next group. */
+.grupo {
+  position: relative;
+  text-align: right !important;
+  border-bottom: 0 !important;
+}
+.grupo::after {
+  content: "";
+  position: absolute;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: 0;
+  height: 1px;
+  background: var(--line-strong);
+}
+/* Long headers wrap so the figures, not the labels, set the width. */
+.ajustar {
+  white-space: normal !important;
+}
+.linea {
+  white-space: nowrap;
+}
+.abajo {
+  vertical-align: bottom !important;
+}
+.semana {
+  white-space: nowrap;
+}

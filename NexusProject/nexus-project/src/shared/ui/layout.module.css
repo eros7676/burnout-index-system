@@ -1,0 +1,85 @@
+.header {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: fit-content;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.back:hover {
+  color: var(--accent);
+}
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.title {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.015em;
+}
+.context {
+  margin-top: var(--space-1);
+  color: var(--ink-2);
+  max-width: 72ch;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.section {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-6);
+  min-width: 0;
+}
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.sectionHead h2 {
+  font-size: var(--text-lg);
+}
+.aside {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.figure {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+}
+.figureLabel {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.figureValue {
+  font-size: var(--text-display);
+  font-weight: var(--weight-strong);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.figure[data-tono="alto"] .figureValue {
+  color: var(--level-alto);
+}
+.figureDetail {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}

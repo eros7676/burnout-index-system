@@ -1,0 +1,63 @@
+.scroll {
+  /* Positioned, so visually hidden text inside clips here and not on the page. */
+  position: relative;
+  max-width: 100%;
+  overflow-x: auto;
+  /* Rows enter with a transform; keep it from creating a vertical scrollbar. */
+  overflow-y: hidden;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+}
+.table th,
+.table td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+.table thead th {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom-color: var(--line-strong);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+}
+.table tbody th[scope="row"] {
+  white-space: nowrap;
+}
+.table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.table tbody tr:hover {
+  background: var(--surface-2);
+}
+.num {
+  text-align: right !important;
+  white-space: nowrap;
+}
+.muted {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+/* A row's primary link: the person's name. */
+.rowLink {
+  font-weight: var(--weight-strong);
+  color: var(--ink);
+}
+.rowLink:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sub {
+  display: block;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+}

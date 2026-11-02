@@ -40,6 +40,8 @@ export async function respuestaCu01(
         error.toApiError(),
         error.codigo === "NO_ENCONTRADO" ? 404 : 422,
       );
+    // The client gets a generic body; the cause stays in the server log.
+    console.error(error);
     const body: ApiError = {
       error: {
         codigo: "ERROR_INTERNO",

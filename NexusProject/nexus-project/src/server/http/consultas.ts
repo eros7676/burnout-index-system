@@ -8,7 +8,7 @@ import {
   identificador,
 } from "../services/filtros-consultas";
 
-async function respuesta(accion: () => Promise<unknown>) {
+export async function respuesta(accion: () => Promise<unknown>) {
   let status = 200;
   let body;
   try {
@@ -20,6 +20,8 @@ async function respuesta(accion: () => Promise<unknown>) {
         : error instanceof ErrorDominio && error.codigo === "NO_ENCONTRADO"
           ? 404
           : 500;
+    // The client gets a generic body; the cause stays in the server log.
+    if (status === 500) console.error(error);
     body = {
       error: {
         codigo:

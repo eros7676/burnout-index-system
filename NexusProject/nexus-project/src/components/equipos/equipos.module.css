@@ -1,0 +1,115 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+/* A containing block for the hidden link text, so it scrolls with the table. */
+.teams > [role="region"] {
+  position: relative;
+}
+.teams thead th {
+  vertical-align: bottom;
+}
+.teams thead th.wrap {
+  white-space: normal;
+  text-wrap: balance;
+  max-width: 96px;
+}
+.mix {
+  width: 30%;
+  min-width: 150px;
+}
+/* The bar's numbers in words; screen readers get them from the bar's label. */
+.mixText {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+/* This week's count, then how it got there. */
+.alto {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+.alto strong {
+  min-width: 2ch;
+  color: var(--level-alto);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-strong);
+  line-height: 1;
+}
+.alto strong[data-cero] {
+  color: var(--ink-2);
+  font-weight: var(--weight-regular);
+}
+.link {
+  display: block;
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+}
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The level key for the bars, shown once in the section head. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+}
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.key::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--fill);
+}
+.key[data-nivel="BAJO"] {
+  --fill: var(--level-bajo);
+}
+.key[data-nivel="MEDIO"] {
+  --fill: var(--level-medio);
+}
+.key[data-nivel="ALTO"] {
+  --fill: var(--level-alto);
+}
+.key[data-nivel="INCOMPLETO"] {
+  --fill: repeating-linear-gradient(
+    -45deg,
+    var(--level-incompleto) 0 2px,
+    var(--level-incompleto-soft) 2px 4px
+  );
+}
+
+/* Alto per week: eight small columns on one baseline. */
+.trend {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 28px;
+  border-bottom: 1px solid var(--line-strong);
+  vertical-align: middle;
+}
+.trendWeek {
+  display: flex;
+  align-items: flex-end;
+  width: 10px;
+  height: 100%;
+}
+.trendBar {
+  width: 100%;
+  min-height: 3px;
+  border-radius: 2px 2px 0 0;
+  background: var(--level-alto);
+  opacity: 0.5;
+}
+.trendWeek[data-actual] .trendBar {
+  opacity: 1;
+}

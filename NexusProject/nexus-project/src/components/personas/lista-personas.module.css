@@ -1,0 +1,30 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+/* Sits on the controls' line, not the labels'. */
+.count {
+  margin-left: auto;
+  padding-block: var(--space-2);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+/* Long factor names wrap onto two lines instead of widening the table. */
+.results thead th {
+  vertical-align: bottom;
+}
+.results thead th.wrap {
+  white-space: normal;
+  text-wrap: balance;
+  min-width: 112px;
+  max-width: 128px;
+}
+.index {
+  font-weight: var(--weight-strong);
+}
+.change {
+  color: var(--ink-2);
+}
+.tasks {
+  white-space: nowrap;
+}

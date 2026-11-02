@@ -239,6 +239,37 @@ export const intentoNotificacionMock = {
   createdAt,
   completedAt: null,
 } satisfies import("./contracts").IntentoNotificacion;
+const semanaMock = {
+  periodStart: filaAltaMock.periodStart,
+  periodEnd: filaAltaMock.periodEnd,
+  horasExtra: 16,
+  diasConsecutivosSinDescanso: 16,
+  tareasActivas: 10,
+  tareasPendientes: 7,
+  tareasVencidas: 5,
+  vacacionesPendientesDias: 14,
+  horasTrabajadas: 56,
+  diasDesdeUltimasVacaciones: 127,
+};
+export const personaMock = {
+  employeeId: filaAltaMock.employeeId,
+  nombre: filaAltaMock.nombre,
+  tipo: "TECNICO",
+  teamId: filaAltaMock.teamId,
+  equipo: "Célula ficticia 1",
+  responsable: "Team Lead ficticio 1",
+  semanas: [
+    {
+      ...semanaMock,
+      actualizado: filaAltaMock.actualizado,
+      processingState: filaAltaMock.processingState,
+      evaluationId: filaAltaMock.evaluationId,
+      indice: filaAltaMock.indice,
+      nivel: filaAltaMock.nivel,
+      alertId: filaAltaMock.alertId,
+    },
+  ],
+} satisfies import("./contracts").PersonaDTO;
 export const cuerposExitoMock = {
   consultarSesionDemo: { usuario: null, usuarios: [] },
   seleccionarUsuarioDemo: {
@@ -272,6 +303,22 @@ export const cuerposExitoMock = {
     estado: "ENVIADO",
     detalle: "Enviado (simulado).",
     completedAt: createdAt,
+  },
+  listarPersonas: { items: [personaMock], semanas: [filaAltaMock.periodStart] },
+  consultarMisDatos: {
+    nombre: filaAltaMock.nombre,
+    equipo: "Célula ficticia 1",
+    semanas: [semanaMock],
+  },
+  consultarReglas: {
+    vigente: reglasMock,
+    versiones: [
+      {
+        version: reglasMock.version,
+        effectiveFrom: reglasMock.effectiveFrom,
+        createdAt: reglasMock.createdAt,
+      },
+    ],
   },
 } satisfies CuerposExito;
 

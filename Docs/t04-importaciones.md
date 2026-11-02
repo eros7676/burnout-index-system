@@ -72,4 +72,4 @@ npm run db:test:http
 
 Evidencia local del 31/10/2026: Node 24.20.0, MySQL 8.0.46 descartable en puerto 3310, base `burnout_t04_test` con migración T02 y seed. Pasaron **57 pruebas sin MySQL y 56 con MySQL**, lint sin advertencias, typecheck y build predeterminado con Turbopack. `db:test:http` verificó las cinco rutas del build real y el ejemplo 83,71/91,21 con alerta única. La plantilla completa reprodujo las 138 filas del oráculo para 49 evaluables. Al terminar quedaron cero registros laborales y cero jobs de pruebas; se detuvo el contenedor descartable. No se modificó la base de la aplicación ni .env.
 
-La implementación y estas pruebas son locales en `t04-feature`; no implican integración a main, publicación remota ni aceptación del tablero o de T16.
+La implementación y estas pruebas se integraron en `main` con PR #11; la aceptación con tablero está en T16.

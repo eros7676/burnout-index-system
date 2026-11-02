@@ -11,5 +11,11 @@
     "plugins": []
   },
   "include": ["src/shared/**/*.ts", "tests/**/*.ts"],
-  "exclude": ["node_modules", ".next", ".test-build"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    ".test-build",
+    "src/shared/ui",
+    "src/shared/motion"
+  ]
 }

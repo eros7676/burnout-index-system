@@ -14,8 +14,8 @@ import {
   validacionRechazadaMock,
 } from "../src/shared/mocks";
 
-test("todas las rutas P0, T12 y T15b tienen un mock serializable con su contrato de respuesta", () => {
-  assert.equal(Object.keys(API_ROUTES).length, 15);
+test("todas las rutas P0, T12, T15b y las lecturas de personas/reglas tienen un mock serializable con su contrato de respuesta", () => {
+  assert.equal(Object.keys(API_ROUTES).length, 18);
   assert.deepEqual(
     Object.keys(cuerposExitoMock).sort(),
     Object.keys(API_ROUTES).sort(),

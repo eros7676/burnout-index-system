@@ -1,0 +1,88 @@
+.page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6);
+  display: grid;
+  gap: var(--space-8);
+}
+.header {
+  display: grid;
+  gap: var(--space-3);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--weight-strong);
+}
+.brand span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.header h1 {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.015em;
+  max-width: 22ch;
+}
+.lead {
+  color: var(--ink-2);
+  font-size: var(--text-lg);
+  max-width: 60ch;
+}
+.panel {
+  display: grid;
+  gap: var(--space-4);
+}
+.panel h2 {
+  font-size: var(--text-lg);
+}
+.users {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+.user {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+  padding: var(--space-4);
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+.user:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.user:disabled {
+  cursor: progress;
+}
+.user[aria-current] {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.userName {
+  font-weight: var(--weight-strong);
+}
+.userScope {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.userState {
+  color: var(--accent);
+  font-size: var(--text-sm);
+}
+.foot {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  max-width: 70ch;
+}

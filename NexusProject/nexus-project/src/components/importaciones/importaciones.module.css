@@ -1,0 +1,324 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+.pasos {
+  display: grid;
+  gap: var(--space-5);
+}
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.meta {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.id {
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+/* Live line for the request in flight or the last completed action. */
+.estadoVivo:empty {
+  display: none;
+}
+.ocupado {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.hecho {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: var(--text-sm);
+}
+.error {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* Step 1: one file, a drop zone that is also the picker; its messages share its width. */
+.elegir,
+.page[data-paso="1"] .estadoVivo,
+.page[data-paso="1"] .error {
+  max-width: 760px;
+}
+.formArchivo {
+  display: grid;
+  gap: var(--space-3);
+}
+.zona {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+.zona:hover,
+.zona:focus-within {
+  border-color: var(--accent);
+}
+.zona:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.zona[data-elegido] {
+  border-style: solid;
+  background: var(--surface);
+}
+/* The native input covers the zone: a click opens the picker, a drop selects the file. */
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.input:disabled {
+  cursor: not-allowed;
+}
+.zonaIcono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.zonaTexto {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.zonaTitulo {
+  font-weight: var(--weight-strong);
+}
+.zonaNombre {
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.zona[data-elegido] .zonaNombre {
+  color: var(--ink);
+}
+.zonaAccion {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-weight: var(--weight-strong);
+}
+.ayuda {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+/* Recovery of a job by id: quiet, collapsed, below the flow. */
+.recuperar {
+  max-width: 760px;
+  color: var(--ink-2);
+}
+.recuperar summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 24px;
+  color: var(--accent);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+  list-style: none;
+}
+.recuperar summary::-webkit-details-marker {
+  display: none;
+}
+.recuperar summary::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-right: var(--space-1);
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.recuperar[open] summary::before {
+  transform: rotate(45deg);
+}
+.recuperar summary:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.recuperarForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.campoTexto {
+  display: grid;
+  gap: var(--space-1);
+  flex: 1 1 280px;
+  max-width: 420px;
+  font-size: var(--text-sm);
+}
+.campoTexto input {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-md);
+}
+.campoTexto input:hover {
+  border-color: var(--ink-3);
+}
+
+/* Step 2: the preview. */
+.archivo {
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.estado {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-xs);
+  font-weight: var(--weight-strong);
+}
+.estado[data-estado="VALIDADA"] {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.estado[data-estado="RECHAZADA"] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.figuras {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line);
+}
+.figurasDos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+.avisos {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+.avisos:empty {
+  margin: var(--space-2) 0;
+}
+.semana {
+  white-space: nowrap;
+}
+.campo {
+  white-space: nowrap;
+}
+.problema {
+  font-weight: var(--weight-strong);
+  min-width: 180px;
+}
+.codigo {
+  display: block;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+}
+.detalle {
+  color: var(--ink-2);
+  min-width: 240px;
+}
+
+/* Step 3: what was saved beside how the calculation goes. */
+.resultado {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 1.75fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+/* Alone (a pending confirmation, a recovered job), a block takes the full row. */
+.resultado > :only-child {
+  grid-column: 1 / -1;
+}
+.bloque {
+  display: grid;
+  gap: var(--space-4);
+}
+.progreso {
+  display: grid;
+  gap: var(--space-2);
+}
+.progresoTexto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+}
+.progresoTexto strong {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-strong);
+}
+.progresoTexto strong[data-estado="COMPLETADO"] {
+  color: var(--success);
+}
+.progresoTexto strong[data-estado="FALLIDO"] {
+  color: var(--danger);
+}
+.progresoTexto span {
+  color: var(--ink-2);
+}
+.barra {
+  position: relative;
+  display: block;
+  height: 8px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+.barra span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ink-3);
+}
+.barra span[data-estado="COMPLETADO"] {
+  background: var(--success);
+}
+.barra span[data-estado="FALLIDO"] {
+  background: var(--danger);
+}
+
+@media (max-width: 1100px) {
+  .resultado {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .figuras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

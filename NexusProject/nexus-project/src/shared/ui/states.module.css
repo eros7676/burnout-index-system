@@ -1,0 +1,52 @@
+/* Static on purpose: no shimmer loop repainting the card (motion recipe). */
+.skeleton {
+  display: block;
+  height: 1lh;
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.rows {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+}
+.emptyTitle {
+  font-weight: var(--weight-strong);
+}
+.emptyText {
+  color: var(--ink-2);
+  max-width: 60ch;
+}
+.error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.notice {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  font-size: var(--text-sm);
+}
+.notice[data-tono="exito"] {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.notice[data-tono="aviso"] {
+  background: var(--notice-soft);
+  color: var(--notice);
+}

@@ -353,6 +353,14 @@ export async function cancelarImportacion(
         "ESTADO_INCOMPATIBLE",
         "Una importación confirmada no se puede cancelar.",
       );
+    // Contract §4: only VALIDADA may become CANCELADA. A rejected batch keeps its status;
+    // its temporary rows expire with the preview like any other.
+    if (carga.status === "RECHAZADA")
+      throw new ErrorImportacion(
+        409,
+        "ESTADO_INCOMPATIBLE",
+        "Una importación rechazada no se puede cancelar; valide un CSV corregido.",
+      );
     if (carga.expiresAt <= reloj())
       throw new ErrorImportacion(
         410,

@@ -1,0 +1,75 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+.cuando {
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+.accion {
+  font-weight: var(--weight-strong);
+}
+.detalles {
+  width: 36%;
+  min-width: 260px;
+}
+.detalles summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 24px;
+  color: var(--accent);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+  list-style: none;
+}
+.detalles summary::-webkit-details-marker {
+  display: none;
+}
+/* A chevron that turns when the details open. */
+.detalles summary::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-right: var(--space-1);
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.detalles details[open] summary::before {
+  transform: rotate(45deg);
+}
+.detalles summary:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ocultar,
+.detalles details[open] .ver {
+  display: none;
+}
+.detalles details[open] .ocultar {
+  display: inline;
+}
+.detalles dl {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+}
+.detalles dl > div {
+  display: grid;
+  grid-template-columns: minmax(120px, 40%) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+.detalles dt {
+  color: var(--ink-2);
+}
+.detalles dd {
+  overflow-wrap: anywhere;
+}
+.pie {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-4);
+}

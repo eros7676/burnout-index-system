@@ -52,7 +52,7 @@ T16 debe registrar evidencia de los RNF01–RNF07 según [Contratos y pruebas, s
 
 `importaciones.test.ts` verifica peticiones, límites de carga y errores HTTP sin MySQL. `importaciones.mysql.test.ts` recorre el mismo adaptador de los Route Handlers por HTTP real con MySQL: confirmación/revalidación atómicas, rollback, cancelación/vencimiento, carreras, T08/T11/T10, fallos y reintentos, sucesores, alertas superadas, exclusividad, recuperación de lease/token y las 138 filas T03. Ver [guía T04](../../../Docs/t04-importaciones.md) y [criterios T11](../../../Docs/t11-alertas.md#integración-con-t04).
 
-`npm run db:test:http` es una comprobación adicional que requiere `npm run build` previo y TEST_DATABASE_URL. Inicia y detiene su propio Next.js en un puerto local libre, verifica las cinco rutas y el ejemplo contractual con Prisma/informe/alerta, y elimina solo sus datos. Exige las dos semanas de EMP-001 vacías. No entra en `npm run db:test`, que sigue sin requerir un build. La API de consultas y la visualización siguen pendientes de T13/T14/T16.
+`npm run db:test:http` es una comprobación adicional que requiere `npm run build` previo y TEST_DATABASE_URL. Inicia y detiene su propio Next.js en un puerto local libre, verifica las nueve rutas (cinco T04 y cuatro T13) y el ejemplo contractual con Prisma/informe/alerta, y elimina solo sus datos. Exige las dos semanas de EMP-001 vacías. No entra en `npm run db:test`, que sigue sin requerir un build.
 
 ## Navegador T06
 

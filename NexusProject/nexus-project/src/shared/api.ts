@@ -19,9 +19,12 @@ import type {
   ResultadoImportacion,
   ResumenDTO,
   VistaPrevia,
+  PersonasDTO,
+  MisDatosDTO,
+  ReglasDTO,
 } from "./contracts";
 
-/** Catálogo acordado; no implica que existan Route Handlers. */
+/** Agreed catalog; each entry is served by a Route Handler under src/app/api. */
 export const API_ROUTES = {
   consultarSesionDemo: { method: "GET", path: "/api/demo/sesion" },
   seleccionarUsuarioDemo: { method: "POST", path: "/api/demo/sesion" },
@@ -56,6 +59,9 @@ export const API_ROUTES = {
     method: "POST",
     path: "/api/alertas/{alertId}/notificaciones/{intentoId}/procesar",
   },
+  listarPersonas: { method: "GET", path: "/api/personas" },
+  consultarMisDatos: { method: "GET", path: "/api/mis-datos" },
+  consultarReglas: { method: "GET", path: "/api/reglas" },
 } as const;
 
 type CuerpoVacio = Record<string, never>;
@@ -82,6 +88,12 @@ export type PeticionesApi = {
     params: { alertId: string; intentoId: string };
     body?: undefined;
   };
+  listarPersonas: {
+    query?: Pick<FiltrosComunes, "employeeId" | "teamId">;
+    body?: undefined;
+  };
+  consultarMisDatos: { body?: undefined };
+  consultarReglas: { body?: undefined };
 };
 export type CuerposExito = {
   consultarSesionDemo: SesionDemoDTO;
@@ -99,6 +111,9 @@ export type CuerposExito = {
   listarNotificaciones: IntentoNotificacion[];
   prepararNotificacion: IntentoNotificacion;
   procesarNotificacion: IntentoNotificacion;
+  listarPersonas: PersonasDTO;
+  consultarMisDatos: MisDatosDTO;
+  consultarReglas: ReglasDTO;
 };
 export type OperacionApi = keyof typeof API_ROUTES;
 export type EstadoErrorHttp =

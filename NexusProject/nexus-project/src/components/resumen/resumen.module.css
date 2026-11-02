@@ -1,0 +1,86 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+/* Attention first and widest; the week's numbers beside it; teams and trend below. */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
+  grid-template-areas:
+    "attention side"
+    "trend trend";
+  gap: var(--space-5);
+  align-items: start;
+}
+.attention {
+  grid-area: attention;
+}
+.side {
+  grid-area: side;
+  display: grid;
+  gap: var(--space-5);
+  align-content: start;
+}
+.trend {
+  grid-area: trend;
+}
+.figures {
+  display: grid;
+  gap: var(--space-5);
+}
+.figureRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+.note {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.strip {
+  display: grid;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+.streak {
+  color: var(--level-alto);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+}
+.causes {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  min-width: 180px;
+}
+.score {
+  font-weight: var(--weight-strong);
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+.score:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+.teamList {
+  display: grid;
+  gap: var(--space-4);
+}
+.teamHead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-md);
+}
+.teamHead span {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: "attention" "side" "trend";
+  }
+}

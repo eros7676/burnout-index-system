@@ -23,6 +23,8 @@ export type HistoricoValidacion = ParPeriodo & { fingerprint: string };
 export interface FuenteValidacion {
   empleados(ids: string[]): Promise<EmpleadoValidacion[]>;
   registros(pares: ParPeriodo[]): Promise<HistoricoValidacion[]>;
+  /** Earliest rule-version effectiveFrom (YYYY-MM-DD); null when none is published. */
+  primeraVigencia(): Promise<string | null>;
 }
 export type FilaNormalizada = {
   fila: number;
@@ -87,6 +89,7 @@ export async function validarFilasImportacion(
       ])
     ).map((e) => [e.employeeId, e]),
   );
+  const vigencia = await fuente.primeraVigencia();
   const errores: ErrorCampo[] = [],
     warnings: ErrorCampo[] = [],
     normalizadas: FilaNormalizada[] = [];
@@ -147,6 +150,15 @@ export async function validarFilasImportacion(
           "period_start",
           "SEMANA_INVALIDA",
           "El período debe cubrir lunes a domingo, inicio + 6 días.",
+        );
+      // Processing needs a rule version in force; without one the job would stop on this pair.
+      if (vigencia === null || periodStart < vigencia)
+        error(
+          "period_start",
+          "FECHA_INVALIDA",
+          vigencia
+            ? `No hay reglas de cálculo para esa semana; rigen desde ${vigencia}.`
+            : "No hay reglas de cálculo publicadas.",
         );
       if (periodEnd >= hoy)
         error(
@@ -264,12 +276,13 @@ export async function validarFilasImportacion(
     ]),
   );
   const nuevas: FilaNormalizada[] = [];
+  const validas: FilaNormalizada[] = [];
   let omitidas = 0;
   for (const f of normalizadas) {
     const existente = historicos.get(clave(f.datos));
     if (existente === undefined) nuevas.push(f);
     else if (existente === f.fingerprint) omitidas++;
-    else
+    else {
       errores.push({
         fila: f.fila,
         campo: "employee_id",
@@ -277,13 +290,16 @@ export async function validarFilasImportacion(
         detalle:
           "Ya existe un registro vigente con valores diferentes para ese empleado y período.",
       });
+      continue;
+    }
+    validas.push(f);
   }
   return {
     status: errores.length ? "RECHAZADA" : "VALIDADA",
     totalFilas: filas.length,
     nuevas: nuevas.length,
     omitidas,
-    muestra: normalizadas.slice(0, 10).map((f) => f.datos),
+    muestra: validas.slice(0, 10).map((f) => f.datos),
     errores,
     warnings,
     filasNuevas: errores.length ? [] : nuevas,

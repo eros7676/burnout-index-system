@@ -49,7 +49,9 @@ de períodos confirmados. No crea empleados ni sustituye registros históricos.
   canónicos recortados, sin repetidos ni desconocidos; nueve obligatorios.
 - Trim de celdas, IDs sensibles a mayúsculas, fechas reales YYYY-MM-DD, lunes a
   domingo separados por seis días. El domingo debe haber terminado en
-  `America/Argentina/Buenos_Aires`; el reloj es inyectable.
+  `America/Argentina/Buenos_Aires`; el reloj es inyectable. Una semana anterior a la
+  primera vigencia de reglas da FECHA_INVALIDA: sin reglas aplicables, el trabajo
+  quedaría bloqueado al procesarla.
 - Números decimales finitos con punto, sin fórmulas, notación exponencial, hex ni
   separadores de miles. No redondea métricas; normaliza -0 a 0 y auxiliares vacíos
   o ausentes a null. Enteros no negativos; rechaza desbordamiento del Int de MySQL

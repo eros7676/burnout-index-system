@@ -1,124 +1,215 @@
 "use client";
-import { useRef, useState } from "react";
-import { notificacionesApi as api } from "../client/notificaciones-api";
+import { useEffect, useId, useRef, useState } from "react";
+import { notificacionesApi as api } from "@/client/notificaciones-api";
 import type {
   Alerta,
   IntentoNotificacion,
   ResultadoSimulado,
   SolicitudNotificacion,
-} from "../shared/contracts";
+} from "@/shared/contracts";
+import { momento } from "@/shared/formato";
+import { Button, Icon } from "@/shared/ui";
+import { StatusTag } from "@/shared/ui/status-tag";
+import s from "./notificacion-alerta.module.css";
 
+type Estado = IntentoNotificacion["estado"];
+const INTENTO: Record<
+  Estado,
+  { texto: string; tono: "aviso" | "exito" | "incidencia" }
+> = {
+  PENDIENTE: { texto: "Pendiente de procesar", tono: "aviso" },
+  ENVIADO: { texto: "Enviado (simulado)", tono: "exito" },
+  FALLIDO: { texto: "Fallido (simulado)", tono: "aviso" },
+  SIN_DESTINATARIO: { texto: "Sin destinatario", tono: "incidencia" },
+};
+const RESULTADO: Record<Estado, string> = {
+  PENDIENTE: "Quedó un envío simulado pendiente de procesar.",
+  ENVIADO: "Quedó registrado como enviado (simulado).",
+  FALLIDO: "Quedó registrado como fallido (simulado). Podés volver a simularlo.",
+  SIN_DESTINATARIO:
+    "No hay a quién avisar: falta el responsable en el catálogo.",
+};
+const mensajeDe = (e: unknown) =>
+  e instanceof Error
+    ? e.message
+    : "No se pudo completar la simulación. Volvé a intentar.";
+
+/**
+ * The simulated email of one alert (T12): no message ever leaves the app.
+ * Each simulation prepares an attempt and processes it; a pending attempt left
+ * behind (a reload, a lost answer) can be processed later, and every attempt
+ * stays in the history.
+ */
 export function NotificacionAlerta({
   alerta,
   alCambiar,
+  destinatario,
 }: {
   alerta: Alerta;
   alCambiar: (intento: IntentoNotificacion) => void;
+  /** The recipient's name for an attempt's employeeId snapshot. */
+  destinatario: (destinatarioId: string) => string;
 }) {
+  const titulo = useId();
   const [intentos, setIntentos] = useState<IntentoNotificacion[]>();
-  const [ocupado, setOcupado] = useState(false);
+  const [ocupado, setOcupado] = useState<string | null>(null);
+  const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
   const bloqueo = useRef(false);
   const solicitud = useRef<SolicitudNotificacion | null>(null);
-  async function ejecutar(accion: () => Promise<void>) {
+
+  // The history is read once on open; an action's own answer never gets replaced by it.
+  useEffect(() => {
+    let vivo = true;
+    api.listar(alerta.alertId).then(
+      (lista) => vivo && setIntentos((previos) => previos ?? lista),
+      (e) => vivo && setError(mensajeDe(e)),
+    );
+    return () => {
+      vivo = false;
+    };
+  }, [alerta.alertId]);
+
+  async function ejecutar(progreso: string, accion: () => Promise<void>) {
     if (bloqueo.current) return;
     bloqueo.current = true;
-    setOcupado(true);
+    setOcupado(progreso);
+    setMensaje("");
     setError("");
     try {
       await accion();
     } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : "No se pudo completar la simulación. Volvé a intentar.",
-      );
+      setError(mensajeDe(e));
     } finally {
       bloqueo.current = false;
-      setOcupado(false);
+      setOcupado(null);
     }
   }
   function guardar(intento: IntentoNotificacion) {
-    setIntentos((prev) =>
+    setIntentos((previos) =>
       [
         intento,
-        ...(prev ?? []).filter((i) => i.intentoId !== intento.intentoId),
+        ...(previos ?? []).filter((i) => i.intentoId !== intento.intentoId),
       ].sort((a, b) => b.numero - a.numero),
     );
     alCambiar(intento);
   }
-  const ultimo = intentos?.[0];
-  const pendiente = ultimo?.estado === "PENDIENTE";
-  const enviado =
-    alerta.estadoEnvio === "ENVIADO" || ultimo?.estado === "ENVIADO";
-  function preparar(resultado: ResultadoSimulado) {
-    return ejecutar(async () => {
-      if (!solicitud.current || solicitud.current.resultado !== resultado)
-        solicitud.current = { requestId: crypto.randomUUID(), resultado };
-      const intento = await api.preparar(alerta.alertId, solicitud.current);
-      solicitud.current = null;
-      guardar(intento);
-      // Leer el historial completo también al recuperar una solicitud perdida.
+  const listar = () =>
+    ejecutar("Actualizando el historial…", async () => {
       setIntentos(await api.listar(alerta.alertId));
     });
-  }
+  const procesar = (intentoId: string) =>
+    ejecutar("Procesando el envío pendiente…", async () => {
+      const intento = await api.procesar(alerta.alertId, intentoId);
+      guardar(intento);
+      setMensaje(RESULTADO[intento.estado]);
+    });
+  const simular = (resultado: ResultadoSimulado) =>
+    ejecutar("Simulando el envío…", async () => {
+      // The same request id survives a lost answer, so a retry never duplicates the attempt.
+      if (!solicitud.current || solicitud.current.resultado !== resultado)
+        solicitud.current = { requestId: crypto.randomUUID(), resultado };
+      let intento = await api.preparar(alerta.alertId, solicitud.current);
+      solicitud.current = null;
+      guardar(intento);
+      if (intento.estado === "PENDIENTE") {
+        intento = await api.procesar(alerta.alertId, intento.intentoId);
+        guardar(intento);
+      }
+      setMensaje(RESULTADO[intento.estado]);
+      // The full history, also when the server answered with an earlier request.
+      setIntentos(await api.listar(alerta.alertId));
+    });
+
+  const ultimo = intentos?.[0];
+  const pendiente = ultimo?.estado === "PENDIENTE" ? ultimo : undefined;
+  const enviado =
+    alerta.estadoEnvio === "ENVIADO" || ultimo?.estado === "ENVIADO";
+  const activa = alerta.vigencia === "ACTIVA";
+
   return (
-    <div aria-label="Correo simulado" aria-busy={ocupado}>
-      <p>Simulación de correo · Se conserva el historial de intentos.</p>
-      <div className="tab-actions">
-        <button
-          disabled={ocupado}
-          onClick={() =>
-            ejecutar(async () => {
-              setIntentos(await api.listar(alerta.alertId));
-            })
-          }
+    <section
+      className={s.panel}
+      aria-labelledby={titulo}
+      aria-busy={ocupado !== null}
+    >
+      <div className={s.head}>
+        <h3 id={titulo} className={s.title}>
+          <Icon nombre="correo" size={16} />
+          Correo simulado
+        </h3>
+        <Button
+          variante="quiet"
+          className={s.refresh}
+          disabled={ocupado !== null}
+          onClick={listar}
         >
-          Ver / actualizar intentos
-        </button>
-        {alerta.vigencia === "ACTIVA" && !enviado && !pendiente && (
-          <>
-            <button disabled={ocupado} onClick={() => preparar("EXITO")}>
-              {alerta.estadoEnvio === "NO_APLICA"
-                ? "Preparar correo simulado"
-                : "Reintentar correo simulado"}
-            </button>
-            <button disabled={ocupado} onClick={() => preparar("FALLO")}>
-              Preparar fallo simulado
-            </button>
-          </>
-        )}
-        {pendiente && (
-          <button
-            disabled={ocupado}
-            onClick={() =>
-              ejecutar(async () => {
-                guardar(await api.procesar(alerta.alertId, ultimo.intentoId));
-              })
-            }
+          Actualizar historial
+        </Button>
+      </div>
+
+      {pendiente ? (
+        <div className={s.actions}>
+          <Button
+            disabled={ocupado !== null}
+            onClick={() => procesar(pendiente.intentoId)}
           >
             Procesar envío pendiente
-          </button>
-        )}
-      </div>
-      {ocupado && <p role="status">Procesando simulación…</p>}
-      {error && <p role="alert">{error}</p>}
-      {intentos &&
-        (intentos.length ? (
-          <ol aria-label="Historial de envíos simulados">
-            {intentos.map((i) => (
-              <li key={i.intentoId}>
-                Intento {i.numero} ·{" "}
-                {i.estado === "ENVIADO" ? "Enviado (simulado)" : i.estado} ·
-                Destinatario: {i.destinatarioId ?? "SIN_DESTINATARIO"} ·{" "}
-                {new Date(i.createdAt).toLocaleString("es-AR")}
-                {i.detalle && <p>{i.detalle}</p>}
+          </Button>
+        </div>
+      ) : activa && !enviado ? (
+        <div className={s.actions}>
+          <Button disabled={ocupado !== null} onClick={() => simular("EXITO")}>
+            Simular envío exitoso
+          </Button>
+          <Button disabled={ocupado !== null} onClick={() => simular("FALLO")}>
+            Simular fallo
+          </Button>
+        </div>
+      ) : !activa ? (
+        <p className={s.note}>Alerta superada: solo queda su historial.</p>
+      ) : null}
+
+      <p role="status" className={s.status}>
+        {ocupado ?? mensaje}
+      </p>
+      {error && (
+        <p role="alert" className={s.error}>
+          {error}
+        </p>
+      )}
+
+      {intentos === undefined ? (
+        !error && <p className={s.note}>Cargando intentos…</p>
+      ) : intentos.length ? (
+        <ol className={s.history} aria-label="Historial de envíos simulados">
+          {intentos.map((i) => {
+            const estado = INTENTO[i.estado];
+            const cuando = i.completedAt ?? i.createdAt;
+            return (
+              <li key={i.intentoId} className={s.attempt}>
+                <span className={s.number}>Intento {i.numero}</span>
+                <StatusTag tono={estado.tono}>{estado.texto}</StatusTag>
+                <time className={s.when} dateTime={cuando}>
+                  {momento(cuando)}
+                </time>
+                {i.destinatarioId && (
+                  <span className={s.to}>
+                    Para {destinatario(i.destinatarioId)}
+                  </span>
+                )}
+                {i.detalle &&
+                  (i.estado === "FALLIDO" ||
+                    i.estado === "SIN_DESTINATARIO") && (
+                    <span className={s.detail}>{i.detalle}</span>
+                  )}
               </li>
-            ))}
-          </ol>
-        ) : (
-          <p>Todavía no hay intentos de envío.</p>
-        ))}
-    </div>
+            );
+          })}
+        </ol>
+      ) : (
+        <p className={s.note}>Todavía no hay intentos.</p>
+      )}
+    </section>
   );
 }

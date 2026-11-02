@@ -1,0 +1,126 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+/* The factors are the answer and the widest block; persistence and suggestions beside them. */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+.side {
+  display: grid;
+  gap: var(--space-5);
+  align-content: start;
+}
+.factors {
+  min-width: 0;
+}
+
+.result {
+  display: grid;
+  gap: var(--space-4);
+}
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4) var(--space-10);
+}
+.fact {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+.label {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.explanation {
+  max-width: 72ch;
+  color: var(--ink-2);
+}
+.inlineLink {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.inlineLink:hover {
+  color: var(--accent-hover);
+}
+
+.exceeded {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--level-alto);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+}
+/* The same diamond as Alto: shape repeats what the color says. */
+.exceeded::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+.bullet {
+  width: 28%;
+  min-width: 140px;
+}
+.total th,
+.total td {
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 0;
+  font-weight: var(--weight-strong);
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-4);
+}
+.lead {
+  font-weight: var(--weight-strong);
+}
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4) var(--space-5);
+}
+.facts dt {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.facts dd {
+  margin-top: var(--space-1);
+}
+.wide {
+  grid-column: 1 / -1;
+}
+.suggestions {
+  display: grid;
+  gap: var(--space-2);
+  padding-left: var(--space-5);
+  list-style: disc;
+}
+.muted {
+  color: var(--ink-2);
+}
+
+.alert {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+.alert[data-con-correo] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+}
+
+@media (max-width: 1100px) {
+  .grid,
+  .alert[data-con-correo] {
+    grid-template-columns: 1fr;
+  }
+}
