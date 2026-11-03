@@ -156,3 +156,19 @@
     padding: var(--space-5) var(--space-4) var(--space-10);
   }
 }
+
+/* A printed page is the document alone: no demo strip, no sidebar, full width (MDN @media print). */
+@media print {
+  .app {
+    display: block;
+    min-height: 0;
+  }
+  .demo,
+  .sidebar {
+    display: none;
+  }
+  .main {
+    max-width: none;
+    padding: 0;
+  }
+}

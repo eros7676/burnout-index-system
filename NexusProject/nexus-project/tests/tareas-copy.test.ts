@@ -60,10 +60,13 @@ test("el informe se puede imprimir: sin el marco ni los controles, sin cortar bl
   assert.match(impresion, /\.controles\s*\{\s*display: none/);
   // The shell (sidebar and demo strip) is hidden only when printing, whichever page prints.
   const marco = readFileSync(
-    join("src", "components", "informe", "impresion.tsx"),
+    join("src", "components", "shell", "app-shell.module.css"),
     "utf8",
   );
-  assert.match(marco, /@media print\s*\{[^`]*aside[^`]*display: none/);
+  assert.match(
+    marco.slice(marco.indexOf("@media print")),
+    /\.demo,\s*\.sidebar\s*\{\s*display: none/,
+  );
   const informe = readFileSync(
     join("src", "components", "informe", "informe.tsx"),
     "utf8",

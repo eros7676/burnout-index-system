@@ -44,7 +44,6 @@ import { NotificacionAlerta } from "../notificacion-alerta";
 import { useSesion } from "../shell/sesion";
 import { hrefTareasSemana } from "../tareas/textos";
 import { explicacionEnPalabras } from "./explicacion";
-import { EstiloImpresion } from "./impresion";
 import s from "./informe.module.css";
 
 type Datos = { informe: InformeDTO; personas: PersonaDTO[] };
@@ -112,7 +111,6 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
 
   return (
     <div ref={pagina} className={s.page}>
-      <EstiloImpresion />
       <PageHeader
         titulo={informe?.empleado.nombre ?? "Informe semanal"}
         volver={
