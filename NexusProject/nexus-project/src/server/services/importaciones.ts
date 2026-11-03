@@ -304,7 +304,7 @@ export async function confirmarImportacion(
     resultado.procesamiento = await procesarImportacion(
       db,
       resultado.procesamiento.jobId,
-      opciones,
+      { ...opciones, actor },
     );
   } catch (error) {
     if (!(error instanceof ErrorImportacion && error.estadoHttp === 409))

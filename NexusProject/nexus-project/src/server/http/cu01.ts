@@ -288,7 +288,14 @@ export function crearHttpCu01(
       respuestaCu01(async () => {
         comprobarId(jobId);
         await exigirObjetoVacio(request);
-        return json(await procesarImportacion(db, jobId, opciones));
+        const quien = actor(request);
+        return json(
+          await procesarImportacion(db, jobId, {
+            ...opciones,
+            actor: quien,
+            reintentadoPor: quien,
+          }),
+        );
       }),
   };
 }
