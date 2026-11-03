@@ -46,27 +46,43 @@ English.
 | `--level-medio` | #9a5b0b | Medio |
 | `--level-alto` | #b42318 | Alto (the only urgent color) |
 | `--level-incompleto` | #5c6875, hatched | Incompleto: a gap in history, not a severity |
-| `--danger`, `--success`, `--notice` | | request errors, completed actions, simulated/pending states |
+| `--level-bajo-mute`, `--level-medio-mute` | Bajo and Medio mixed toward the surface | the calm weeks on the strip recede; the same hue, one token each, no opacity |
+| `--danger` / `--success` / `--notice` (+ `-soft`) | #a3174f / #0b6a62 / #5b3d9e | states: request errors (berry), completed actions (teal), simulated or pending (violet). Hues of their own, apart from the level scale and the accent, and always with an icon |
 | `--strip` family | #18212b | the dark demo strip of the shell |
 
 The level scale is sequential (calm → urgent). Each level also differs in
 shape: Bajo/Medio a square mark, Alto a diamond, Incompleto/Desactualizado an
-outline; Incompleto fills are hatched (WCAG 1.4.1).
+outline; Incompleto fills are hatched (WCAG 1.4.1). The mark is the same in a
+LevelTag, a legend key (`LevelMark`) and the distribution key.
+
+States are drawn another way, so they never read as a level (visual-system
+R27): a soft fill with a 1 px outline in the state's hue and a circle icon
+(`exito` check, `info`, `error`), where a level is a soft fill without outline
+and a square or diamond. The accent is for what can be clicked or is selected
+(R28): the info notice is neutral and the stepper uses ink.
 
 ## Type
 
 IBM Plex Sans (next/font, weights 400 and 600 only): its digits are tabular by
-default, so columns of figures align. Sizes follow Carbon's productive set:
+default, so columns of figures align. Sizes are Carbon's productive steps, and the
+line height is part of the step:
 
 | Token | Size/line | Use |
 |---|---|---|
-| `--text-xs` | 12/16 | column headers, axis labels, group titles — never a value |
-| `--text-sm` | 13/18 | secondary line under a value, captions |
+| `--text-xs` | 12/16 | column headers, labels above controls, secondary lines under a value, asides, tags, axis labels |
+| `--text-sm` | 12/16 | the same step; modules written against the earlier 13 px scale still resolve. New code uses `--text-xs` |
 | `--text-md` | 14/20 | body, table cells, controls |
 | `--text-lg` | 16/24 | section titles |
-| `--text-xl` | 20/28 | legend figures |
+| `--text-xl` | 20/28 | sub-headlines |
 | `--text-2xl` | 28/36 | page title (h1) |
 | `--text-display` | 32/40 | headline figures |
+
+`* { line-height: var(--leading) }` with `--leading: round(nearest, 1.2em + 3px, 4px)`
+resolves every element's line height from its own size to the pair above, so
+the declared pair is the rendered one and text boxes sit on the 4 px grid (R31,
+R32). A module sets a size and nothing else. Weights are the two tokens;
+`th` and `strong` use `--weight-strong`, not the UA's bold. A Section uses at
+most three sizes (R33).
 
 Sentence case everywhere; no all-caps labels, no eyebrows, no middle-dot meta
 strings; separate facts with commas or layout.
@@ -74,39 +90,75 @@ strings; separate facts with commas or layout.
 ## Layout
 
 ```
-┌──────────────── demo strip: "Modo demo…" · Viendo como [usuario ▾] ───────┐
+┌── demo strip: "Modo demostración…" · Perfil activo [usuario ▾] ───────────┐
 ├─────────────┬──────────────────────────────────────────────────────────────┤
-│ Nexo Laboral│ PageHeader: h1 + one context line        [filters] [primary] │
-│ rol, alcance│                                                              │
-│             │ Sections (white, 10 px radius, 1 px line), 20 px apart      │
-│ Seguimiento │ ┌ answer (wide) ─────────────┐ ┌ supporting column ┐        │
-│ Datos       │ └────────────────────────────┘ └───────────────────┘        │
-│ Mi espacio  │ ┌ trend / detail (full width) ─────────────────────┐        │
+│ Nexo Laboral│ PageHeader: h1 + one context line                  [primary] │
+│ rol, alcance│ FilterBar: [Semana ▾] [other filters]                        │
+│             │                                                              │
+│ Seguimiento │ Sections (white, 10 px radius, 1 px line), one gutter apart  │
+│ Datos       │ ┌ answer, 8 columns ─────────┐ ┌ support, 4 ──────┐          │
+│ Mi espacio  │ └────────────────────────────┘ └──────────────────┘          │
+│             │ ┌ trend / detail, 12 columns ──────────────────────┐          │
 └─────────────┴──────────────────────────────────────────────────────────────┘
 ```
 
 Sidebar 248 px, content max 1320 px, 32 px page padding, 4 px spacing grid.
-Content is left-aligned. Radii by role: 3 px tags and week cells, 6 px
-controls, 10 px sections. One elevation (`--shadow-pop`) for popovers only.
+The content is one container that centers once the window is wider than its
+maximum (Polaris "center when there is no secondary column"). The sidebar and
+the page start on one line: equal top padding, and the brand row is as tall as
+the title's line, so brand and h1 share a center.
+
+**Grid.** Twelve columns with one gutter (`--gutter`, 20 px). Splits are 12,
+8+4 (answer and support, the answer top-left), 4+8, 6+6 and 4+4+4 (peers of
+one kind), built with `Columns`; below 1100 px they stack. The gutter is also
+the row gap, the distance between sections and the distance from the header to
+the first block, so no gap is a compound of two values. Blocks side by side
+end on one line: the containers stretch (`Columns`, `Stack`) and their content
+stays top-aligned, never stretched.
+
+**Breakpoints.** Two: 900 px (the sidebar moves above the page) and 1100 px
+(side-by-side blocks stack). Media queries cannot read tokens, so the set is
+written here.
+
+**Sizes (tokens).**
+
+| Token | Value | Where |
+|---|---|---|
+| `--control-h` | 32 px | every Button, ButtonLink, SelectField, SearchField, DateField, form field, Pagination and nav link (Carbon small, Fiori compact for mouse use) |
+| `--tag-h` | 24 px | LevelTag and StatusTag |
+| `--row-h`, `--row-h-2` | 48 / 64 px | a table body row; a row whose first cell has a second line (person and team) |
+| `--pad-section` | 24 px | Section padding, the same on four sides |
+| `--icon-sm`, `--icon-md` | 16 / 20 px | icons next to 12-14 px text and next to 16 px text; the rendered stroke is 1.5 px at both |
+| `--plot-h` | 220 px | plot of every weekly chart; bars take 60 % of their slot |
+| `--radius-2xs`, `-xs`, `-sm`, `-md` | 2 / 3 / 6 / 10 px | marks and chart bars, tags and week cells, controls, sections |
+
+Table header 12/16; text of the first and last columns sits on the Section's
+key lines (the table bleeds one cell padding past them). Column rules are
+1 px; focus and selection use 2 px.
 
 ## Components (src/shared/ui)
 
 | Component | Rule |
 |---|---|
-| `PageHeader` | every screen opens with it; `volver` only on detail pages |
-| `Section` | a titled block; it is one piece of the entrance cascade |
-| `Figure` | a number with its label above and meaning below |
-| `LevelTag` | level as word + color + shape; `actualizado=false` reads "Desactualizado" |
+| `PageHeader` | every screen opens with it; title and context on the left, actions on the right ending on the content's edge and on one control line; `volver` only on detail pages; no bottom margin (the page grid spaces it) |
+| `Section` | a titled block; it is one piece of the entrance cascade; title at 16/24, aside at 12/16 on its baseline |
+| `Columns`, `Stack` | `8-4`, `4-8`, `6-6`, `4-4-4` on twelve columns; blocks end level, the last block of a `Stack` takes the leftover height |
+| `FilterBar`, `Toolbar` | the page's filters, week included, on one control line: `FilterBar` between the header and the content, `Toolbar` inside a Section |
+| `Figure` | a number with its label above and meaning below; peers share width, top and gap |
+| `LevelTag`, `LevelMark` | level as word + color + shape; `actualizado=false` reads "Desactualizado"; the mark alone for legends |
 | `WeekStrip` | eight weeks, oldest → newest; consecutive Alto weeks join into one bar |
-| `DistributionBar`, `WeekColumns`, `IndexChart`, `FactorBullet` | SVG-free, dependency-free charts, each with a hidden data table or aria-label |
-| `DataTable` | scrollable region with a label; numbers right-aligned; row header is the person |
-| `SkeletonRows`, `Empty`, `ErrorBox`, `Notice` | loading inside the datum's box; empty says what would appear and the next step; errors say what failed and offer retry |
-| `SelectField`, `SearchField`, `Toolbar`, `DateField` | visible labels; selects carry names, values carry ids — nobody types an ID |
+| `DistributionBar`, `WeekColumns`, `IndexChart`, `FactorBullet` | SVG-free, dependency-free charts, each with a hidden data table or aria-label; weekly charts share plot height and bar width |
+| `DataTable` | scrollable region with a label; numbers right-aligned with their header; first and last columns on the Section's key lines; `tabla.rowLink` names a row (ink), `tabla.cellLink` is the one action or value that opens a detail (accent) |
+| `Button`, `ButtonLink` | one height (`--control-h`); primary filled, secondary outlined, quiet text-only; `alinearTexto` offsets a quiet button's padding so its text continues the column |
+| `SkeletonRows`, `Empty`, `ErrorBox`, `Notice` | loading inside the datum's box; empty says what would appear and the next step, left-aligned; errors say what failed and offer retry; each state carries an icon |
+| `SelectField`, `SearchField`, `DateField`, `Pagination` | visible labels; selects carry names, values carry ids — nobody types an ID |
+| `TextField`, `TextAreaField`, `SelectFormField`, `CheckboxField`, `Form`, `FormGroup`, `FormActions`, `KeyFacts` | create and edit pages: one column, labels above, short fields on one row, buttons at the bottom left |
 | `TaskBar`, `TaskLegend`, `textoTareas` | a week's tasks as one bar (vencidas, pendientes, completadas) with the same counts in words; the legend once per block |
 | `HoursColumns` | hours per week with extra hours stacked; neutral, never a level |
 | `WeekDataTable` | loaded weekly data as loaded (7,5 h stays 7,5 h), no index or level |
-| `StatusTag` | the state of an action or record (neutral, aviso, éxito, incidencia); never a level |
-| `Stepper`, `Pagination` | a flow's steps with the current one marked; previous/next with "Página n de m" |
+| `StatusTag` | the state of an action or record (neutro, aviso, éxito, incidencia): outlined, with an icon; never a level |
+| `Icon` | 16 or 20 px only (other sizes snap), one rendered stroke |
+| `Stepper` | a flow's steps with the current one marked, in ink |
 
 A new pattern is added to the kit first, then used.
 
@@ -173,10 +225,17 @@ people are not shown (`GRUPO_MINIMO`).
 - 2026-11-02 — IBM Plex Sans, weights 400 and 600, Carbon productive sizes. (held by src/app/layout.tsx)
 - 2026-11-02 — The level scale is the only saturated color; Alto is the only red. (held by owner)
 - 2026-11-02 — Component styles are CSS Modules; Tailwind runs on globals.css only, for its reset. (held by next.config.ts)
+- 2026-11-02 — Every control in the main area is `--control-h` (32 px); no screen sets its own control height. (held by work/enterprise/audit/rules.mjs, R10)
+- 2026-11-02 — Type is Carbon's productive pairs, and the line height is resolved from the size by `--leading`. (held by globals.css)
+- 2026-11-02 — Danger, success and notice have hues of their own and an icon; the four level hues appear only on level encodings. (held by globals.css)
+- 2026-11-02 — The accent appears only on interactive or selected elements. (held by owner)
 
 #### Patrones
 
 - 2026-11-02 — Every screen opens with PageHeader: title, one context line, at most one primary action. (held by owner)
+- 2026-11-02 — The page is a 12-column grid with one gutter; splits are 12, 8+4, 4+8, 6+6 or 4+4+4, and blocks side by side end level. (held by shared/ui Columns)
+- 2026-11-02 — The week is a filter: it sits in the page's FilterBar with the other filters, never in the header actions. (held by owner)
+- 2026-11-02 — The first and last columns of a table sit on the Section's key lines. (held by shared/ui table.module.css)
 - 2026-11-02 — The demo/not-a-diagnosis disclaimer appears once, in the shell's demo strip. (held by e2e/shell.spec.ts)
 - 2026-11-02 — Visible text never shows raw IDs, enums or ISO dates; formato.ts maps them. (held by tests/formato.test.ts)
 - 2026-11-02 — A level is always word + color + shape; a non-current result reads Desactualizado. (held by owner)
