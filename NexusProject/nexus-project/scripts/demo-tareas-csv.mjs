@@ -221,7 +221,8 @@ export function generar() {
 
 const contenido = generar();
 if (process.argv.includes("--check")) {
-  if (readFileSync(SALIDA, "utf8") !== contenido) {
+  // A Windows checkout with autocrlf stores the file with CRLF; the content is the same.
+  if (readFileSync(SALIDA, "utf8").replaceAll("\r\n", "\n") !== contenido) {
     console.error(
       "templates/tareas-demo-ocho-semanas.csv no coincide con el generador.",
     );
