@@ -29,7 +29,7 @@ async function llamar<K extends Operacion>(
   } catch {
     // The browser's own text ("Failed to fetch") says nothing to the user.
     throw new Error(
-      "No se pudo conectar. Revisá la conexión y volvé a intentar.",
+      "No se pudo conectar con el servidor. Verifique la conexión e inténtelo nuevamente.",
     );
   }
   let body;
@@ -37,7 +37,7 @@ async function llamar<K extends Operacion>(
     body = await respuesta.json();
   } catch {
     throw new Error(
-      "El servidor no devolvió una respuesta JSON válida. Volvé a intentar.",
+      "El servidor devolvió una respuesta inesperada. Inténtelo nuevamente.",
     );
   }
   if (!respuesta.ok)

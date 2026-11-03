@@ -27,7 +27,7 @@ test("formato: decimales con coma y dos cifras, como el informe", () => {
 
 test("formato: niveles, factores y envíos en lenguaje de la persona", () => {
   assert.equal(NIVEL.INCOMPLETO, "Incompleto");
-  assert.equal(FACTOR.DS, "Días seguidos sin descanso");
+  assert.equal(FACTOR.DS, "Días consecutivos sin descanso");
   assert.equal(ESTADO_ENVIO.NO_APLICA, "Solo aviso interno");
   assert.equal(valorFactor("HE", 16), "16 h");
   assert.equal(valorFactor("DS", 1), "1 día");

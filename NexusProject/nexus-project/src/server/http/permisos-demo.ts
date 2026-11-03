@@ -16,7 +16,7 @@ import {
 const USUARIOS_FIJOS: readonly UsuarioDemoDTO[] = [
   {
     userId: "demo-rrhh",
-    nombre: "RRHH",
+    nombre: "RR. HH.",
     rol: "RRHH",
     employeeId: null,
     teamId: null,

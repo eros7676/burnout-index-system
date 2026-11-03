@@ -40,7 +40,7 @@ async function consultar<K extends Consulta>(
   } catch (error) {
     if (signal.aborted) throw error;
     throw new Error(
-      "No se pudo conectar. Revisá la conexión y volvé a intentar.",
+      "No se pudo conectar con el servidor. Verifique la conexión e inténtelo nuevamente.",
     );
   }
   let body;
@@ -48,14 +48,14 @@ async function consultar<K extends Consulta>(
     body = await response.json();
   } catch {
     throw new Error(
-      "El servidor no devolvió una respuesta JSON válida. Volvé a intentar.",
+      "El servidor devolvió una respuesta inesperada. Inténtelo nuevamente.",
     );
   }
   if (!response.ok)
     throw new Error(
       typeof body?.error?.mensaje === "string"
         ? body.error.mensaje
-        : `Error HTTP ${response.status}.`,
+        : `No se pudo completar la solicitud (código ${response.status}). Inténtelo nuevamente.`,
     );
   return body as CuerposExito[K];
 }

@@ -117,7 +117,7 @@ async function conPropietarioTx<T>(
     throw new ErrorImportacion(
       409,
       "JOB_RECLAMADO",
-      "El ejecutor perdió su lease o token; reintente el trabajo.",
+      "El procesamiento se interrumpió antes de terminar. Reintente el procesamiento.",
     );
   const resultado = await ejecutar(tx);
   // Comprobar también después del trabajo, antes de permitir su commit.
@@ -128,7 +128,7 @@ async function conPropietarioTx<T>(
     throw new ErrorImportacion(
       409,
       "JOB_RECLAMADO",
-      "Venció el permiso del ejecutor.",
+      "El procesamiento se interrumpió antes de terminar. Reintente el procesamiento.",
     );
   return resultado;
 }

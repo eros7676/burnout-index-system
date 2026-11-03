@@ -1,5 +1,7 @@
 import type { Evaluacion, FactorInforme } from "../../shared/contracts";
 
+// T10 contract: the text states it is not a diagnosis; the report screen strips this
+// sentence because the shell already says it (src/components/informe/explicacion.ts).
 const CIERRE =
   "Parámetros demostrativos; no es un diagnóstico de burnout y no dispara una acción automática.";
 
@@ -13,22 +15,22 @@ export function explicarInforme(evaluacion: Evaluacion): string {
   const { mediumLimit, highLimit } = snapshot.reglas;
   const visible = puntos(indice);
   if (nivel === "INCOMPLETO") {
-    return `${visible} puntos, nivel INCOMPLETO. No hay semana previa inmediata (${persistencia.motivo}); el índice numérico se conserva. Versión ${rulesVersion}. ${CIERRE}`;
+    return `${visible} puntos, nivel INCOMPLETO. No hay semana anterior inmediata (${persistencia.motivo}); el índice numérico se conserva. Versión ${rulesVersion}. ${CIERRE}`;
   }
   if (nivel === "BAJO") {
-    return `${visible} puntos, nivel BAJO, por debajo del corte ${mediumLimit} de la versión ${rulesVersion}. ${CIERRE}`;
+    return `${visible} puntos, nivel BAJO, por debajo del límite de Medio (${mediumLimit}) de la versión ${rulesVersion}. ${CIERRE}`;
   }
   if (nivel === "ALTO") {
     const comunes = persistencia.comunesExcedidas.join(", ") || "ninguno";
     const anterior = persistencia.anterior
-      ? ` La semana previa quedó en ${puntos(persistencia.anterior.indice)} puntos.`
+      ? ` La semana anterior quedó en ${puntos(persistencia.anterior.indice)} puntos.`
       : "";
-    return `${visible} puntos, nivel ALTO. Se cumple la persistencia (${persistencia.motivo}) con factores comunes ${comunes}.${anterior} Versión ${rulesVersion}. ${CIERRE}`;
+    return `${visible} puntos, nivel ALTO. Se cumple la persistencia (${persistencia.motivo}) con factores en común: ${comunes}.${anterior} Versión ${rulesVersion}. ${CIERRE}`;
   }
   const pico =
     indice >= highLimit
-      ? ` El índice alcanza el corte alto ${highLimit}, pero el nivel guardado es MEDIO porque la persistencia es ${persistencia.motivo}.`
-      : ` Queda entre los cortes ${mediumLimit} y ${highLimit} (persistencia ${persistencia.motivo}).`;
+      ? ` El índice alcanza el límite de Alto (${highLimit}), pero el nivel guardado es MEDIO porque la persistencia es ${persistencia.motivo}.`
+      : ` Queda entre el límite de Medio (${mediumLimit}) y el de Alto (${highLimit}) (persistencia ${persistencia.motivo}).`;
   return `${visible} puntos, nivel MEDIO.${pico} Versión ${rulesVersion}. ${CIERRE}`;
 }
 

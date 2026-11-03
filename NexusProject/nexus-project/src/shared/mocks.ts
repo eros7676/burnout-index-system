@@ -282,7 +282,7 @@ export const cuerposExitoMock = {
   seleccionarUsuarioDemo: {
     usuario: {
       userId: "demo-rrhh",
-      nombre: "RRHH",
+      nombre: "RR. HH.",
       rol: "RRHH",
       employeeId: null,
       teamId: null,
