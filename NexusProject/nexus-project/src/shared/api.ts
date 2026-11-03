@@ -2,8 +2,8 @@ import type {
   Alerta,
   UsuarioDemoDTO,
   SesionDemoDTO,
-  EventoAuditoria,
   FiltrosAuditoria,
+  PaginaAuditoria,
   ApiError,
   ErrorValidacionImportacion,
   FilaTablero,
@@ -147,7 +147,7 @@ export type PeticionesApi = {
 export type CuerposExito = {
   consultarSesionDemo: SesionDemoDTO;
   seleccionarUsuarioDemo: { usuario: UsuarioDemoDTO };
-  listarAuditoria: Pagina<EventoAuditoria>;
+  listarAuditoria: PaginaAuditoria;
   validarImportacion: VistaPrevia;
   confirmarImportacion: ResultadoImportacion;
   cancelarImportacion: ResultadoCancelacion;

@@ -1,5 +1,7 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { ErrorDominio } from "../../shared/errors";
+import { registrarEvento } from "../repositories/auditoria";
+import { actorDemo } from "./permisos-demo";
 import { consultarResultados } from "../services/consultas";
 import { construirInforme } from "../services/informes";
 import {
@@ -58,9 +60,23 @@ export function crearHttpConsultas(db: PrismaClient) {
         if (new URL(request.url).search)
           throw new ErrorConsulta(400, "El detalle no admite filtros.");
         const evaluationId = identificador(id, 36);
-        return db.$transaction((tx) => construirInforme(tx, evaluationId), {
-          isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead,
-        });
+        // Reading one person's report is a consultation of personal data: the trace is written
+        // with the read and fails closed, so a report is never shown without it
+        // (audit-trail §1.4 and §2.3: CNIL §6 "consultation", Ley 25.326 art. 9, OWASP sensitive_read).
+        return db.$transaction(
+          async (tx) => {
+            const informe = await construirInforme(tx, evaluationId);
+            await registrarEvento(tx, {
+              accion: "INFORME_CONSULTADO",
+              recursoId: evaluationId,
+              sujetoId: informe.evaluacion.employeeId,
+              actor: actorDemo(request),
+              detalles: { semana: informe.evaluacion.periodStart },
+            });
+            return informe;
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
+        );
       }),
   };
 }
