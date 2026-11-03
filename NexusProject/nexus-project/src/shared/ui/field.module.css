@@ -40,3 +40,97 @@
   padding-left: calc(var(--space-3) + 22px);
   min-width: 240px;
 }
+
+/* Forms (form.tsx): dedicated pages use 24 px between fields, 32 px before the actions (R42). */
+.form {
+  display: grid;
+  gap: var(--space-8);
+  max-width: 640px;
+}
+.group {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-strong);
+}
+.stack {
+  display: grid;
+  gap: var(--space-6);
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-6);
+}
+.field[data-ancho="corto"] {
+  width: 220px;
+  min-width: 0;
+}
+.optional {
+  color: var(--ink-3);
+}
+.help,
+.error {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--ink-2);
+}
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--danger);
+}
+.control[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+.textarea {
+  min-height: 88px;
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+}
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+.check .help {
+  grid-column: 2;
+}
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin: 0;
+}
+.fact {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+  min-width: 0;
+}
+.fact dt {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.fact dd {
+  margin: 0;
+  font-weight: var(--weight-strong);
+  overflow-wrap: anywhere;
+}
