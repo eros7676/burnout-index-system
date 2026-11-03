@@ -1,0 +1,43 @@
+.lista {
+  display: grid;
+  gap: 0;
+}
+.evento {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+.evento:first-child {
+  padding-top: 0;
+}
+.evento:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+}
+.meta {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.motivo {
+  color: var(--ink-2);
+  max-width: 72ch;
+  overflow-wrap: anywhere;
+}
+.cambios {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.cambios strong {
+  color: var(--ink);
+}
