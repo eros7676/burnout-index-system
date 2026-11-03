@@ -113,3 +113,14 @@
 .trendWeek[data-actual] .trendBar {
   opacity: 1;
 }
+
+/* The week of one team: the mix, then the figures that read from it. */
+.resumen {
+  display: grid;
+  gap: var(--space-5);
+}
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
