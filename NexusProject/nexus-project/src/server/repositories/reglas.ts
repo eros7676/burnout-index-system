@@ -1,8 +1,34 @@
-import { registrarEvento } from "./auditoria";
+import { registrarEvento, type Actor } from "./auditoria";
 import { Prisma } from "@prisma/client";
 import type { ConfiguracionIndice, FechaISO } from "../../shared/contracts";
 import { ErrorDominio } from "../../shared/errors";
+import { cambiosEntre, propuestaDesde } from "../services/reglas-parametros";
+import { reglasDesdeDb } from "./evaluaciones";
 import { fechaDesdeDb, fechaParaDb } from "./fechas";
+
+/** Rows per INSERT when a reprocessing job lists its weeks. */
+const LOTE_PARES = 2_000;
+
+/** Who published and under which operation, for the audit event. A bare command-line run has none of it. */
+export type ContextoPublicacion = {
+  actor?: Actor;
+  /** The draft that produced the version. */
+  correlacionId?: string;
+  justificacion?: string;
+};
+
+/**
+ * The weeks a version starting at `inicio` takes over: every week with loaded data
+ * up to the start of the next version. One definition for the job it creates and
+ * for the draft's retroactivity.
+ */
+export const periodosAfectados = (
+  inicio: Date,
+  siguiente: Date | null,
+): Prisma.PeriodoEmpleadoWhereInput => ({
+  periodStart: siguiente ? { gte: inicio, lt: siguiente } : { gte: inicio },
+  registros: { some: {} },
+});
 
 export type VersionPublicada = {
   version: string;
@@ -48,6 +74,7 @@ function conflictoUnico(error: unknown): ErrorDominio | null {
 export async function guardarVersionNueva(
   tx: Prisma.TransactionClient,
   reglas: ConfiguracionIndice,
+  contexto: ContextoPublicacion = {},
 ): Promise<VersionPublicada> {
   const inicio = fechaParaDb(reglas.effectiveFrom);
   const mismaVersion = await tx.configuracionIndice.findUnique({
@@ -69,12 +96,7 @@ export async function guardarVersionNueva(
   });
 
   const periodos = await tx.periodoEmpleado.findMany({
-    where: {
-      periodStart: siguiente
-        ? { gte: inicio, lt: siguiente.effectiveFrom }
-        : { gte: inicio },
-      registros: { some: {} },
-    },
+    where: periodosAfectados(inicio, siguiente?.effectiveFrom ?? null),
     orderBy: [{ employeeId: "asc" }, { periodStart: "asc" }],
     select: { periodoId: true },
   });
@@ -103,24 +125,34 @@ export async function guardarVersionNueva(
         estado: sinSemanas ? "COMPLETADO" : "PENDIENTE",
         createdBy: reglas.createdBy,
         finishedAt: sinSemanas ? new Date() : null,
-        pares: {
-          create: periodos.map((periodo, orden) => ({
-            periodoId: periodo.periodoId,
-            orden,
-          })),
-        },
       },
       select: { jobId: true },
     });
+    // A long history lists tens of thousands of weeks: insert them in batches.
+    for (let desde = 0; desde < periodos.length; desde += LOTE_PARES)
+      await tx.processingJobPar.createMany({
+        data: periodos.slice(desde, desde + LOTE_PARES).map((periodo, i) => ({
+          jobId: trabajo.jobId,
+          periodoId: periodo.periodoId,
+          orden: desde + i,
+        })),
+      });
     const anterior = await tx.configuracionIndice.findFirst({
       where: { effectiveFrom: { lt: inicio } },
       orderBy: { effectiveFrom: "desc" },
-      select: { version: true },
     });
     await registrarEvento(tx, {
       accion: "REGLAS_PUBLICADAS",
       recursoId: reglas.version,
-      actor: reglas.createdBy,
+      actor: contexto.actor ?? reglas.createdBy,
+      correlacionId: contexto.correlacionId ?? null,
+      justificacion: contexto.justificacion,
+      cambios: anterior
+        ? cambiosEntre(
+            propuestaDesde(reglasDesdeDb(anterior)),
+            propuestaDesde(reglas),
+          )
+        : [],
       detalles: {
         versionAnterior: anterior?.version ?? null,
         version: reglas.version,

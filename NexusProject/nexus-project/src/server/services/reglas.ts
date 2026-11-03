@@ -1,28 +1,34 @@
 import type { ConfiguracionIndice, Factor, FechaISO } from "../../shared/contracts";
+import type { PropuestaReglas } from "../../shared/contratos/reglas";
 import { ErrorDominio, type CodigoErrorDominio } from "../../shared/errors";
+import { FACTOR } from "../../shared/formato";
 import { fechaParaDb } from "../repositories/fechas";
 
 const FACTORES = ["HE", "DS", "CT", "VP"] as const satisfies readonly Factor[];
-const CAMPOS = new Set([
-  "version",
+const PARAMETROS = [
   "effectiveFrom",
-  "windowDays",
-  "persistencePeriods",
   "weights",
   "thresholds",
   "mediumLimit",
   "highLimit",
   "minExceededFactors",
+];
+const CAMPOS = new Set([
+  "version",
+  "windowDays",
+  "persistencePeriods",
   "createdBy",
   "createdAt",
+  ...PARAMETROS,
 ]);
 
 const PESO_MIN = 0.05;
 const PESO_MAX = 0.7;
 const SUMA_TOLERANCIA = 0.000001;
 const VERSION_MAX = 64;
+const PORCENTAJE = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
 
-type Problema = { campo: string; detalle: string };
+export type Problema = { campo: string; detalle: string };
 
 function esRegistro(valor: unknown): valor is Record<string, unknown> {
   return typeof valor === "object" && valor !== null && !Array.isArray(valor);
@@ -68,7 +74,10 @@ function leerFecha(
 ): FechaISO | null {
   const valor = entrada[campo];
   if (typeof valor !== "string") {
-    problemas.push({ campo, detalle: "Se requiere una fecha YYYY-MM-DD." });
+    problemas.push({
+      campo,
+      detalle: "Se requiere una fecha con formato AAAA-MM-DD.",
+    });
     return null;
   }
   try {
@@ -76,7 +85,7 @@ function leerFecha(
   } catch {
     problemas.push({
       campo,
-      detalle: "La fecha no existe o no tiene formato YYYY-MM-DD.",
+      detalle: "La fecha no existe o no tiene formato AAAA-MM-DD.",
     });
     return null;
   }
@@ -87,13 +96,11 @@ function leerEnteroExacto(
   entrada: Record<string, unknown>,
   campo: string,
   esperado: number,
+  detalle: string,
   problemas: Problema[],
 ): boolean {
   if (entrada[campo] !== esperado) {
-    problemas.push({
-      campo,
-      detalle: `P0 solo acepta ${campo}=${esperado}.`,
-    });
+    problemas.push({ campo, detalle });
     return false;
   }
   return true;
@@ -108,7 +115,7 @@ function leerFactores(
   if (!esRegistro(valor)) {
     problemas.push({
       campo,
-      detalle: "Se requieren los cuatro factores HE, DS, CT y VP.",
+      detalle: `Se requieren los cuatro factores: ${FACTORES.map((f) => FACTOR[f]).join(", ")}.`,
     });
     return null;
   }
@@ -126,7 +133,7 @@ function leerFactores(
     if (typeof crudo !== "number" || !Number.isFinite(crudo)) {
       problemas.push({
         campo: `${campo}.${factor}`,
-        detalle: "Se requiere un número finito.",
+        detalle: `El valor de ${FACTOR[factor]} debe ser un número.`,
       });
       continue;
     }
@@ -142,7 +149,10 @@ function leerLimite(
 ): number | null {
   const valor = entrada[campo];
   if (typeof valor !== "number" || !Number.isFinite(valor)) {
-    problemas.push({ campo, detalle: "Se requiere un número finito." });
+    problemas.push({
+      campo,
+      detalle: `El límite de ${campo === "mediumLimit" ? "Medio" : "Alto"} debe ser un número.`,
+    });
     return null;
   }
   return valor;
@@ -173,9 +183,136 @@ function leerInstanteUtc(
 }
 
 /**
+ * Parameters shared by a published version and a draft: weights, thresholds,
+ * level limits, minimum factors and the start of validity. Pushes every problem
+ * it finds and returns the parameters only when there are none.
+ */
+function revisarParametros(
+  entrada: Record<string, unknown>,
+  problemas: Problema[],
+): PropuestaReglas | null {
+  const antes = problemas.length;
+  const effectiveFrom = leerFecha(entrada, "effectiveFrom", problemas);
+  if (effectiveFrom && fechaParaDb(effectiveFrom).getUTCDay() !== 1) {
+    // JS: 1 es lunes. MySQL WEEKDAY 0 también es lunes.
+    problemas.push({
+      campo: "effectiveFrom",
+      detalle: "El inicio de vigencia debe ser un lunes.",
+    });
+  }
+
+  const pesos = leerFactores(entrada, "weights", problemas);
+  const umbrales = leerFactores(entrada, "thresholds", problemas);
+  const mediumLimit = leerLimite(entrada, "mediumLimit", problemas);
+  const highLimit = leerLimite(entrada, "highLimit", problemas);
+
+  if (pesos && FACTORES.every((factor) => typeof pesos[factor] === "number")) {
+    const completos = pesos as Record<Factor, number>;
+    for (const factor of FACTORES) {
+      const peso = completos[factor];
+      if (peso < PESO_MIN || peso > PESO_MAX) {
+        problemas.push({
+          campo: `weights.${factor}`,
+          detalle: `El peso de ${FACTOR[factor]} debe estar entre ${Math.round(PESO_MIN * 100)} % y ${Math.round(PESO_MAX * 100)} %.`,
+        });
+      }
+    }
+    const suma = FACTORES.reduce((total, factor) => total + completos[factor], 0);
+    if (Math.abs(suma - 1) > SUMA_TOLERANCIA) {
+      problemas.push({
+        campo: "weights",
+        detalle: `Los pesos suman ${PORCENTAJE.format(suma * 100)} %. Deben sumar 100 %.`,
+      });
+    }
+  }
+
+  if (umbrales) {
+    for (const factor of FACTORES) {
+      const umbral = umbrales[factor];
+      if (typeof umbral === "number" && umbral <= 0) {
+        problemas.push({
+          campo: `thresholds.${factor}`,
+          detalle: `El umbral de ${FACTOR[factor]} debe ser mayor que 0.`,
+        });
+      }
+    }
+    if (typeof umbrales.CT === "number" && umbrales.CT > 1) {
+      problemas.push({
+        campo: "thresholds.CT",
+        detalle: "El umbral de Carga de tareas no puede superar 1.",
+      });
+    }
+  }
+
+  if (mediumLimit !== null && mediumLimit <= 0) {
+    problemas.push({
+      campo: "mediumLimit",
+      detalle: "El límite de Medio debe ser mayor que 0.",
+    });
+  }
+  if (mediumLimit !== null && highLimit !== null && mediumLimit >= highLimit) {
+    problemas.push({
+      campo: "mediumLimit",
+      detalle: "El límite de Medio debe ser menor que el de Alto.",
+    });
+  }
+  if (highLimit !== null && highLimit > 100) {
+    problemas.push({
+      campo: "highLimit",
+      detalle: "El límite de Alto no puede superar 100.",
+    });
+  }
+
+  const minimo = entrada.minExceededFactors;
+  const minExceededFactors: 2 | 3 | 4 | null =
+    minimo === 2 || minimo === 3 || minimo === 4 ? minimo : null;
+  if (minExceededFactors === null) {
+    problemas.push({
+      campo: "minExceededFactors",
+      detalle: "El mínimo de factores superados debe ser 2, 3 o 4.",
+    });
+  } else if (pesos) {
+    const activas = FACTORES.filter((factor) => {
+      const peso = pesos[factor];
+      return typeof peso === "number" && peso > 0;
+    }).length;
+    if (minExceededFactors > activas) {
+      problemas.push({
+        campo: "minExceededFactors",
+        detalle: "El mínimo no puede superar la cantidad de factores con peso.",
+      });
+    }
+  }
+
+  if (
+    problemas.length > antes ||
+    effectiveFrom === null ||
+    pesos === null ||
+    umbrales === null ||
+    mediumLimit === null ||
+    highLimit === null ||
+    minExceededFactors === null ||
+    FACTORES.some(
+      (factor) =>
+        typeof pesos?.[factor] !== "number" ||
+        typeof umbrales?.[factor] !== "number",
+    )
+  )
+    return null;
+  return {
+    effectiveFrom,
+    weights: pesos as Record<Factor, number>,
+    thresholds: umbrales as Record<Factor, number>,
+    mediumLimit,
+    highLimit,
+    minExceededFactors,
+  };
+}
+
+/**
  * Revisa la regla completa antes de persistirla.
  * MySQL ya exige lunes, ventana 7, persistencia 2 y cortes básicos.
- * Acá se rechazan pesos, umbrales y campos faltantes, que viajan en JSON.
+ * Aquí se rechazan pesos, umbrales y campos faltantes, que viajan en JSON.
  */
 export function validarConfiguracion(entrada: unknown): ConfiguracionIndice {
   const problemas: Problema[] = [];
@@ -197,146 +334,76 @@ export function validarConfiguracion(entrada: unknown): ConfiguracionIndice {
   const version = leerTexto(entrada, "version", problemas);
   const createdBy = leerTexto(entrada, "createdBy", problemas);
   const createdAt = leerInstanteUtc(entrada, problemas);
-  const effectiveFrom = leerFecha(entrada, "effectiveFrom", problemas);
-  if (effectiveFrom && fechaParaDb(effectiveFrom).getUTCDay() !== 1) {
-    // JS: 1 es lunes. MySQL WEEKDAY 0 también es lunes.
-    problemas.push({
-      campo: "effectiveFrom",
-      detalle: "El inicio de vigencia tiene que ser un lunes.",
-    });
-  }
-
-  const ventanaValida = leerEnteroExacto(entrada, "windowDays", 7, problemas);
+  const ventanaValida = leerEnteroExacto(
+    entrada,
+    "windowDays",
+    7,
+    "La ventana debe ser de 7 días.",
+    problemas,
+  );
   const persistenciaValida = leerEnteroExacto(
     entrada,
     "persistencePeriods",
     2,
+    "La persistencia debe ser de 2 semanas.",
     problemas,
   );
-
-  const pesos = leerFactores(entrada, "weights", problemas);
-  const umbrales = leerFactores(entrada, "thresholds", problemas);
-  const mediumLimit = leerLimite(entrada, "mediumLimit", problemas);
-  const highLimit = leerLimite(entrada, "highLimit", problemas);
-
-  if (
-    pesos &&
-    FACTORES.every((factor) => typeof pesos[factor] === "number")
-  ) {
-    const completos = pesos as Record<Factor, number>;
-    for (const factor of FACTORES) {
-      const peso = completos[factor];
-      if (peso < PESO_MIN || peso > PESO_MAX) {
-        problemas.push({
-          campo: `weights.${factor}`,
-          detalle: "Cada peso tiene que estar entre 0.05 y 0.70.",
-        });
-      }
-    }
-    const suma = FACTORES.reduce((total, factor) => total + completos[factor], 0);
-    if (Math.abs(suma - 1) > SUMA_TOLERANCIA) {
-      const visible = Number(suma.toFixed(6)).toString();
-      problemas.push({
-        campo: "weights",
-        detalle: `Los pesos suman ${visible}. Deben sumar 1 con tolerancia 0.000001.`,
-      });
-    }
-  }
-
-  if (
-    umbrales &&
-    FACTORES.every((factor) => typeof umbrales[factor] === "number")
-  ) {
-    const completos = umbrales as Record<Factor, number>;
-    for (const factor of FACTORES) {
-      const umbral = completos[factor];
-      if (umbral <= 0) {
-        problemas.push({
-          campo: `thresholds.${factor}`,
-          detalle: "Cada umbral tiene que ser mayor que 0.",
-        });
-      }
-    }
-    if (typeof completos.CT === "number" && completos.CT > 1) {
-      problemas.push({
-        campo: "thresholds.CT",
-        detalle: "El umbral de tareas no puede ser mayor que 1.",
-      });
-    }
-  }
-
-  if (mediumLimit !== null && highLimit !== null) {
-    if (!(mediumLimit > 0 && mediumLimit < highLimit && highLimit <= 100)) {
-      problemas.push({
-        campo: "mediumLimit",
-        detalle: "Se requiere 0 < corte medio < corte alto ≤ 100.",
-      });
-    }
-  }
-
-  const minimo = entrada.minExceededFactors;
-  const minExceededFactors: 2 | 3 | 4 | null =
-    minimo === 2 || minimo === 3 || minimo === 4 ? minimo : null;
-  if (minExceededFactors === null) {
-    problemas.push({
-      campo: "minExceededFactors",
-      detalle: "Se requiere un entero 2, 3 o 4.",
-    });
-  } else if (pesos) {
-    const activas = FACTORES.filter((factor) => {
-      const peso = pesos[factor];
-      return typeof peso === "number" && peso > 0;
-    }).length;
-    if (minExceededFactors > activas) {
-      problemas.push({
-        campo: "minExceededFactors",
-        detalle: "No puede superar la cantidad de factores con peso.",
-      });
-    }
-  }
+  const parametros = revisarParametros(entrada, problemas);
 
   if (
     problemas.length > 0 ||
     version === null ||
     createdBy === null ||
     createdAt === null ||
-    effectiveFrom === null ||
     !ventanaValida ||
     !persistenciaValida ||
-    pesos === null ||
-    umbrales === null ||
-    mediumLimit === null ||
-    highLimit === null ||
-    minExceededFactors === null ||
-    FACTORES.some(
-      (factor) =>
-        typeof pesos?.[factor] !== "number" ||
-        typeof umbrales?.[factor] !== "number",
-    )
+    parametros === null
   ) {
     rechazar(
       problemas.length > 0
         ? problemas
-        : [
-            {
-              campo: "configuracion",
-              detalle: "Faltan campos obligatorios.",
-            },
-          ],
+        : [{ campo: "configuracion", detalle: "Faltan campos obligatorios." }],
     );
   }
 
   return {
     version,
-    effectiveFrom,
     windowDays: 7,
     persistencePeriods: 2,
-    weights: pesos as Record<Factor, number>,
-    thresholds: umbrales as Record<Factor, number>,
-    mediumLimit,
-    highLimit,
-    minExceededFactors,
     createdBy,
     createdAt,
+    ...parametros,
   };
+}
+
+/**
+ * Valida solo lo que edita un borrador. Devuelve los problemas por campo en
+ * lugar de lanzar, para mostrarlos junto a cada control y conservar lo escrito.
+ */
+export function validarPropuesta(
+  entrada: unknown,
+): { propuesta: PropuestaReglas; problemas: [] } | { propuesta: null; problemas: Problema[] } {
+  if (!esRegistro(entrada))
+    return {
+      propuesta: null,
+      problemas: [
+        {
+          campo: "propuesta",
+          detalle: "Se esperaba un objeto con los parámetros de la regla.",
+        },
+      ],
+    };
+  const problemas: Problema[] = [];
+  for (const extra of Object.keys(entrada))
+    if (!PARAMETROS.includes(extra))
+      problemas.push({ campo: extra, detalle: "Campo no reconocido." });
+  const propuesta = revisarParametros(entrada, problemas);
+  return problemas.length > 0 || propuesta === null
+    ? {
+        propuesta: null,
+        problemas: problemas.length
+          ? problemas
+          : [{ campo: "propuesta", detalle: "Faltan parámetros obligatorios." }],
+      }
+    : { propuesta, problemas: [] };
 }

@@ -3,62 +3,14 @@ import type { MisDatosDTO } from "../src/shared/contracts";
 import {
   alerta,
   api,
-  celda,
   datos,
   demo,
   menu,
   sinDesbordeHorizontal,
 } from "./demo";
 
-// The read-only modules: Reglas del índice and Mis datos. Auditoría has its own spec (auditoria.spec.ts).
-
-test("Reglas: un Team Lead las lee en palabras, sin controles para editarlas", async ({
-  page,
-}) => {
-  await demo(page, "demo-tl-01");
-  await page.goto("/home");
-  await menu(page).getByRole("link", { name: "Reglas del índice" }).click();
-  await expect(page).toHaveURL(/\/rules-config$/);
-  await expect(
-    page.getByText("Versión v1, vigente desde el 5 ene 2026."),
-  ).toBeVisible();
-  const factores = page.getByRole("region", { name: "Factores del índice" });
-  for (const [factor, umbral, peso] of [
-    ["Horas extra", "8 h", "30 %"],
-    ["Días seguidos sin descanso", "6 días", "30 %"],
-    ["Carga de tareas", "0,35", "25 %"],
-    ["Vacaciones pendientes", "10 días", "15 %"],
-  ]) {
-    await expect(await celda(factores, factor, "Umbral")).toHaveText(umbral);
-    await expect(await celda(factores, factor, "Peso en el índice")).toHaveText(
-      peso,
-    );
-  }
-  const main = page.getByRole("main");
-  await expect(main).toContainText("Índice menor a 40.");
-  await expect(main).toContainText(
-    "Índice de 70 o más dos semanas seguidas, con al menos 2 factores superados en las dos.",
-  );
-  await expect(
-    page.getByRole("region", { name: "Versiones de las reglas" }),
-  ).toContainText("Vigente");
-  // Read-only: no field, no action, no codes or raw values.
-  for (const rol of [
-    "textbox",
-    "spinbutton",
-    "slider",
-    "checkbox",
-    "radio",
-    "combobox",
-    "button",
-  ] as const)
-    await expect(main.getByRole(rol)).toHaveCount(0);
-  // innerText and :visible: Next keeps the previous route mounted but hidden.
-  await expect(main.locator("form:visible")).toHaveCount(0);
-  await expect(main).not.toContainText(/\b(HE|DS|CT|VP)\b|0\.3|0\.35/, {
-    useInnerText: true,
-  });
-});
+// The read-only module: Mis datos. Auditoría and Reglas del índice have their own specs
+// (auditoria.spec.ts, reglas.spec.ts), narrow screen included.
 
 test("Mis datos: el empleado ve sus semanas con horas y tareas, y ningún índice ni nivel", async ({
   page,
@@ -152,7 +104,6 @@ test("Módulos de lectura: en pantalla angosta no desbordan la página", async (
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const [usuario, ruta, tabla] of [
-    ["demo-tl-01", "/rules-config", "Factores del índice"],
     ["demo-empleado", "/my-data", "Sus datos por semana"],
   ] as const) {
     await page.unrouteAll({ behavior: "ignoreErrors" });

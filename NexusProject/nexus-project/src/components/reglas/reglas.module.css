@@ -86,9 +86,19 @@
   height: 2px;
   background: var(--ink-3);
 }
-.vigente {
-  color: var(--success);
-  font-weight: var(--weight-strong);
+/* The draft's reason: wraps in a measured column instead of stretching the table. */
+.motivo {
+  min-width: 220px;
+  max-width: 40ch;
+  overflow-wrap: anywhere;
+}
+/* Who published a version and why: wraps in a measured column inside the nowrap row header. */
+.detalleVersion {
+  white-space: normal;
+  max-width: 24ch;
+}
+.pie {
+  margin-top: var(--space-4);
 }
 @media (max-width: 1100px) {
   .grid {
