@@ -1,0 +1,12 @@
+/* Same centered column as Ingreso (R35 a): the block is centered, its text stays left-aligned. */
+.page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6);
+  display: grid;
+  gap: var(--space-6);
+}
+.title {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.015em;
+}
