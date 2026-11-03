@@ -95,7 +95,14 @@ export function WeekColumns({
             data-actual={c.periodStart === actual || undefined}
           >
             <span className={`${s.columnTop} num`}>
-              {c.conteo.ALTO ? `${c.conteo.ALTO} en Alto` : ""}
+              {c.conteo.ALTO ? (
+                <>
+                  {c.conteo.ALTO}
+                  <span className={s.topWord}> en Alto</span>
+                </>
+              ) : (
+                ""
+              )}
             </span>
             <div className={s.stack}>
               {pila.map((n) =>

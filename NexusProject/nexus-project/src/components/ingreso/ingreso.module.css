@@ -81,7 +81,7 @@
   font-size: var(--text-xs);
 }
 .userState {
-  color: var(--accent);
+  color: var(--ink-2);
   font-size: var(--text-xs);
 }
 .foot {
