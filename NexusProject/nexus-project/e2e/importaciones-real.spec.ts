@@ -47,7 +47,7 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
     ).toContainText("Tareas vencidas");
     await expect(confirmar).toBeDisabled();
     expect(await db.registroLaboral.count()).toBe(0);
-    await previa.getByRole("button", { name: "Cancelar" }).click();
+    await page.getByRole("button", { name: "Cancelar" }).click();
     await expect(
       page.getByText("Vista previa cancelada.", { exact: false }),
     ).toBeVisible();
@@ -56,7 +56,7 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
     await validar.click();
     await expect(previa).toContainText("Validada");
     await confirmar.click();
-    await expect(procesamiento.getByRole("status")).toContainText("Terminado");
+    await expect(procesamiento.getByRole("status")).toContainText("Completado");
     await expect(confirmada).toContainText(/Guardadas\s*2\s*filas nuevas/);
     await expect(confirmada).toContainText(/Omitidas\s*0/);
     expect(await db.registroLaboral.count()).toBe(2);
