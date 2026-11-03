@@ -359,13 +359,15 @@ test("B6 MySQL: filtros, páginas por posición, detalle, operación, exportaci�
       // A Team Lead holds EXPORTAR but not AUDITORIA: the export refuses and records the attempt.
       const tl = await exportar(pedir("demo-tl-01", "/api/auditoria/exportacion?formato=csv"));
       assert.equal(tl.status, 403);
-      const denegado = await db.eventoAuditoria.findFirstOrThrow({ where: { solicitudId: registrar(tl) } });
+      const solicitudTl = registrar(tl);
+      const denegado = await db.eventoAuditoria.findFirstOrThrow({ where: { solicitudId: solicitudTl } });
       assert.deepEqual(
         [denegado.accion, denegado.resultado, denegado.motivo, denegado.actorId, denegado.actorRol],
         ["ACCESO_DENEGADO", "DENEGADO", "SIN_PERMISO", "demo-tl-01", "TEAM_LEAD"],
       );
       assert.equal((denegado.detalles as { permiso: string }).permiso, "AUDITORIA");
-      assert.equal(await db.eventoAuditoria.count({ where: { accion: "EXPORTACION_GENERADA", actorId: "demo-tl-01" } }), 0);
+      // Scoped to this request: other suites share the DB and the trail is append-only.
+      assert.equal(await db.eventoAuditoria.count({ where: { accion: "EXPORTACION_GENERADA", solicitudId: solicitudTl } }), 0);
       const empleado = await exportar(pedir("demo-empleado", "/api/auditoria/exportacion?formato=csv"));
       assert.equal(empleado.status, 403);
       registrar(empleado);
