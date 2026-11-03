@@ -2,19 +2,54 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum ResultadoAuditoria {
+  EXITO
+  FALLO
+  DENEGADO
+}
+
+enum OrigenAuditoria {
+  WEB
+  CLI
+  SISTEMA
+}
+
+// Append-only: registrarEvento is the only writer (NIST AU-9, AU-12). New columns are
+// nullable so pre-migration rows stay valid and are never rewritten.
 model EventoAuditoria {
-  eventoId  String   @id @default(cuid()) @db.VarChar(36)
-  clave     String   @unique @db.VarChar(180)
-  accion    String   @db.VarChar(40)
-  entidad   String   @db.VarChar(20)
-  recursoId String   @db.VarChar(64)
-  actorId   String   @db.VarChar(64)
-  detalles  Json
-  createdAt DateTime @default(now()) @db.DateTime(3)
+  eventoId      String             @id @default(cuid()) @db.VarChar(36)
+  /// One-shot transitions: ENTIDAD:recurso:ACCION. Repeatable events: ACCION:recurso:solicitudId.
+  clave         String             @unique @db.VarChar(180)
+  accion        String             @db.VarChar(40)
+  entidad       String             @db.VarChar(20)
+  recursoId     String             @db.VarChar(64)
+  /// Employee whose personal data the event concerns; null for configuration and imports.
+  sujetoId      String?            @db.VarChar(64)
+  actorId       String             @db.VarChar(64)
+  /// Operator snapshot at event time (name and role decide what the actor could do).
+  actorNombre   String?            @db.VarChar(160)
+  actorRol      String?            @db.VarChar(20)
+  origen        OrigenAuditoria?
+  resultado     ResultadoAuditoria @default(EXITO)
+  /// Closed error-code catalog, never free text.
+  motivo        String?            @db.VarChar(64)
+  /// One HTTP request, also returned as X-Request-Id.
+  solicitudId   String?            @db.VarChar(36)
+  /// One business operation across requests (importId, draft id, alertId).
+  correlacionId String?            @db.VarChar(64)
+  /// [{ campo, antes, despues }]: changed fields only; never index or indicator values.
+  cambios       Json?
+  justificacion String?            @db.VarChar(280)
+  detalles      Json
+  createdAt     DateTime           @default(now()) @db.DateTime(3)
 
   @@index([createdAt, eventoId])
   @@index([entidad, recursoId, createdAt])
   @@index([actorId, createdAt])
+  @@index([accion, createdAt])
+  @@index([sujetoId, createdAt])
+  @@index([correlacionId, createdAt])
+  @@index([resultado, createdAt])
 }
 
 datasource db {
@@ -77,31 +112,84 @@ enum EstadoEnvio {
   SIN_DESTINATARIO
 }
 
+enum MotivoAsignacion {
+  ALTA
+  CAMBIO_EQUIPO
+  CAMBIO_PUESTO
+  CAMBIO_LIDER
+  BAJA
+  CORRECCION
+}
+
 model Equipo {
-  teamId    String     @id @db.VarChar(64)
-  nombre    String     @db.VarChar(160)
-  activo    Boolean    @default(true)
-  empleados Empleado[]
+  teamId       String               @id @db.VarChar(64)
+  nombre       String               @db.VarChar(160)
+  activo       Boolean              @default(true)
+  /// TEAM_LEAD who is the responsable of the team's technicians.
+  liderId      String?              @unique @db.VarChar(64)
+  /// GERENCIA who is the responsable of the team's lead.
+  gerenteId    String?              @db.VarChar(64)
+  createdAt    DateTime             @default(now()) @db.DateTime(3)
+  updatedAt    DateTime             @default(now()) @updatedAt @db.DateTime(3)
+  lider        Empleado?            @relation("LiderEquipo", fields: [liderId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
+  gerente      Empleado?            @relation("GerenteEquipo", fields: [gerenteId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
+  empleados    Empleado[]
+  asignaciones AsignacionEmpleado[]
+
+  @@index([gerenteId])
 }
 
 // Gerencia es destinatario del seed; no es un empleado evaluable en el contrato P0.
 model Empleado {
-  employeeId       String            @id @db.VarChar(64)
-  nombre           String            @db.VarChar(160)
+  employeeId       String               @id @db.VarChar(64)
+  nombre           String               @db.VarChar(160)
   tipo             TipoEmpleado
-  activo           Boolean           @default(true)
-  enCobertura      Boolean           @default(true)
-  teamId           String?           @db.VarChar(64)
-  responsableId    String?           @db.VarChar(64)
-  equipo           Equipo?           @relation(fields: [teamId], references: [teamId], onDelete: Restrict, onUpdate: Restrict)
-  responsable      Empleado?         @relation("Responsables", fields: [responsableId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
-  subordinados     Empleado[]        @relation("Responsables")
+  activo           Boolean              @default(true)
+  enCobertura      Boolean              @default(true)
+  teamId           String?              @db.VarChar(64)
+  responsableId    String?              @db.VarChar(64)
+  equipo           Equipo?              @relation(fields: [teamId], references: [teamId], onDelete: Restrict, onUpdate: Restrict)
+  responsable      Empleado?            @relation("Responsables", fields: [responsableId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
+  subordinados     Empleado[]           @relation("Responsables")
+  /// Current projection; history lives in AsignacionEmpleado.
+  fechaIngreso     DateTime?            @db.Date
+  fechaBaja        DateTime?            @db.Date
+  createdAt        DateTime             @default(now()) @db.DateTime(3)
+  updatedAt        DateTime             @default(now()) @updatedAt @db.DateTime(3)
   periodos         PeriodoEmpleado[]
-  alertas          Alerta[]          @relation("EmpleadoAlertado")
-  alertasRecibidas Alerta[]          @relation("DestinatarioAlerta")
+  alertas          Alerta[]             @relation("EmpleadoAlertado")
+  alertasRecibidas Alerta[]             @relation("DestinatarioAlerta")
+  asignaciones     AsignacionEmpleado[]
+  lidera           Equipo?              @relation("LiderEquipo")
+  gerencia         Equipo[]             @relation("GerenteEquipo")
+  casos            CasoSeguimiento[]
 
   @@index([teamId, activo, enCobertura])
   @@index([responsableId])
+}
+
+// Effective-dated assignment history (one row per change; the current one has hasta = null).
+model AsignacionEmpleado {
+  asignacionId  String           @id @default(cuid()) @db.VarChar(36)
+  employeeId    String           @db.VarChar(64)
+  /// Monday, inclusive.
+  desde         DateTime         @db.Date
+  /// Next row's desde, exclusive; null = current.
+  hasta         DateTime?        @db.Date
+  tipo          TipoEmpleado
+  teamId        String?          @db.VarChar(64)
+  responsableId String?          @db.VarChar(64)
+  enCobertura   Boolean
+  activo        Boolean
+  motivo        MotivoAsignacion
+  comentario    String?          @db.VarChar(500)
+  registradoPor String           @db.VarChar(64)
+  createdAt     DateTime         @default(now()) @db.DateTime(3)
+  empleado      Empleado         @relation(fields: [employeeId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
+  equipo        Equipo?          @relation(fields: [teamId], references: [teamId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([employeeId, desde])
+  @@index([teamId, desde])
 }
 
 model Importacion {
@@ -126,6 +214,7 @@ model Importacion {
   resultadoConfirmacion Json?
   temporal              ImportacionTemporal?
   registros             RegistroLaboral[]
+  tareas                TareaSemana[]
   job                   ProcessingJob?
 
   @@index([status, expiresAt])
@@ -182,6 +271,8 @@ model RegistroLaboral {
   vacacionesPendientesDias    Int
   horasTrabajadas             Float?            @db.Double
   diasDesdeUltimasVacaciones  Int?
+  /// SHA-256 of the normalized task rows attached to this version; null = summary without detail.
+  huellaTareas                String?           @db.Char(64)
   createdAt                   DateTime          @default(now()) @db.DateTime(3)
   periodo                     PeriodoEmpleado   @relation("RegistrosPeriodo", fields: [periodoId, employeeId], references: [periodoId, employeeId], onDelete: Restrict, onUpdate: Restrict)
   importacion                 Importacion       @relation(fields: [sourceImportId], references: [importId], onDelete: Restrict, onUpdate: Restrict)
@@ -190,12 +281,47 @@ model RegistroLaboral {
   siguientesVersiones         RegistroLaboral[] @relation("VersionesRegistro")
   evaluacionesActuales        Evaluacion[]      @relation("RegistroActualEvaluado")
   evaluacionesComoAntecedente Evaluacion[]      @relation("RegistroAnteriorEvaluado")
+  tareas                      TareaSemana[]
 
   @@unique([periodoId, dataVersion])
   @@unique([recordId, periodoId])
   @@unique([recordId, employeeId])
   @@index([periodoId, employeeId])
   @@index([supersedesRecordId, periodoId])
+  @@index([sourceImportId])
+}
+
+enum EstadoTareaCierre {
+  COMPLETADA
+  PENDIENTE
+  VENCIDA
+}
+
+// One task as it stood at the close of one employee-week (Kimball periodic snapshot).
+// Immutable: it substantiates the counts of the RegistroLaboral version it hangs from.
+model TareaSemana {
+  tareaSemanaId  String            @id @default(cuid()) @db.VarChar(36)
+  recordId       String            @db.VarChar(36)
+  periodoId      String            @db.VarChar(36)
+  employeeId     String            @db.VarChar(64)
+  periodStart    DateTime          @db.Date
+  sourceImportId String            @db.VarChar(36)
+  taskId         String            @db.VarChar(64)
+  titulo         String            @db.VarChar(160)
+  origen         String            @db.VarChar(40)
+  origenRef      String?           @db.VarChar(255)
+  asignadaEl     DateTime          @db.Date
+  venceEl        DateTime?         @db.Date
+  completadaEl   DateTime?         @db.Date
+  estadoCierre   EstadoTareaCierre
+  /// VENCIDA only: period end minus due date, in days.
+  diasAtraso     Int?
+  registro       RegistroLaboral   @relation(fields: [recordId, periodoId], references: [recordId, periodoId], onDelete: Restrict, onUpdate: Restrict)
+  importacion    Importacion       @relation(fields: [sourceImportId], references: [importId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([recordId, taskId])
+  @@index([recordId, estadoCierre, diasAtraso])
+  @@index([employeeId, taskId, periodStart])
   @@index([sourceImportId])
 }
 
@@ -213,6 +339,39 @@ model ConfiguracionIndice {
   createdAt          DateTime        @default(now()) @db.DateTime(3)
   evaluaciones       Evaluacion[]
   jobs               ProcessingJob[]
+  borrador           BorradorReglas?
+}
+
+enum EstadoBorradorReglas {
+  BORRADOR
+  EN_REVISION
+  PUBLICADO
+  DESCARTADO
+}
+
+// Reason, simulation and approval of a rules version. ConfiguracionIndice gets no new
+// columns: the engine reads it field by field (workforce-admin R10).
+model BorradorReglas {
+  borradorId       String               @id @default(cuid()) @db.VarChar(36)
+  baseVersion      String               @db.VarChar(64)
+  /// weights, thresholds, mediumLimit, highLimit, minExceededFactors, effectiveFrom
+  propuesta        Json
+  motivo           String               @db.VarChar(500)
+  estado           EstadoBorradorReglas @default(BORRADOR)
+  /// SHA-256 of propuesta; editing invalidates simulation and approval.
+  huella           String               @db.Char(64)
+  simulacion       Json?
+  simulacionHuella String?              @db.Char(64)
+  retroactivo      Boolean              @default(false)
+  creadoPor        String               @db.VarChar(64)
+  aprobadoPor      String?              @db.VarChar(64)
+  aprobadoAt       DateTime?            @db.DateTime(3)
+  versionPublicada String?              @unique @db.VarChar(64)
+  createdAt        DateTime             @default(now()) @db.DateTime(3)
+  updatedAt        DateTime             @default(now()) @updatedAt @db.DateTime(3)
+  version          ConfiguracionIndice? @relation(fields: [versionPublicada], references: [version], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([estado, updatedAt])
 }
 
 model Evaluacion {
@@ -271,6 +430,7 @@ model Alerta {
   empleado           Empleado              @relation("EmpleadoAlertado", fields: [employeeId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
   destinatario       Empleado?             @relation("DestinatarioAlerta", fields: [destinatarioId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
   intentos           IntentoNotificacion[]
+  caso               CasoSeguimiento?
 
   @@unique([evaluationId, employeeId])
   @@index([employeeId, vigencia, createdAt])
@@ -345,4 +505,71 @@ model ProcessingJobPar {
   @@id([jobId, periodoId])
   @@unique([jobId, orden])
   @@index([periodoId, estado])
+}
+
+enum EstadoSeguimiento {
+  NUEVO
+  EN_CURSO
+  EN_ESPERA
+  CERRADO
+}
+
+enum MotivoCierre {
+  MEDIDAS_IMPLEMENTADAS
+  SIN_ACCION_NECESARIA
+  SUPERADA_POR_RECALCULO
+  BAJA_PERSONA
+}
+
+// Follow-up of a person's alerts. One open case per person, enforced in the service under a
+// row lock (MySQL has no partial unique index). Alerts of a case are queried by person and dates.
+model CasoSeguimiento {
+  casoId         String              @id @default(cuid()) @db.VarChar(36)
+  employeeId     String              @db.VarChar(64)
+  alertaOrigenId String              @unique @db.VarChar(36)
+  estado         EstadoSeguimiento   @default(NUEVO)
+  /// demo userId of the owner.
+  asignadoA      String              @db.VarChar(64)
+  vence          DateTime?           @db.Date
+  motivoCierre   MotivoCierre?
+  abiertoPor     String              @db.VarChar(64)
+  cerradoPor     String?             @db.VarChar(64)
+  createdAt      DateTime            @default(now()) @db.DateTime(3)
+  updatedAt      DateTime            @default(now()) @updatedAt @db.DateTime(3)
+  cerradoAt      DateTime?           @db.DateTime(3)
+  empleado       Empleado            @relation(fields: [employeeId], references: [employeeId], onDelete: Restrict, onUpdate: Restrict)
+  alertaOrigen   Alerta              @relation(fields: [alertaOrigenId], references: [alertId], onDelete: Restrict, onUpdate: Restrict)
+  notas          NotaSeguimiento[]
+  medidas        MedidaSeguimiento[]
+
+  @@index([employeeId, estado])
+  @@index([asignadoA, estado, vence])
+}
+
+// Append-only: no update or delete in service or API.
+model NotaSeguimiento {
+  notaId    String          @id @default(cuid()) @db.VarChar(36)
+  casoId    String          @db.VarChar(36)
+  autorId   String          @db.VarChar(64)
+  texto     String          @db.VarChar(1000)
+  createdAt DateTime        @default(now()) @db.DateTime(3)
+  caso      CasoSeguimiento @relation(fields: [casoId], references: [casoId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([casoId, createdAt])
+}
+
+model MedidaSeguimiento {
+  medidaId    String          @id @default(cuid()) @db.VarChar(36)
+  casoId      String          @db.VarChar(36)
+  /// Catalog key, e.g. REDISTRIBUIR_TAREAS.
+  tipo        String          @db.VarChar(40)
+  factor      String?         @db.VarChar(2)
+  responsable String          @db.VarChar(64)
+  vence       DateTime?       @db.Date
+  hecha       Boolean         @default(false)
+  createdAt   DateTime        @default(now()) @db.DateTime(3)
+  updatedAt   DateTime        @default(now()) @updatedAt @db.DateTime(3)
+  caso        CasoSeguimiento @relation(fields: [casoId], references: [casoId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([casoId])
 }
