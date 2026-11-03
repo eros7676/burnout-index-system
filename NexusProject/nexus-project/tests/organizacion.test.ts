@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { puedeAbrirOrganizacion } from "../src/components/organizacion/rutas";
 import { COLUMNAS_PERSONAS } from "../src/shared/contratos/organizacion";
 import {
   claveNombre,
@@ -61,6 +62,8 @@ test("legajo: obligatorio, recortado, de 1 a 64 caracteres y con caracteres admi
     ["Directorio", "LEGAJO_RESERVADO"],
     ["IMPORTACION", "LEGAJO_RESERVADO"],
     ["opciones", "LEGAJO_RESERVADO"],
+    ["New", "LEGAJO_RESERVADO"],
+    ["import", "LEGAJO_RESERVADO"],
   ];
   for (const [entrada, codigo] of casos) {
     const { errores } = validarLegajo(entrada, "employeeId");
@@ -577,4 +580,29 @@ test("filtros del directorio: valores por defecto, límites y rechazo de lo desc
     );
   // A blank search is no search.
   assert.equal(f("q=%20%20").q, undefined);
+});
+
+test("rutas: solo RR. HH. abre las pantallas que escriben y el Team Lead solo la página de su equipo", () => {
+  const escritura = [
+    "/employees/new",
+    "/employees/import",
+    "/employees/EMP-001/edit",
+    "/employees/EMP-001/move",
+    "/employees/EMP-001/deactivate",
+    "/teams/new",
+    "/teams/EQ-01/edit",
+    "/teams/EQ-01/lead",
+    "/teams/EQ-01/deactivate",
+  ];
+  for (const ruta of escritura) {
+    assert.equal(puedeAbrirOrganizacion("RRHH", ruta), true, ruta);
+    for (const rol of ["GERENCIA", "TEAM_LEAD", "EMPLEADO"] as const)
+      assert.equal(puedeAbrirOrganizacion(rol, ruta, "EQ-01"), false, `${rol} ${ruta}`);
+  }
+  assert.equal(puedeAbrirOrganizacion("TEAM_LEAD", "/teams/EQ-01", "EQ-01"), true);
+  assert.equal(puedeAbrirOrganizacion("TEAM_LEAD", "/teams/EQ-02", "EQ-01"), false);
+  assert.equal(puedeAbrirOrganizacion("TEAM_LEAD", "/teams/EQ-01", null), false);
+  // Everything else is left to the sidebar map.
+  for (const ruta of ["/teams", "/employees", "/employees/EMP-001", "/employees/EMP-001/weeks/2026-10-12", "/teams/EQ-01"])
+    assert.equal(puedeAbrirOrganizacion("GERENCIA", ruta), null, ruta);
 });

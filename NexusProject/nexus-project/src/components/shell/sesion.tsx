@@ -3,6 +3,7 @@ import { createContext, useContext } from "react";
 import { API_ROUTES } from "@/shared/api";
 import type { SesionDemoDTO, UsuarioDemoDTO } from "@/shared/contracts";
 import type { Icono } from "@/shared/ui";
+import { puedeAbrirOrganizacion } from "../organizacion/rutas";
 
 type Rol = UsuarioDemoDTO["rol"];
 const LECTURA: Rol[] = ["RRHH", "GERENCIA", "TEAM_LEAD"];
@@ -43,7 +44,10 @@ const SUBRUTAS: { prefijo: string; roles: Rol[] }[] = [
 
 export const inicioDe = (rol: Rol) => (rol === "EMPLEADO" ? "/my-data" : "/home");
 
-export function puedeAbrir(rol: Rol, ruta: string) {
+/** Whether a role may open a screen; a Team Lead's own team page needs the `teamId` of the session. */
+export function puedeAbrir(rol: Rol, ruta: string, teamId?: string | null) {
+  const organizacion = puedeAbrirOrganizacion(rol, ruta, teamId);
+  if (organizacion !== null) return organizacion;
   const items = NAVEGACION.flatMap((g) => g.items);
   const item = items.find((i) => ruta === i.href || ruta.startsWith(`${i.href}/`));
   if (item) return item.roles.includes(rol);
@@ -67,7 +71,7 @@ export async function elegirUsuario(usuario: UsuarioDemoDTO) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userId: usuario.userId }),
   });
-  if (!respuesta.ok) throw new Error("No se pudo cambiar de usuario. Volvé a intentar.");
+  if (!respuesta.ok) throw new Error("No se pudo cambiar de usuario. Intente nuevamente.");
   window.location.assign(inicioDe(usuario.rol));
 }
 

@@ -21,8 +21,11 @@ export const MOTIVOS_CAMBIO: readonly MotivoCambio[] = [
   "CAMBIO_PUESTO",
   "CORRECCION",
 ];
-/** Paths that sit beside `/api/personas/[employeeId]`; a legajo with these names could not be opened. */
-const LEGAJOS_RESERVADOS = ["directorio", "opciones", "importacion"];
+/**
+ * Paths that sit beside `/api/personas/[employeeId]` and `/employees/[employeeId]`: a legajo with
+ * one of these names would be shadowed by the fixed route and could not be opened.
+ */
+const LEGAJOS_RESERVADOS = ["directorio", "opciones", "importacion", "new", "import"];
 const FECHA_MINIMA: FechaISO = "2000-01-03";
 const MESES = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",

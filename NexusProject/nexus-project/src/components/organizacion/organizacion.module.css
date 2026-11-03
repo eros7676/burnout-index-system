@@ -1,0 +1,101 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+/* One column of form, as wide as its fields need (R41). */
+.formulario {
+  max-width: 560px;
+}
+.resumen {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--ink);
+}
+.resumen:focus-visible {
+  outline: 2px solid var(--danger);
+  outline-offset: 2px;
+}
+.resumenTitulo {
+  color: var(--danger);
+  font-weight: var(--weight-strong);
+}
+.resumen ul {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  padding-left: var(--space-4);
+  list-style: disc;
+}
+.resumen a {
+  color: var(--danger);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* A confirmation before a step that is hard to undo. */
+.confirmacion {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  padding: var(--space-4);
+  border-left: 3px solid var(--notice);
+  border-radius: var(--radius-sm);
+  background: var(--notice-soft);
+  color: var(--ink);
+}
+.confirmacion p {
+  max-width: 60ch;
+}
+.lista {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-4);
+  list-style: disc;
+}
+.link {
+  color: var(--accent);
+  font-weight: var(--weight-strong);
+}
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4);
+}
+.cuerpo {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+.cuerpo > * {
+  max-width: 100%;
+}
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.fallo {
+  color: var(--danger);
+  font-weight: var(--weight-strong);
+}
+.archivo {
+  display: grid;
+  gap: var(--space-1);
+}
+.archivo span {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.archivo input {
+  max-width: 100%;
+  min-height: 36px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}

@@ -2,12 +2,30 @@
   display: grid;
   gap: var(--space-5);
 }
-/* Sits on the controls' line, not the labels'. */
+/* The page's position and the pager, under the table and aligned on one line. */
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
 .count {
-  margin-left: auto;
-  padding-block: var(--space-2);
   color: var(--ink-2);
   font-size: var(--text-sm);
+}
+/* The last page stays visible, dimmed, while the next one loads. */
+.results[data-cargando] {
+  opacity: 0.6;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.equipo {
+  color: var(--accent);
+}
+.equipo:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 /* Long factor names wrap onto two lines instead of widening the table. */
 .results thead th {
