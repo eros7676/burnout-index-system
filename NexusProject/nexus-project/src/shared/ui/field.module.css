@@ -1,9 +1,17 @@
+/* Controls in a row share the control line (their bottom edge), not the label line (R11). */
 .toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
+}
+/* The page's filters, between the header and the content (R14). The page grid spaces it. */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
 }
 .field {
   display: grid;
@@ -12,12 +20,14 @@
 }
 .label {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .control {
+  box-sizing: border-box;
   width: 100%;
-  min-height: 36px;
+  min-height: var(--control-h);
   padding: 0 var(--space-3);
+  line-height: var(--leading);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -37,7 +47,7 @@
   pointer-events: none;
 }
 .search .control {
-  padding-left: calc(var(--space-3) + 22px);
+  padding-left: calc(var(--space-3) + var(--icon-sm) + var(--space-2));
   min-width: 240px;
 }
 
@@ -82,7 +92,6 @@
 .error {
   margin: 0;
   font-size: var(--text-xs);
-  line-height: var(--leading-snug);
   color: var(--ink-2);
 }
 .error {
@@ -103,6 +112,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
+  min-height: var(--control-h);
   gap: var(--space-1) var(--space-2);
 }
 .check .help {
@@ -127,7 +137,7 @@
 }
 .fact dt {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .fact dd {
   margin: 0;

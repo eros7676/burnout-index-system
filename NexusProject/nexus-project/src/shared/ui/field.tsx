@@ -33,7 +33,25 @@ export function SearchField({
   );
 }
 
-/** A row of filters above a list. */
+/** A row of filters above a list, inside its Section. */
 export function Toolbar({ children }: { children: ReactNode }) {
   return <div className={s.toolbar}>{children}</div>;
+}
+
+/**
+ * The page's filters, week included, together in one left-aligned bar between the
+ * header and the content (R14). Controls share the control line (R11).
+ */
+export function FilterBar({
+  children,
+  etiqueta = "Filtros",
+}: {
+  children: ReactNode;
+  etiqueta?: string;
+}) {
+  return (
+    <div className={s.filterBar} role="group" aria-label={etiqueta} data-enter>
+      {children}
+    </div>
+  );
 }

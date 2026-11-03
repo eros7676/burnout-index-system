@@ -40,7 +40,7 @@ function Envoltorio({
       {children}
       {error ? (
         <p className={s.error} id={`${id}-nota`}>
-          <Icon nombre="alertas" size={14} />
+          <Icon nombre="error" />
           {error}
         </p>
       ) : (
