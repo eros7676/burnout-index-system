@@ -213,7 +213,7 @@ test("T14: el informe muestra el ranking del servidor, las reglas, la persistenc
   ]);
   const anterior = page.getByRole("region", { name: "Semana anterior" });
   await expect(anterior).toContainText(
-    "La carga alta se sostiene dos semanas seguidas, con causas en común.",
+    "La carga alta se sostiene dos semanas seguidas, con factores en común.",
   );
   await expect(anterior).toContainText("5–11 oct 2026");
   await expect(anterior).toContainText("83,71");

@@ -13,14 +13,15 @@ import {
 import { HoursColumns } from "@/shared/ui/hours-columns";
 import { WeekDataTable } from "@/shared/ui/week-data-table";
 import { useSesion } from "../shell/sesion";
+import { TareasPropias } from "../tareas/tareas-propias";
 import s from "./mis-datos.module.css";
 
 const PARA_QUE =
-  "Tus datos de trabajo semana a semana, para revisar la carga del equipo.";
+  "Sus datos de trabajo, semana a semana, que se usan para revisar la carga del equipo.";
 
 /**
- * Answers "¿Qué datos míos se cargaron?": the person's own weekly work data,
- * exactly as loaded. By construction there is no index or level here (RF10).
+ * Answers "¿Qué datos propios se cargaron?": the person's own weekly work data and the tasks
+ * behind its counts, exactly as loaded. By construction there is no index or level here (RF10).
  */
 export function MisDatos() {
   const { usuario } = useSesion();
@@ -79,9 +80,9 @@ export function MisDatos() {
           ) : !datos ? (
             <SkeletonRows filas={5} />
           ) : vacio ? (
-            <Empty titulo="Todavía no se cargaron datos tuyos">
-              Cuando RRHH importe una semana con tu legajo, vas a ver acá tus
-              horas, tareas y vacaciones.
+            <Empty titulo="Todavía no hay datos cargados con su legajo">
+              Sus horas, tareas y vacaciones aparecerán cuando RR. HH. importe
+              una semana con su legajo.
             </Empty>
           ) : (
             <HoursColumns semanas={cronologico} />
@@ -95,13 +96,15 @@ export function MisDatos() {
             <SkeletonRows filas={6} />
           ) : (
             <WeekDataTable
-              etiqueta="Tus datos por semana"
+              etiqueta="Sus datos por semana"
               filas={datos.semanas}
               cuerpoRef={filas}
             />
           )}
         </Section>
       )}
+
+      {!vacio && consulta.estado !== "error" && datos && <TareasPropias />}
     </div>
   );
 }
