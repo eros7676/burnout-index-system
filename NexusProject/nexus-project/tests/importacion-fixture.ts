@@ -211,3 +211,52 @@ export async function escenario(
     });
   }
 }
+
+/** Removes what a set of imports created, found through the imports themselves (no employee of its own). */
+export async function limpiarImportaciones(db: PrismaClient, ids: string[]) {
+  const importId = { in: ids };
+  const periodos = await db.periodoEmpleado.findMany({
+    where: { registros: { some: { sourceImportId: importId } } },
+    select: { periodoId: true },
+  });
+  const periodoId = { in: periodos.map((p) => p.periodoId) };
+  const jobs = await db.processingJob.findMany({
+    where: { importId },
+    select: { jobId: true },
+  });
+  await db.$transaction(
+    async (tx) => {
+      await tx.tareaSemana.deleteMany({
+        where: { OR: [{ sourceImportId: importId }, { periodoId }] },
+      });
+      await tx.processingJobPar.deleteMany({
+        where: { OR: [{ job: { importId } }, { periodoId }] },
+      });
+      await tx.processingJob.deleteMany({ where: { importId } });
+      await tx.alerta.deleteMany({ where: { evaluacion: { periodoId } } });
+      await tx.periodoEmpleado.updateMany({
+        where: { periodoId },
+        data: { registroVigenteId: null, evaluacionVigenteId: null },
+      });
+      await tx.evaluacion.updateMany({
+        where: { periodoId },
+        data: { supersedesEvaluationId: null },
+      });
+      await tx.evaluacion.deleteMany({ where: { periodoId } });
+      await tx.registroLaboral.deleteMany({ where: { periodoId } });
+      await tx.periodoEmpleado.deleteMany({ where: { periodoId } });
+      await tx.importacionTemporal.deleteMany({ where: { importId } });
+      await tx.importacion.deleteMany({ where: { importId } });
+      await tx.eventoAuditoria.deleteMany({
+        where: {
+          OR: [
+            { correlacionId: importId },
+            { recursoId: importId },
+            { recursoId: { in: jobs.map((j) => j.jobId) } },
+          ],
+        },
+      });
+    },
+    { timeout: 120_000 },
+  );
+}

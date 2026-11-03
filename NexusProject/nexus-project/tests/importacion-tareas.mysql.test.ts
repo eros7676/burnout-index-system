@@ -5,7 +5,18 @@ import { sembrarBase } from "../prisma/seed-base";
 import { fuenteTareasPrisma } from "../src/server/repositories/tareas-importacion";
 import { huellaTareas } from "../src/server/services/tareas-importacion";
 import type { ResultadoImportacionTareas } from "../src/shared/contratos/importaciones";
-import { csvDe, escenario, filasTareas } from "./importacion-fixture";
+import { readFileSync } from "node:fs";
+import {
+  confirmarImportacion,
+  validarImportacion,
+} from "../src/server/services/importaciones";
+import { validarImportacionTareas } from "../src/server/services/tareas-importacion-flujo";
+import {
+  csvDe,
+  escenario,
+  filasTareas,
+  limpiarImportaciones,
+} from "./importacion-fixture";
 
 test("MySQL tareas-v1: confirmación atómica, idempotente y con eventos", async (t) => {
   const url = process.env.TEST_DATABASE_URL;
@@ -246,6 +257,68 @@ test("MySQL tareas-v1: confirmación atómica, idempotente y con eventos", async
       }));
       assert.deepEqual(await fuenteTareasPrisma(db).semanas(pares), []);
     });
+
+    await t.test(
+      "demo de ocho semanas: 392 semanas y 3.587 tareas entran por el mismo circuito",
+      async () => {
+        const imports: string[] = [];
+        const csv = (nombre: string) => readFileSync(`templates/${nombre}.csv`);
+        const archivo = (nombre: string) =>
+          new File([csv(nombre)], `${nombre}.csv`, { type: "text/csv" });
+        try {
+          const resumen = await validarImportacion(db, archivo("demo-ocho-semanas"), "demo-local");
+          imports.push(resumen.importId);
+          assert.equal(resumen.status, "VALIDADA");
+          const cargado = await confirmarImportacion(db, resumen.importId, "demo-local");
+          assert.equal(cargado.procesamiento?.estado, "COMPLETADO");
+          assert.equal(cargado.insertados, 392);
+
+          let inicio = performance.now();
+          const vista = await validarImportacionTareas(db, archivo("tareas-demo-ocho-semanas"), "demo-local");
+          imports.push(vista.importId);
+          const msValidar = Math.round(performance.now() - inicio);
+          assert.equal(vista.status, "VALIDADA", JSON.stringify(vista.errores.slice(0, 2)));
+          assert.equal(vista.conciliacion.coinciden, 392);
+          assert.equal(vista.nuevas + vista.excluidas, vista.totalFilas);
+
+          inicio = performance.now();
+          const resultado = (await confirmarImportacion(db, vista.importId, "demo-local")) as ResultadoImportacionTareas;
+          const msConfirmar = Math.round(performance.now() - inicio);
+          t.diagnostic(`3.587 tareas: validar ${msValidar} ms, confirmar ${msConfirmar} ms`);
+          assert.equal(resultado.insertados, vista.nuevas);
+          assert.equal(resultado.semanas, 392);
+          assert.equal(
+            await db.tareaSemana.count({ where: { sourceImportId: vista.importId } }),
+            vista.nuevas,
+          );
+          assert.equal(
+            await db.registroLaboral.count({
+              where: { sourceImportId: resumen.importId, huellaTareas: { not: null } },
+            }),
+            392,
+          );
+          // The control totals hold in the database itself: stored rows add up to stored counts.
+          const [{ descuadres }] = await db.$queryRaw<{ descuadres: bigint }[]>`
+            SELECT COUNT(*) AS descuadres FROM RegistroLaboral r
+            LEFT JOIN (
+              SELECT recordId, COUNT(*) a, SUM(estadoCierre <> 'COMPLETADA') p, SUM(estadoCierre = 'VENCIDA') v
+              FROM TareaSemana WHERE sourceImportId = ${vista.importId} GROUP BY recordId
+            ) t ON t.recordId = r.recordId
+            WHERE r.sourceImportId = ${resumen.importId}
+              AND (COALESCE(t.a, 0) <> r.tareasActivas OR COALESCE(t.p, 0) <> r.tareasPendientes
+                   OR COALESCE(t.v, 0) <> r.tareasVencidas)`;
+          assert.equal(Number(descuadres), 0);
+
+          // Importing the same file again stores nothing.
+          const otra = await validarImportacionTareas(db, archivo("tareas-demo-ocho-semanas"), "demo-local");
+          imports.push(otra.importId);
+          assert.equal(otra.nuevas, 0);
+          assert.equal(otra.omitidas, vista.nuevas);
+        } finally {
+          await limpiarImportaciones(db, imports);
+        }
+      },
+    );
 
     await t.test("cancelar una vista previa de tareas no guarda nada", () =>
       escenario(db, async (s) => {
