@@ -165,14 +165,16 @@ export function Resumen() {
         }
       />
 
-      {datos && datos.semanas.length > 0 && (
+      {/* Present while loading, so the blocks below do not move when the weeks arrive. */}
+      {consulta.estado !== "error" && datos?.semanas.length !== 0 && (
         <FilterBar etiqueta="Filtros del resumen">
           <SelectField
             etiqueta="Semana"
-            value={semana}
+            value={semana ?? ""}
+            disabled={!datos}
             onChange={(e) => setElegida(e.target.value)}
           >
-            {datos.semanas.map((w) => {
+            {(datos?.semanas ?? []).map((w) => {
               const fin =
                 vista?.evolucion.find((e) => e.periodStart === w)?.periodEnd ??
                 w;

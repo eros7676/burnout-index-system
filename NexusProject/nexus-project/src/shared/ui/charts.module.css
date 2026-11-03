@@ -103,10 +103,15 @@
   white-space: nowrap;
 }
 /* Every weekly chart draws its bars at 60% of the slot (R39). */
-/* A narrow plot keeps the count and drops the word, so labels never overprint. */
+/* A narrow plot keeps the count and drops the word, and shows every second week label
+   (the latest always), so labels never overprint. */
 @container (max-width: 560px) {
   .topWord {
     display: none;
+  }
+  .column:nth-last-child(even) .columnLabel,
+  .indexColumn:nth-last-child(even) .columnLabel {
+    visibility: hidden;
   }
 }
 .stack {
@@ -143,6 +148,7 @@
   margin: 0;
 }
 .indexPlot {
+  container-type: inline-size;
   position: relative;
   display: grid;
   grid-auto-flow: column;
