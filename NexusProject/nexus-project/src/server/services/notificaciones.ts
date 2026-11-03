@@ -8,7 +8,15 @@ import type {
   SolicitudNotificacion,
 } from "../../shared/contracts";
 import { simularCorreo } from "../../lib/mail";
+import {
+  calcularCambios,
+  registrarEvento,
+  type Actor,
+} from "../repositories/auditoria";
 import { resolverDestinatario } from "./destinatario-alerta";
+
+/** Internal adapters (scripts, tests) act like `actorDemo` does without a session. */
+const ACTOR_INTERNO: Actor = { actorId: "demo-local" };
 
 export class ErrorNotificacion extends Error {
   constructor(
@@ -75,11 +83,15 @@ export async function listarNotificaciones(
   ).map(dto);
 }
 
-/** Una sola notificación pendiente por alerta. Repetir requestId devuelve el mismo intento. */
+/**
+ * Una sola notificación pendiente por alerta. Repetir requestId devuelve el mismo intento.
+ * Crear el intento deja su evento NOTIFICACION_PREPARADA en la misma transacción.
+ */
 export async function prepararNotificacion(
   db: PrismaClient,
   alertId: string,
   solicitud: SolicitudNotificacion,
+  actor: Actor = ACTOR_INTERNO,
 ): Promise<IntentoNotificacion> {
   return transaccion(db, alertId, async (tx) => {
     const existente = await tx.intentoNotificacion.findUnique({
@@ -121,15 +133,35 @@ export async function prepararNotificacion(
       where: { alertId },
       data: { ...destino, canal: "SIMULADO", estadoEnvio: "PENDIENTE" },
     });
+    await registrarEvento(tx, {
+      accion: "NOTIFICACION_PREPARADA",
+      recursoId: intento.intentoId,
+      actor,
+      sujetoId: alerta.employeeId,
+      correlacionId: alertId,
+      cambios: calcularCambios(
+        { estadoEnvio: alerta.estadoEnvio },
+        { estadoEnvio: "PENDIENTE" },
+      ),
+      detalles: {
+        numero: intento.numero,
+        canal: "SIMULADO",
+        resultadoSolicitado: solicitud.resultado,
+      },
+    });
     return dto(intento);
   });
 }
 
-/** Procesa un intento persistido; puede repetirse incluso tras reiniciar el servidor. */
+/**
+ * Procesa un intento persistido; puede repetirse incluso tras reiniciar el servidor.
+ * Solo el primer proceso deja su evento NOTIFICACION_PROCESADA, en la misma transacción.
+ */
 export async function procesarNotificacion(
   db: PrismaClient,
   alertId: string,
   intentoId: string,
+  actor: Actor = ACTOR_INTERNO,
 ): Promise<IntentoNotificacion> {
   return transaccion(db, alertId, async (tx) => {
     const intento = await tx.intentoNotificacion.findFirst({
@@ -139,13 +171,13 @@ export async function procesarNotificacion(
       throw new ErrorNotificacion(404, "No existe ese intento en la alerta.");
     if (intento.estado !== "PENDIENTE") return dto(intento);
     const alerta = await tx.alerta.findUniqueOrThrow({ where: { alertId } });
-    const resultado =
-      alerta.vigencia === "ACTIVA"
-        ? simularCorreo(intento.destinatarioId, intento.resultado)
-        : {
-            estado: "FALLIDO" as const,
-            detalle: "La alerta fue superada antes de simular el envío.",
-          };
+    const superada = alerta.vigencia !== "ACTIVA";
+    const resultado = superada
+      ? {
+          estado: "FALLIDO" as const,
+          detalle: "La alerta fue superada antes de simular el envío.",
+        }
+      : simularCorreo(intento.destinatarioId, intento.resultado);
     const final = await tx.intentoNotificacion.update({
       where: { intentoId },
       data: { ...resultado, completedAt: new Date() },
@@ -153,6 +185,32 @@ export async function procesarNotificacion(
     await tx.alerta.update({
       where: { alertId },
       data: { estadoEnvio: resultado.estado },
+    });
+    await registrarEvento(tx, {
+      accion: "NOTIFICACION_PROCESADA",
+      recursoId: intentoId,
+      actor,
+      sujetoId: alerta.employeeId,
+      correlacionId: alertId,
+      resultado: resultado.estado === "ENVIADO" ? "EXITO" : "FALLO",
+      ...(resultado.estado === "ENVIADO"
+        ? {}
+        : {
+            motivo: superada
+              ? ("ESTADO_INCOMPATIBLE" as const)
+              : resultado.estado === "SIN_DESTINATARIO"
+                ? ("SIN_DESTINATARIO" as const)
+                : ("SIMULADO_FALLO" as const),
+          }),
+      cambios: calcularCambios(
+        { estadoEnvio: alerta.estadoEnvio },
+        { estadoEnvio: resultado.estado },
+      ),
+      detalles: {
+        numero: intento.numero,
+        canal: "SIMULADO",
+        estado: resultado.estado,
+      },
     });
     return dto(final);
   });
