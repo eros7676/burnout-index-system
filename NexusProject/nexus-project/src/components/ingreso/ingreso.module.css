@@ -5,6 +5,7 @@
   display: grid;
   gap: var(--space-8);
 }
+/* The one centered page (R35): the column is a block, its text stays left-aligned. */
 .header {
   display: grid;
   gap: var(--space-3);
@@ -41,10 +42,12 @@
 .panel h2 {
   font-size: var(--text-lg);
 }
+/* Peers: equal width and equal height, one gutter in both directions (R38, R40). */
 .users {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--space-3);
+  grid-auto-rows: 1fr;
+  gap: var(--gutter);
 }
 .user {
   width: 100%;
@@ -75,14 +78,14 @@
 }
 .userScope {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .userState {
   color: var(--accent);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .foot {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   max-width: 70ch;
 }

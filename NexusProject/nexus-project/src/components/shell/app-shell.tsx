@@ -43,8 +43,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className={s.app}>
         <div className={s.demo} role="region" aria-label="Modo demostración">
           <p>
-            <strong>Modo demo</strong> con datos ficticios. El índice señala
-            posible sobrecarga; no es un diagnóstico.{" "}
+            <strong>Modo demostración</strong> con datos ficticios. El índice
+            señala una posible sobrecarga de trabajo; no es un diagnóstico
+            médico.{" "}
             {visible && puedeAbrir(visible.rol, "/rules-config") && (
               <Link href="/rules-config">Cómo se calcula</Link>
             )}
@@ -54,9 +55,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
           {visible && (
             <label className={s.switcher}>
-              <span>Viendo como</span>
+              <span>Perfil activo</span>
               <select
-                aria-label="Usuario de demostración"
+                aria-label="Perfil activo, usuario de demostración"
                 value={visible.userId}
                 onChange={(e) => {
                   const elegido = usuarios.find(

@@ -21,16 +21,19 @@ import {
 } from "@/shared/semanas";
 import {
   ButtonLink,
+  Columns,
   DataTable,
   DistributionBar,
   Empty,
   ErrorBox,
+  FilterBar,
   Figure,
   Notice,
   PageHeader,
   Section,
   SelectField,
   SkeletonRows,
+  Stack,
   WeekColumns,
   WeekStrip,
   tabla,
@@ -56,12 +59,12 @@ async function cargar(signal: AbortSignal): Promise<Datos> {
   };
 }
 
-/** The first two causes in words; the rest as a count. */
+/** The first two causes in words; the rest as a count that wraps as one unit. */
 function causas(lista: Alerta["causas"] | undefined) {
   if (!lista?.length) return "—";
   const nombres = lista.map((f) => FACTOR[f]);
   return nombres.length > 2
-    ? `${nombres.slice(0, 2).join(", ")} y ${nombres.length - 2} más`
+    ? `${nombres.slice(0, 2).join(", ")} y\u00a0${nombres.length - 2}\u00a0más`
     : nombres.join(" y ");
 }
 
@@ -154,33 +157,34 @@ export function Resumen() {
             : "Seguimiento semanal de la carga de trabajo"
         }
         acciones={
-          <>
-            {datos && datos.semanas.length > 0 && (
-              <SelectField
-                etiqueta="Semana"
-                value={semana}
-                onChange={(e) => setElegida(e.target.value)}
-              >
-                {datos.semanas.map((w) => {
-                  const fin =
-                    vista?.evolucion.find((e) => e.periodStart === w)
-                      ?.periodEnd ?? w;
-                  return (
-                    <option key={w} value={w}>
-                      {textoSemana(w, fin)}
-                    </option>
-                  );
-                })}
-              </SelectField>
-            )}
-            {usuario?.rol === "RRHH" && (
-              <ButtonLink variante="primary" href="/importaciones">
-                Importar datos
-              </ButtonLink>
-            )}
-          </>
+          usuario?.rol === "RRHH" ? (
+            <ButtonLink variante="primary" href="/importaciones">
+              Importar datos
+            </ButtonLink>
+          ) : undefined
         }
       />
+
+      {datos && datos.semanas.length > 0 && (
+        <FilterBar etiqueta="Filtros del resumen">
+          <SelectField
+            etiqueta="Semana"
+            value={semana}
+            onChange={(e) => setElegida(e.target.value)}
+          >
+            {datos.semanas.map((w) => {
+              const fin =
+                vista?.evolucion.find((e) => e.periodStart === w)?.periodEnd ??
+                w;
+              return (
+                <option key={w} value={w}>
+                  {textoSemana(w, fin)}
+                </option>
+              );
+            })}
+          </SelectField>
+        </FilterBar>
+      )}
 
       {/* A failed read shows only its error; no block keeps announcing a load. */}
       {consulta.estado === "error" ? (
@@ -198,167 +202,178 @@ export function Resumen() {
               ) : undefined
             }
           >
-            Cuando RRHH importe la primera semana, acá vas a ver quién sostiene
-            una carga alta.
+            Las personas con carga alta sostenida aparecerán cuando RR. HH.
+            importe la primera semana.
           </Empty>
         </Section>
       ) : (
-        <div className={s.grid}>
-          <Section
-            className={s.attention}
-            titulo="Necesitan atención"
-            aside={
-              vista && vista.enAlto.length > 0 ? (
-                <span>Alto: índice de 70 o más dos semanas seguidas</span>
-              ) : undefined
-            }
-          >
-            <div ref={atencion}>
-              {!vista ? (
-                <SkeletonRows filas={5} />
-              ) : vista.enAlto.length === 0 ? (
-                <Empty titulo="Nadie en Alto esta semana">
-                  {vista.cerca.length
-                    ? `Las personas más cerca del límite: ${vista.cerca.map((p) => p.nombre).join(", ")}.`
-                    : undefined}
-                </Empty>
-              ) : (
-                <DataTable etiqueta="Personas en nivel Alto">
-                  <thead>
-                    <tr>
-                      <th scope="col">Persona</th>
-                      <th scope="col">Últimas 8 semanas</th>
-                      <th scope="col">Causas</th>
-                      <th scope="col" className={tabla.num}>
-                        Índice
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody ref={filas}>
-                    {vista.enAlto.map(({ persona, racha: n, semana: w }) => (
-                      <tr key={persona.employeeId}>
-                        <th scope="row">
-                          <Link
-                            className={tabla.rowLink}
-                            href={`/employees/${persona.employeeId}`}
-                          >
-                            {persona.nombre}
-                          </Link>
-                          <span className={tabla.sub}>{persona.equipo}</span>
+        <>
+          <Columns division="8-4">
+            <Section
+              titulo="Necesitan atención"
+              aside={
+                vista && vista.enAlto.length > 0 ? (
+                  <span>
+                    Alto: índice de 70 o más durante dos semanas consecutivas
+                  </span>
+                ) : undefined
+              }
+            >
+              <div ref={atencion}>
+                {!vista ? (
+                  <SkeletonRows filas={5} />
+                ) : vista.enAlto.length === 0 ? (
+                  <Empty titulo="Ninguna persona en nivel Alto esta semana">
+                    {vista.cerca.length
+                      ? `Las personas más cerca del límite: ${vista.cerca.map((p) => p.nombre).join(", ")}.`
+                      : undefined}
+                  </Empty>
+                ) : (
+                  <DataTable etiqueta="Personas en nivel Alto">
+                    <thead>
+                      <tr>
+                        <th scope="col">Persona</th>
+                        <th scope="col">Últimas 8 semanas</th>
+                        <th scope="col">Causas</th>
+                        <th scope="col" className={tabla.num}>
+                          Índice
                         </th>
-                        <td>
-                          <span className={s.strip}>
-                            <WeekStrip semanas={serieHasta(persona, semana!)} />
-                            <span className={s.streak}>
-                              {n === 1 ? "1 semana" : `${n} semanas seguidas`}
-                            </span>
-                          </span>
-                        </td>
-                        <td className={s.causes}>
-                          {causas(datos!.causas.get(persona.employeeId))}
-                        </td>
-                        <td className={tabla.num}>
-                          {w.evaluationId ? (
-                            <Link
-                              className={s.score}
-                              href={`/reports/${w.evaluationId}`}
-                            >
-                              {decimal(w.indice)}
-                            </Link>
-                          ) : (
-                            decimal(w.indice)
-                          )}
-                        </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </DataTable>
-              )}
-            </div>
-          </Section>
-
-          <div className={s.side}>
-            <Section titulo="La semana en números">
-              {!vista || !periodo ? (
-                <SkeletonRows filas={3} />
-              ) : (
-                <div className={s.figures}>
-                  <div className={s.figureRow}>
-                    <Figure
-                      etiqueta="En Alto"
-                      valor={entero(vista.enAlto.length)}
-                      tono={vista.enAlto.length ? "alto" : "neutro"}
-                      detalle={`de ${entero(datos!.personas.length)} personas`}
-                    />
-                    <Figure
-                      etiqueta="Nuevas en Alto"
-                      valor={entero(vista.nuevas)}
-                      detalle="respecto de la semana anterior"
-                    />
-                  </div>
-                  <DistributionBar conteo={periodo.conteo} />
-                  {resumen.estado === "listo" && (
-                    <p className={s.note}>
-                      Índice promedio {decimal(resumen.datos.promedioIndice)} en{" "}
-                      {entero(resumen.datos.muestraPromedio)} evaluaciones,
-                      Incompleto incluido.
-                    </p>
-                  )}
-                  {resumen.estado === "listo" &&
-                    resumen.datos.noProcesados > 0 && (
-                      <Notice tono="aviso">
-                        {entero(resumen.datos.noProcesados)} evaluaciones de
-                        esta semana esperan cálculo y no se cuentan.
-                      </Notice>
-                    )}
-                  {resumen.estado === "error" && (
-                    <ErrorBox
-                      mensaje={resumen.mensaje}
-                      onRetry={resumen.reintentar}
-                    />
-                  )}
-                </div>
-              )}
+                    </thead>
+                    <tbody ref={filas}>
+                      {vista.enAlto.map(({ persona, racha: n, semana: w }) => (
+                        <tr key={persona.employeeId}>
+                          <th scope="row">
+                            <Link
+                              className={tabla.rowLink}
+                              href={`/employees/${persona.employeeId}`}
+                            >
+                              {persona.nombre}
+                            </Link>
+                            <span className={tabla.sub}>{persona.equipo}</span>
+                          </th>
+                          <td>
+                            <span className={s.strip}>
+                              <WeekStrip
+                                semanas={serieHasta(persona, semana!)}
+                              />
+                              <span className={s.streak}>
+                                {n === 1 ? "1 semana" : `${n} semanas seguidas`}
+                              </span>
+                            </span>
+                          </td>
+                          <td className={s.causes}>
+                            {causas(datos!.causas.get(persona.employeeId))}
+                          </td>
+                          <td className={tabla.num}>
+                            {w.evaluationId ? (
+                              <Link
+                                className={tabla.cellLink}
+                                href={`/reports/${w.evaluationId}`}
+                              >
+                                {decimal(w.indice)}
+                              </Link>
+                            ) : (
+                              decimal(w.indice)
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </DataTable>
+                )}
+              </div>
             </Section>
 
-            {verEquipos && (
-              <Section titulo="Por equipo">
-                {!vista ? (
-                  <SkeletonRows filas={4} />
+            <Stack>
+              <Section titulo="Indicadores de la semana">
+                {!vista || !periodo ? (
+                  <SkeletonRows filas={3} />
                 ) : (
-                  <ul className={s.teamList}>
-                    {vista.equipos.map((e) => (
-                      <li key={e.teamId}>
-                        <div className={s.teamHead}>
-                          <Link
-                            href={`/employees?equipo=${e.teamId}`}
-                            className={tabla.rowLink}
-                          >
-                            {e.nombre}
-                          </Link>
-                          <span className="num">
-                            {e.conteo.ALTO
-                              ? `${e.conteo.ALTO} en Alto`
-                              : "Nadie en Alto"}
-                          </span>
-                        </div>
-                        {e.miembros < GRUPO_MINIMO ? (
-                          <p className={s.note}>
-                            Grupo demasiado chico para mostrar.
-                          </p>
-                        ) : (
-                          <DistributionBar conteo={e.conteo} leyenda={false} />
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                  <div className={s.figures}>
+                    <div className={s.figureRow}>
+                      <Figure
+                        etiqueta="En Alto"
+                        valor={entero(vista.enAlto.length)}
+                        tono={vista.enAlto.length ? "alto" : "neutro"}
+                        detalle={`de ${entero(datos!.personas.length)} personas`}
+                      />
+                      <Figure
+                        etiqueta="Nuevas en Alto"
+                        valor={entero(vista.nuevas)}
+                        detalle="respecto de la semana anterior"
+                      />
+                    </div>
+                    <DistributionBar conteo={periodo.conteo} />
+                    {resumen.estado === "listo" && (
+                      <p className={s.note}>
+                        Índice promedio {decimal(resumen.datos.promedioIndice)}{" "}
+                        sobre {entero(resumen.datos.muestraPromedio)}{" "}
+                        {resumen.datos.muestraPromedio === 1
+                          ? "evaluación"
+                          : "evaluaciones"}{" "}
+                        (incluye nivel Incompleto).
+                      </p>
+                    )}
+                    {resumen.estado === "listo" &&
+                      resumen.datos.noProcesados > 0 && (
+                        <Notice tono="aviso">
+                          {entero(resumen.datos.noProcesados)} evaluaciones de
+                          esta semana esperan cálculo y no se cuentan.
+                        </Notice>
+                      )}
+                    {resumen.estado === "error" && (
+                      <ErrorBox
+                        mensaje={resumen.mensaje}
+                        onRetry={resumen.reintentar}
+                      />
+                    )}
+                  </div>
                 )}
               </Section>
-            )}
-          </div>
+
+              {verEquipos && (
+                <Section titulo="Por equipo">
+                  {!vista ? (
+                    <SkeletonRows filas={4} />
+                  ) : (
+                    <ul className={s.teamList}>
+                      {vista.equipos.map((e) => (
+                        <li key={e.teamId}>
+                          <div className={s.teamHead}>
+                            <Link
+                              href={`/teams/${e.teamId}`}
+                              className={tabla.rowLink}
+                            >
+                              {e.nombre}
+                            </Link>
+                            <span className="num">
+                              {e.conteo.ALTO
+                                ? `${e.conteo.ALTO} en Alto`
+                                : "Ninguna en Alto"}
+                            </span>
+                          </div>
+                          {e.miembros < GRUPO_MINIMO ? (
+                            <p className={s.note}>
+                              No se muestra: el equipo tiene menos de{" "}
+                              {GRUPO_MINIMO} personas.
+                            </p>
+                          ) : (
+                            <DistributionBar
+                              conteo={e.conteo}
+                              leyenda={false}
+                            />
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Section>
+              )}
+            </Stack>
+          </Columns>
 
           <Section
-            className={s.trend}
             titulo="Evolución"
             aside={
               vista ? (
@@ -372,7 +387,7 @@ export function Resumen() {
               <WeekColumns semanas={vista.evolucion} actual={semana} />
             )}
           </Section>
-        </div>
+        </>
       )}
     </div>
   );

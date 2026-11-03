@@ -9,8 +9,8 @@ import s from "./ingreso.module.css";
 
 const QUE_VE: Record<UsuarioDemoDTO["rol"], string> = {
   RRHH: "Toda la empresa. Importa datos y simula avisos.",
-  GERENCIA: "Toda la empresa y la auditoría, sin importar datos.",
-  TEAM_LEAD: "Solo su célula.",
+  GERENCIA: "Toda la empresa y la auditoría, solo en consulta.",
+  TEAM_LEAD: "Solo su equipo.",
   EMPLEADO: "Sus propias horas y tareas. Nunca ve un índice.",
 };
 
@@ -43,7 +43,7 @@ export function Ingreso() {
         </p>
       </header>
       <section className={s.panel} data-enter aria-labelledby="perfil">
-        <h2 id="perfil">Elegí con qué perfil entrar</h2>
+        <h2 id="perfil">Seleccione un perfil para ingresar</h2>
         {sesion.estado === "cargando" && <SkeletonRows filas={4} />}
         {sesion.estado === "error" && (
           <ErrorBox mensaje={sesion.mensaje} onRetry={sesion.reintentar} />
@@ -66,7 +66,7 @@ export function Ingreso() {
                   <span className={s.userScope}>{QUE_VE[u.rol]}</span>
                   {eligiendo === u.userId && (
                     <span className={s.userState} role="status">
-                      Entrando…
+                      Ingresando…
                     </span>
                   )}
                 </button>
@@ -76,8 +76,9 @@ export function Ingreso() {
         )}
       </section>
       <p className={s.foot} data-enter>
-        Demo académica con datos ficticios. El índice señala posible sobrecarga
-        laboral; no es un diagnóstico y no reemplaza la conversación con la persona.
+        Demostración con datos ficticios. El índice señala una posible
+        sobrecarga de trabajo; no es un diagnóstico médico y no reemplaza la
+        conversación con la persona.
       </p>
     </div>
   );
