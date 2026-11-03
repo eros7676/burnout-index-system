@@ -23,16 +23,17 @@ const INTENTO: Record<
   SIN_DESTINATARIO: { texto: "Sin destinatario", tono: "incidencia" },
 };
 const RESULTADO: Record<Estado, string> = {
-  PENDIENTE: "Quedó un envío simulado pendiente de procesar.",
-  ENVIADO: "Quedó registrado como enviado (simulado).",
-  FALLIDO: "Quedó registrado como fallido (simulado). Podés volver a simularlo.",
+  PENDIENTE: "Envío simulado pendiente de procesar.",
+  ENVIADO: "Envío registrado como enviado (simulado).",
+  FALLIDO:
+    "Envío registrado como fallido (simulado). Se puede volver a simularlo.",
   SIN_DESTINATARIO:
-    "No hay a quién avisar: falta el responsable en el catálogo.",
+    "No hay destinatario: falta el responsable en el catálogo.",
 };
 const mensajeDe = (e: unknown) =>
   e instanceof Error
     ? e.message
-    : "No se pudo completar la simulación. Volvé a intentar.";
+    : "No se pudo completar la simulación. Inténtelo nuevamente.";
 
 /**
  * The simulated email of one alert (T12): no message ever leaves the app.
@@ -44,11 +45,14 @@ export function NotificacionAlerta({
   alerta,
   alCambiar,
   destinatario,
+  sinMarco = false,
 }: {
   alerta: Alerta;
   alCambiar: (intento: IntentoNotificacion) => void;
   /** The recipient's name for an attempt's employeeId snapshot. */
   destinatario: (destinatarioId: string) => string;
+  /** Inside a titled Section: no box and no title of its own, so nothing is boxed twice. */
+  sinMarco?: boolean;
 }) {
   const titulo = useId();
   const [intentos, setIntentos] = useState<IntentoNotificacion[]>();
@@ -126,21 +130,25 @@ export function NotificacionAlerta({
   const enviado =
     alerta.estadoEnvio === "ENVIADO" || ultimo?.estado === "ENVIADO";
   const activa = alerta.vigencia === "ACTIVA";
+  // Framed, the panel is its own region; inside a titled Section that Section is the region.
+  const Raiz = sinMarco ? "div" : "section";
 
   return (
-    <section
+    <Raiz
       className={s.panel}
-      aria-labelledby={titulo}
+      data-sin-marco={sinMarco || undefined}
+      aria-labelledby={sinMarco ? undefined : titulo}
       aria-busy={ocupado !== null}
     >
       <div className={s.head}>
-        <h3 id={titulo} className={s.title}>
-          <Icon nombre="correo" size={16} />
-          Correo simulado
-        </h3>
+        {!sinMarco && (
+          <h3 id={titulo} className={s.title}>
+            <Icon nombre="correo" size={16} />
+            Correo simulado
+          </h3>
+        )}
         <Button
           variante="quiet"
-          className={s.refresh}
           disabled={ocupado !== null}
           onClick={listar}
         >
@@ -163,11 +171,13 @@ export function NotificacionAlerta({
             Simular envío exitoso
           </Button>
           <Button disabled={ocupado !== null} onClick={() => simular("FALLO")}>
-            Simular fallo
+            Simular envío fallido
           </Button>
         </div>
       ) : !activa ? (
-        <p className={s.note}>Alerta superada: solo queda su historial.</p>
+        <p className={s.note}>
+          Alerta superada: solo se conserva el historial.
+        </p>
       ) : null}
 
       <p role="status" className={s.status}>
@@ -208,8 +218,8 @@ export function NotificacionAlerta({
           })}
         </ol>
       ) : (
-        <p className={s.note}>Todavía no hay intentos.</p>
+        <p className={s.note}>Sin intentos registrados.</p>
       )}
-    </section>
+    </Raiz>
   );
 }

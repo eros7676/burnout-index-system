@@ -1,0 +1,48 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+.contenido {
+  display: grid;
+  gap: var(--space-5);
+}
+/* One 12-column grid: the answer takes 8 columns, its support 4 (R2, R3); equal gutters (R40). */
+.fila {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+.principal {
+  grid-column: span 8;
+}
+.apoyo {
+  grid-column: span 4;
+}
+.completa {
+  grid-column: 1 / -1;
+}
+@media (max-width: 1100px) {
+  .principal,
+  .apoyo {
+    grid-column: 1 / -1;
+  }
+}
+.semana,
+.destinatario {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+}
+.lista {
+  display: grid;
+  gap: var(--space-2);
+  padding-left: var(--space-5);
+  list-style: disc;
+}
+.lista + .nota {
+  margin-top: var(--space-4);
+}
+.nota {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
