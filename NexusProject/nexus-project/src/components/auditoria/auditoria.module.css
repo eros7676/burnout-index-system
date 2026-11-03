@@ -2,74 +2,79 @@
   display: grid;
   gap: var(--space-5);
 }
-.cuando {
-  white-space: nowrap;
-  color: var(--ink-2);
+
+/* The checkbox sits on the same control line as the selects beside it (R11). */
+.consultas {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
 }
-.accion {
-  font-weight: var(--weight-strong);
+
+/* Filters that arrive by link and have no control in the bar: visible, removable one by one. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
 }
-.detalles {
-  width: 36%;
-  min-width: 260px;
-}
-.detalles summary {
+.chip {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   min-height: 24px;
-  color: var(--accent);
-  font-weight: var(--weight-strong);
-  cursor: pointer;
-  list-style: none;
-}
-.detalles summary::-webkit-details-marker {
-  display: none;
-}
-/* A chevron that turns when the details open. */
-.detalles summary::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  margin-right: var(--space-1);
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: rotate(-45deg);
-  transition: transform var(--motion-fast) var(--ease-standard);
-}
-.detalles details[open] summary::before {
-  transform: rotate(45deg);
-}
-.detalles summary:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.ocultar,
-.detalles details[open] .ver {
-  display: none;
-}
-.detalles details[open] .ocultar {
-  display: inline;
-}
-.detalles dl {
-  display: grid;
-  gap: var(--space-1);
-  margin-top: var(--space-2);
+  padding: 0 var(--space-1) 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
   font-size: var(--text-sm);
 }
-.detalles dl > div {
+.quitar {
   display: grid;
-  grid-template-columns: minmax(120px, 40%) minmax(0, 1fr);
-  gap: var(--space-3);
-}
-.detalles dt {
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--ink-2);
+  cursor: pointer;
 }
-.detalles dd {
-  overflow-wrap: anywhere;
+.quitar:hover {
+  color: var(--accent);
 }
+
+.avisos {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.persona {
+  white-space: nowrap;
+}
+
 .pie {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
   margin-top: var(--space-4);
+}
+.nota {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.paginas {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.posicion {
+  color: var(--ink-2);
+  white-space: nowrap;
 }

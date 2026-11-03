@@ -1,9 +1,5 @@
 import { test, expect } from "@playwright/test";
-import type {
-  EventoAuditoria,
-  MisDatosDTO,
-  Pagina,
-} from "../src/shared/contracts";
+import type { MisDatosDTO } from "../src/shared/contracts";
 import {
   alerta,
   api,
@@ -14,126 +10,7 @@ import {
   sinDesbordeHorizontal,
 } from "./demo";
 
-// The three read-only modules: Auditoría, Reglas del índice and Mis datos.
-
-const IMPORTACION = "cmvyxbwvi00mut1tc6hs32lco";
-const JOB = "cmvyxc0aa00muz9job000abcd";
-const eventos: Pagina<EventoAuditoria> = {
-  items: [
-    {
-      eventoId: "evento-1",
-      accion: "IMPORTACION_CONFIRMADA",
-      entidad: "IMPORTACION",
-      recursoId: IMPORTACION,
-      actorId: "demo-rrhh",
-      detalles: { insertados: 2, omitidos: 0, jobId: JOB },
-      createdAt: "2026-10-19T12:00:00.000Z",
-    },
-    {
-      eventoId: "evento-2",
-      accion: "REGLAS_PUBLICADAS",
-      entidad: "REGLAS",
-      recursoId: "v2",
-      actorId: "rules-publish",
-      detalles: {
-        version: "v2",
-        versionAnterior: "v1",
-        effectiveFrom: "2026-10-12",
-        highLimit: 72,
-      },
-      createdAt: "2026-10-18T23:30:00.000Z",
-    },
-  ],
-  total: 2,
-  page: 1,
-  pageSize: 20,
-};
-
-test("Auditoría: los eventos se leen con nombres y fechas es-AR, sin IDs ni fechas ISO, y un fallo se reintenta", async ({
-  page,
-}) => {
-  await demo(page, "demo-rrhh");
-  let falla = true;
-  await page.route(api("/api/auditoria"), (route) =>
-    falla
-      ? route.fulfill({
-          status: 500,
-          json: {
-            error: {
-              codigo: "ERROR_INTERNO",
-              mensaje: "No se pudo leer la auditoría.",
-              detalles: [],
-            },
-          },
-        })
-      : route.fulfill({ json: eventos }),
-  );
-  await page.goto("/audit");
-  await expect(alerta(page)).toContainText("No se pudo leer la auditoría.");
-  await expect(
-    page.getByRole("region", { name: "Eventos de auditoría" }),
-  ).toHaveCount(0);
-  falla = false;
-  await alerta(page).getByRole("button", { name: "Reintentar" }).click();
-
-  const tabla = page.getByRole("region", { name: "Eventos de auditoría" });
-  await expect(tabla.getByRole("rowheader")).toHaveText([
-    "Confirmó una importación",
-    "Publicó una versión de las reglas",
-  ]);
-  const importacion = "Confirmó una importación";
-  await expect(await celda(tabla, importacion, "Quién")).toHaveText("RRHH");
-  await expect(await celda(tabla, importacion, "Sobre")).toContainText(
-    "Importación",
-  );
-  // Dates in the product's zone (UTC−3): 12:00 UTC is 09:00 on 19 Oct.
-  await expect(await celda(tabla, importacion, "Cuándo")).toHaveText(
-    /^19 oct\.?,? 09:00$/,
-  );
-  const reglas = "Publicó una versión de las reglas";
-  await expect(await celda(tabla, reglas, "Quién")).toHaveText("Sistema");
-  await expect(await celda(tabla, reglas, "Sobre")).toContainText("Versión v2");
-  await expect(await celda(tabla, reglas, "Cuándo")).toHaveText(
-    /^18 oct\.?,? 20:30$/,
-  );
-
-  await tabla.getByText("Ver 3 datos").click();
-  const detalle = (await celda(tabla, importacion, "Detalles")).getByRole(
-    "definition",
-  );
-  await expect(detalle).toHaveText(["2", "0", /^cmvyxc0aa0…$/]);
-  await tabla.getByText("Ver 4 datos").click();
-  await expect(await celda(tabla, reglas, "Detalles")).toContainText(
-    "12 oct 2026",
-  );
-
-  // Words, not codes: no raw id, enum, user id or ISO instant reaches the page.
-  const main = page.getByRole("main");
-  for (const crudo of [
-    IMPORTACION,
-    JOB,
-    "demo-rrhh",
-    "rules-publish",
-    "IMPORTACION_CONFIRMADA",
-    "REGLAS_PUBLICADAS",
-    "2026-10-19",
-    "2026-10-12",
-    "T12:00",
-  ])
-    await expect(main).not.toContainText(crudo);
-});
-
-test("Auditoría/T15a: Gerencia la abre y un Team Lead no", async ({ page }) => {
-  await demo(page, "demo-gerencia");
-  await page.goto("/audit");
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Auditoría" }),
-  ).toBeVisible();
-  await page.unrouteAll({ behavior: "ignoreErrors" });
-  await demo(page, "demo-tl-01");
-  await page.goto("/audit");
-  await expect(page).toHaveURL(/\/home$/);
-});
+// The read-only modules: Reglas del índice and Mis datos. Auditoría has its own spec (auditoria.spec.ts).
 
 test("Reglas: un Team Lead las lee en palabras, sin controles para editarlas", async ({
   page,
@@ -271,16 +148,11 @@ test("Módulos de lectura: en pantalla angosta no desbordan la página", async (
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const [usuario, ruta, tabla] of [
-    ["demo-rrhh", "/audit", "Eventos de auditoría"],
     ["demo-tl-01", "/rules-config", "Factores del índice"],
     ["demo-empleado", "/my-data", "Tus datos por semana"],
   ] as const) {
     await page.unrouteAll({ behavior: "ignoreErrors" });
     await demo(page, usuario);
-    if (ruta === "/audit")
-      await page.route(api("/api/auditoria"), (route) =>
-        route.fulfill({ json: eventos }),
-      );
     await page.goto(ruta);
     await expect(page.getByRole("region", { name: tabla })).toBeVisible();
     await sinDesbordeHorizontal(page);
