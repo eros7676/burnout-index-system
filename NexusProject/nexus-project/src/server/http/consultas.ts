@@ -7,6 +7,9 @@ import {
   filtrosConsulta,
   identificador,
 } from "../services/filtros-consultas";
+import { listarAlertas } from "../services/seguimiento-alertas";
+import { filtrosAlertas } from "../services/seguimiento-filtros";
+import { solicitanteDe } from "./seguimiento";
 
 export async function respuesta(accion: () => Promise<unknown>) {
   let status = 200;
@@ -45,13 +48,17 @@ export async function respuesta(accion: () => Promise<unknown>) {
 }
 export function crearHttpConsultas(db: PrismaClient) {
   const listar =
-    (tipo: "evaluaciones" | "alertas" | "resumen") => (request: Request) =>
+    (tipo: "evaluaciones" | "resumen") => (request: Request) =>
       respuesta(() =>
         consultarResultados(db, filtrosConsulta(request, tipo), tipo),
       );
   return {
     evaluaciones: listar("evaluaciones"),
-    alertas: listar("alertas"),
+    // Alerts carry their names, weeks and follow-up status, and take the follow-up filters.
+    alertas: (request: Request) =>
+      respuesta(async () =>
+        listarAlertas(db, filtrosAlertas(request), await solicitanteDe(db, request)),
+      ),
     resumen: listar("resumen"),
     informe: (request: Request, id: string) =>
       respuesta(async () => {

@@ -1,6 +1,10 @@
 // Contrato del prototipo. Fuente: DOCUMENTACION, pestaña «Contratos y pruebas».
 // Estos tipos no validan datos en ejecución; CU01 y CU02 deben hacerlo en servidor.
 import type { EntidadAuditoria } from "./auditoria-catalogo";
+import type {
+  FiltroSeguimiento,
+  ResumenSeguimiento,
+} from "./contratos/seguimiento";
 
 export type FechaISO = string; // YYYY-MM-DD validado en servidor
 export type UsuarioDemoDTO = {
@@ -111,6 +115,38 @@ export type Alerta = {
     | 'FALLIDO' | 'SIN_DESTINATARIO';
   createdAt: string;
 };
+/** An alert with the names and week a screen needs, so it never fetches the people list (D10). */
+export type AlertaListada = Alerta & {
+  persona: {
+    nombre: string;
+    equipo: string;
+    teamId: string;
+    tipo: 'TECNICO' | 'TEAM_LEAD';
+  } | null;
+  /** Name of the recipient (Gerencia is not a person of the catalog's teams). */
+  destinatario: string | null;
+  /** The week the alert belongs to, with its stored result. */
+  semana: {
+    periodStart: FechaISO;
+    periodEnd: FechaISO;
+    nivel: Nivel | null;
+    indice: number | null;
+    actualizado: boolean;
+  } | null;
+  /** The person's weeks up to this one, oldest first (the eight-week strip). */
+  serie: {
+    periodStart: FechaISO;
+    periodEnd: FechaISO;
+    nivel: Nivel | null;
+    indice: number | null;
+    actualizado: boolean;
+  }[];
+  seguimiento: ResumenSeguimiento | null;
+};
+export type PaginaAlertas = Pagina<AlertaListada> & {
+  /** Teams to filter by, within the viewer's scope. */
+  equipos: { teamId: string; nombre: string }[];
+};
 /** P1: historial de simulación; nunca representa entrega de correo real. */
 export type ResultadoSimulado = "EXITO" | "FALLO";
 export type IntentoNotificacion = {
@@ -216,7 +252,15 @@ export type ErrorValidacionImportacion = { vistaPrevia: VistaPrevia; error: ApiE
 export type FiltrosComunes = { employeeId?: string; teamId?: string; periodStart?: FechaISO };
 export type Paginacion = { page?: number; pageSize?: number };
 export type FiltrosEvaluaciones = FiltrosComunes & Paginacion & { nivel?: Nivel };
-export type FiltrosAlertas = FiltrosComunes & Paginacion;
+export type FiltrosAlertas = FiltrosComunes &
+  Paginacion & {
+    /** Status of the follow-up case the alert belongs to, or none. */
+    seguimiento?: FiltroSeguimiento;
+    /** userId of the case owner. */
+    asignadoA?: string;
+    /** Only cases past their due date. */
+    vencido?: "1";
+  };
 // FilaTablero usa indice/nivel null solo cuando no hay evaluación; Evaluacion siempre tiene índice numérico. processingState describe ese par, no todos los pares del job: uno ya completado sigue COMPLETADO aunque falle otro. actualizado compara datos, antecedente, reglas y engineVersion esperados con el snapshot vigente. Si es false, señalar pendiente/fallo y no presentar el nivel anterior como actualizado; el detalle histórico sí puede conservarlo identificado.
 
 /** One week of loaded work data, without any index: all the employee sees of themselves (RF10). */
