@@ -27,6 +27,11 @@ export function LevelTag({
   );
 }
 
+/** The level's mark without its word, for a legend or a key. Decorative: the word goes beside it. */
+export function LevelMark({ nivel }: { nivel: Nivel }) {
+  return <span className={s.mark} data-nivel={nivel} aria-hidden="true" />;
+}
+
 export type CeldaSemana = {
   periodStart: string;
   periodEnd: string;

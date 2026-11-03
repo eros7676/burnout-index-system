@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Button } from "./button";
+import { Icon } from "./icons";
 import s from "./states.module.css";
 
 /** A placeholder inside the datum's own box, with the datum's line height. */
@@ -53,7 +54,10 @@ export function ErrorBox({
 }) {
   return (
     <div className={s.error} role="alert">
-      <p>{mensaje}</p>
+      <p className={s.message}>
+        <Icon nombre="error" />
+        {mensaje}
+      </p>
       {onRetry && (
         <Button variante="secondary" onClick={onRetry}>
           Reintentar
@@ -73,7 +77,8 @@ export function Notice({
 }) {
   return (
     <p className={s.notice} data-tono={tono} role="status">
-      {children}
+      <Icon nombre={tono === "exito" ? "exito" : "info"} />
+      <span>{children}</span>
     </p>
   );
 }
