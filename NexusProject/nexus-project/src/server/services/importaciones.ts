@@ -1,5 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { registrarEvento } from "../repositories/auditoria";
+import {
+  idActor,
+  registrarEvento,
+  type Actor,
+} from "../repositories/auditoria";
 import { ErrorFormatoImportacion } from "./csv-importacion";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import type {
@@ -63,7 +67,7 @@ export function comprobarArchivoCsv(archivo: File) {
 async function validarImportacionInterna(
   db: PrismaClient,
   archivo: File,
-  actorId: string,
+  actor: Actor,
   opciones: OpcionesImportacion = {},
 ): Promise<VistaPrevia> {
   comprobarArchivoCsv(archivo);
@@ -83,7 +87,7 @@ async function validarImportacionInterna(
       data: {
         sourceName: archivo.name.slice(0, 255),
         sourceHash,
-        uploadedBy: actorId,
+        uploadedBy: idActor(actor),
         uploadedAt: ahora,
         status: validacion.status,
         expiresAt,
@@ -107,9 +111,9 @@ async function validarImportacionInterna(
         validacion.status === "VALIDADA"
           ? "IMPORTACION_VALIDADA"
           : "IMPORTACION_RECHAZADA",
-      entidad: "IMPORTACION",
       recursoId: creada.importId,
-      actorId,
+      correlacionId: creada.importId,
+      actor,
       detalles: {
         sourceHash,
         schemaVersion: "indicadores-v1",
@@ -140,13 +144,13 @@ async function validarImportacionInterna(
 export async function validarImportacion(
   db: PrismaClient,
   archivo: File,
-  actorId: string,
+  actor: Actor,
   opciones: OpcionesImportacion = {},
 ): Promise<VistaPrevia> {
   // Los límites de transporte se rechazan incluso si MySQL no está disponible.
   comprobarArchivoCsv(archivo);
   try {
-    return await validarImportacionInterna(db, archivo, actorId, opciones);
+    return await validarImportacionInterna(db, archivo, actor, opciones);
   } catch (error) {
     if (
       error instanceof ErrorFormatoImportacion ||
@@ -155,9 +159,8 @@ export async function validarImportacion(
       await db.$transaction((tx) =>
         registrarEvento(tx, {
           accion: "IMPORTACION_RECHAZADA",
-          entidad: "IMPORTACION",
           recursoId: randomUUID(),
-          actorId,
+          actor,
           detalles: { etapa: "FORMATO", codigo: error.codigo },
         }),
       );
@@ -169,7 +172,7 @@ export async function validarImportacion(
 export async function confirmarImportacion(
   db: PrismaClient,
   importId: string,
-  actorId: string,
+  actor: Actor,
   opciones: OpcionesImportacion = {},
 ): Promise<ResultadoImportacion> {
   const reloj = opciones.ahora ?? (() => new Date());
@@ -248,7 +251,7 @@ export async function confirmarImportacion(
           data: {
             origen: "IMPORTACION",
             importId,
-            createdBy: actorId,
+            createdBy: idActor(actor),
             pares: { createMany: { data: pares } },
           },
         });
@@ -276,7 +279,7 @@ export async function confirmarImportacion(
         data: {
           status: "CONFIRMADA",
           confirmedAt: reloj(),
-          confirmedBy: actorId,
+          confirmedBy: idActor(actor),
           nuevas: nuevas.length,
           omitidas: validacion.omitidas,
           warnings: jsonImportacion(validacion.warnings),
@@ -285,9 +288,9 @@ export async function confirmarImportacion(
       });
       await registrarEvento(tx, {
         accion: "IMPORTACION_CONFIRMADA",
-        entidad: "IMPORTACION",
         recursoId: importId,
-        actorId,
+        correlacionId: importId,
+        actor,
         detalles: {
           sourceHash: carga.sourceHash,
           schemaVersion: "indicadores-v1",
@@ -339,7 +342,7 @@ export async function confirmarImportacion(
 export async function cancelarImportacion(
   db: PrismaClient,
   importId: string,
-  actorId: string,
+  actor: Actor,
   opciones: OpcionesImportacion = {},
 ): Promise<ResultadoCancelacion> {
   const reloj = opciones.ahora ?? (() => new Date());
@@ -370,13 +373,13 @@ export async function cancelarImportacion(
     await tx.importacionTemporal.deleteMany({ where: { importId } });
     await tx.importacion.update({
       where: { importId },
-      data: { status: "CANCELADA", cancelledAt: reloj(), cancelledBy: actorId },
+      data: { status: "CANCELADA", cancelledAt: reloj(), cancelledBy: idActor(actor) },
     });
     await registrarEvento(tx, {
       accion: "IMPORTACION_CANCELADA",
-      entidad: "IMPORTACION",
       recursoId: importId,
-      actorId,
+      correlacionId: importId,
+      actor,
       detalles: { estadoAnterior: carga.status },
     });
     return { importId, status: "CANCELADA" };

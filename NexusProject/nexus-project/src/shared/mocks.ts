@@ -12,6 +12,13 @@ import type {
   VistaPrevia,
 } from "./contracts";
 import { ErrorDominio } from "./errors";
+import { MOCKS_ORGANIZACION } from "./contratos/organizacion";
+import { MOCKS_IMPORTACIONES } from "./contratos/importaciones";
+import { MOCKS_TAREAS } from "./contratos/tareas";
+import { MOCKS_REGLAS } from "./contratos/reglas";
+import { MOCKS_AUDITORIA } from "./contratos/auditoria";
+import { MOCKS_SEGUIMIENTO } from "./contratos/seguimiento";
+import { MOCKS_EXPORTACIONES } from "./contratos/exportaciones";
 
 /** Datos fijos para desarrollar consumidores. No son seed, motor ni API real. */
 const createdAt = "2026-10-19T12:00:00.000Z";
@@ -320,6 +327,13 @@ export const cuerposExitoMock = {
       },
     ],
   },
+  ...MOCKS_ORGANIZACION,
+  ...MOCKS_IMPORTACIONES,
+  ...MOCKS_TAREAS,
+  ...MOCKS_REGLAS,
+  ...MOCKS_AUDITORIA,
+  ...MOCKS_SEGUIMIENTO,
+  ...MOCKS_EXPORTACIONES,
 } satisfies CuerposExito;
 
 /** Copia aislada por consumidor; no hace fetch ni conserva estado. */

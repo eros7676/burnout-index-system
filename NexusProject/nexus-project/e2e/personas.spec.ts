@@ -161,7 +161,7 @@ test("Personas/T15a: un Team Lead solo ve a su equipo y no abre a nadie de otro"
         json: {
           error: {
             codigo: "SIN_PERMISO",
-            mensaje: "No podés consultar empleados de otro equipo.",
+            mensaje: "No tiene permiso para consultar personas de otros equipos.",
             detalles: [],
           },
         },
@@ -188,7 +188,7 @@ test("Personas/T15a: un Team Lead solo ve a su equipo y no abre a nadie de otro"
     page.getByRole("heading", { level: 1, name: "No se pudo abrir la ficha" }),
   ).toBeVisible();
   await expect(alerta(page)).toContainText(
-    "No podés consultar empleados de otro equipo.",
+    "No tiene permiso para consultar personas de otros equipos.",
   );
   await expect(page.getByRole("main")).not.toContainText(
     "Persona ficticia 002",
@@ -215,7 +215,7 @@ test("Personas/T15a real: el servidor limita la lista del Team Lead a su equipo"
 
   await page.goto("/employees/EMP-002");
   await expect(alerta(page)).toContainText(
-    "No podés consultar empleados de otro equipo.",
+    "No tiene permiso para consultar personas de otros equipos.",
   );
   await page.goto("/employees/EMP-001");
   await expect(

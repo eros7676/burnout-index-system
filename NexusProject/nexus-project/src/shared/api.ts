@@ -23,6 +23,41 @@ import type {
   MisDatosDTO,
   ReglasDTO,
 } from "./contracts";
+import {
+  RUTAS_ORGANIZACION,
+  type CuerposOrganizacion,
+  type PeticionesOrganizacion,
+} from "./contratos/organizacion";
+import {
+  RUTAS_IMPORTACIONES,
+  type CuerposImportaciones,
+  type PeticionesImportaciones,
+} from "./contratos/importaciones";
+import {
+  RUTAS_TAREAS,
+  type CuerposTareas,
+  type PeticionesTareas,
+} from "./contratos/tareas";
+import {
+  RUTAS_REGLAS,
+  type CuerposReglas,
+  type PeticionesReglas,
+} from "./contratos/reglas";
+import {
+  RUTAS_AUDITORIA,
+  type CuerposAuditoria,
+  type PeticionesAuditoria,
+} from "./contratos/auditoria";
+import {
+  RUTAS_SEGUIMIENTO,
+  type CuerposSeguimiento,
+  type PeticionesSeguimiento,
+} from "./contratos/seguimiento";
+import {
+  RUTAS_EXPORTACIONES,
+  type CuerposExportaciones,
+  type PeticionesExportaciones,
+} from "./contratos/exportaciones";
 
 /** Agreed catalog; each entry is served by a Route Handler under src/app/api. */
 export const API_ROUTES = {
@@ -62,6 +97,13 @@ export const API_ROUTES = {
   listarPersonas: { method: "GET", path: "/api/personas" },
   consultarMisDatos: { method: "GET", path: "/api/mis-datos" },
   consultarReglas: { method: "GET", path: "/api/reglas" },
+  ...RUTAS_ORGANIZACION,
+  ...RUTAS_IMPORTACIONES,
+  ...RUTAS_TAREAS,
+  ...RUTAS_REGLAS,
+  ...RUTAS_AUDITORIA,
+  ...RUTAS_SEGUIMIENTO,
+  ...RUTAS_EXPORTACIONES,
 } as const;
 
 type CuerpoVacio = Record<string, never>;
@@ -94,7 +136,14 @@ export type PeticionesApi = {
   };
   consultarMisDatos: { body?: undefined };
   consultarReglas: { body?: undefined };
-};
+} &
+  PeticionesOrganizacion &
+  PeticionesImportaciones &
+  PeticionesTareas &
+  PeticionesReglas &
+  PeticionesAuditoria &
+  PeticionesSeguimiento &
+  PeticionesExportaciones;
 export type CuerposExito = {
   consultarSesionDemo: SesionDemoDTO;
   seleccionarUsuarioDemo: { usuario: UsuarioDemoDTO };
@@ -114,7 +163,14 @@ export type CuerposExito = {
   listarPersonas: PersonasDTO;
   consultarMisDatos: MisDatosDTO;
   consultarReglas: ReglasDTO;
-};
+} &
+  CuerposOrganizacion &
+  CuerposImportaciones &
+  CuerposTareas &
+  CuerposReglas &
+  CuerposAuditoria &
+  CuerposSeguimiento &
+  CuerposExportaciones;
 export type OperacionApi = keyof typeof API_ROUTES;
 export type EstadoErrorHttp =
   400 | 401 | 403 | 404 | 409 | 410 | 413 | 415 | 422 | 500;

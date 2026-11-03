@@ -1,5 +1,7 @@
 // Contrato del prototipo. Fuente: DOCUMENTACION, pestaña «Contratos y pruebas».
 // Estos tipos no validan datos en ejecución; CU01 y CU02 deben hacerlo en servidor.
+import type { EntidadAuditoria } from "./auditoria-catalogo";
+
 export type FechaISO = string; // YYYY-MM-DD validado en servidor
 export type UsuarioDemoDTO = {
   userId: string; nombre: string;
@@ -17,7 +19,7 @@ export type EventoAuditoria = {
   createdAt: string;
 };
 export type FiltrosAuditoria = {
-  accion?: string; entidad?: 'IMPORTACION' | 'REGLAS';
+  accion?: string; entidad?: EntidadAuditoria;
   recursoId?: string; actorId?: string; desde?: string; hasta?: string;
   page?: number; pageSize?: number;
 };

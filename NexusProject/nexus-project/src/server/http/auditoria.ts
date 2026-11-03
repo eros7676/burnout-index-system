@@ -1,5 +1,8 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
-import { ACCIONES_AUDITORIA } from "../repositories/auditoria";
+import {
+  ACCIONES_AUDITORIA,
+  ENTIDADES_AUDITORIA,
+} from "../../shared/auditoria-catalogo";
 import { ErrorConsulta } from "../services/filtros-consultas";
 
 export function filtrosAuditoria(request: Request) {
@@ -37,7 +40,7 @@ export function filtrosAuditoria(request: Request) {
   }
   if (params.has("entidad")) {
     const entidad = params.get("entidad")!;
-    if (!["IMPORTACION", "REGLAS"].includes(entidad))
+    if (!Object.hasOwn(ENTIDADES_AUDITORIA, entidad))
       throw new ErrorConsulta(400, "Entidad inválida.");
     where.entidad = entidad;
   }

@@ -119,9 +119,8 @@ export async function guardarVersionNueva(
     });
     await registrarEvento(tx, {
       accion: "REGLAS_PUBLICADAS",
-      entidad: "REGLAS",
       recursoId: reglas.version,
-      actorId: reglas.createdBy,
+      actor: reglas.createdBy,
       detalles: {
         versionAnterior: anterior?.version ?? null,
         version: reglas.version,
