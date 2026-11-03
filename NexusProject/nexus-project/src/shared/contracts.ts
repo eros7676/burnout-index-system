@@ -1,6 +1,6 @@
 // Contrato del prototipo. Fuente: DOCUMENTACION, pestaña «Contratos y pruebas».
 // Estos tipos no validan datos en ejecución; CU01 y CU02 deben hacerlo en servidor.
-import type { EntidadAuditoria } from "./auditoria-catalogo";
+import type { CambioAuditoria, EntidadAuditoria } from "./auditoria-catalogo";
 
 export type FechaISO = string; // YYYY-MM-DD validado en servidor
 export type UsuarioDemoDTO = {
@@ -9,19 +9,60 @@ export type UsuarioDemoDTO = {
   employeeId: string | null; teamId: string | null;
 };
 export type SesionDemoDTO = { usuario: UsuarioDemoDTO | null; usuarios: readonly UsuarioDemoDTO[] };
+export type ResultadoAuditoria = 'EXITO' | 'FALLO' | 'DENEGADO';
+export type OrigenAuditoria = 'WEB' | 'CLI' | 'SISTEMA';
+/** One audit event as the screens and the export read it (audit-trail §2.1). */
 export type EventoAuditoria = {
   eventoId: string;
   accion: string;
+  /** Catalog label of `accion`; null for a code the catalog no longer knows. */
+  etiqueta: string | null;
   entidad: string;
   recursoId: string;
+  /** The person whose data the event concerns. */
+  sujetoId: string | null;
   actorId: string;
+  /** Operator snapshot at event time; null on events written before the snapshot existed. */
+  actorNombre: string | null;
+  actorRol: string | null;
+  origen: OrigenAuditoria | null;
+  resultado: ResultadoAuditoria;
+  /** Code from the closed reason catalog (MOTIVOS_AUDITORIA). */
+  motivo: string | null;
+  solicitudId: string | null;
+  correlacionId: string | null;
+  /** Changed fields only; never index values. */
+  cambios: CambioAuditoria[] | null;
+  justificacion: string | null;
   detalles: Record<string, unknown>;
-  createdAt: string;
+  createdAt: string; // ISO UTC with milliseconds
+  /** Resolved when read, never stored: null when not applicable or unknown. */
+  recursoNombre: string | null;
+  sujetoNombre: string | null;
 };
 export type FiltrosAuditoria = {
   accion?: string; entidad?: EntidadAuditoria;
-  recursoId?: string; actorId?: string; desde?: string; hasta?: string;
-  page?: number; pageSize?: number;
+  recursoId?: string; sujetoId?: string; actorId?: string;
+  correlacionId?: string; solicitudId?: string;
+  /** Exact code of a resource, person, operation or request. */
+  q?: string;
+  resultado?: ResultadoAuditoria; origen?: OrigenAuditoria;
+  /** "1" includes consultations, which are hidden by default. */
+  consultas?: '1';
+  desde?: string; hasta?: string;
+  /** Opaque position returned as `siguiente` by the previous page. */
+  cursor?: string; pageSize?: number;
+};
+export type PaginaAuditoria = {
+  items: EventoAuditoria[];
+  /** Matching events, counted up to AUDITORIA_LIMITES.conteoMaximo. */
+  total: number;
+  totalAcotado: boolean;
+  pageSize: number;
+  /** Cursor of the next page; null on the last one. */
+  siguiente: string | null;
+  /** Consultations left out of this page because `consultas` is off. */
+  consultasOcultas: number;
 };
 export type Factor = 'HE' | 'DS' | 'CT' | 'VP';
 export type Nivel = 'BAJO' | 'MEDIO' | 'ALTO' | 'INCOMPLETO';
