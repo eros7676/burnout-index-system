@@ -1,15 +1,17 @@
+/* The header carries no bottom margin: the distance to the content is the page grid's
+   gap, the same --gutter that separates sections (R7, R40). */
 .header {
   display: grid;
   gap: var(--space-3);
-  margin-bottom: var(--space-6);
 }
 .back {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   width: fit-content;
+  min-height: var(--space-6);
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .back:hover {
   color: var(--accent);
@@ -30,17 +32,18 @@
   color: var(--ink-2);
   max-width: 72ch;
 }
+/* Actions end on the content's right edge and share the control line (R11, R13). */
 .actions {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   gap: var(--space-2);
 }
 .section {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  padding: var(--space-5) var(--space-6);
+  padding: var(--pad-section);
   min-width: 0;
 }
 .sectionHead {
@@ -56,9 +59,9 @@
 }
 .aside {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--space-3);
 }
 .figure {
@@ -68,12 +71,11 @@
 }
 .figureLabel {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .figureValue {
   font-size: var(--text-display);
   font-weight: var(--weight-strong);
-  line-height: 1;
   letter-spacing: -0.02em;
 }
 .figure[data-tono="alto"] .figureValue {
@@ -81,5 +83,46 @@
 }
 .figureDetail {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
+}
+
+/* Side-by-side blocks (R2, R3, R17): a 12-column grid, so blocks start and end on column
+   edges; the containers stretch to end level while their content stays top-aligned. */
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gutter);
+}
+@media (min-width: 1101px) {
+  .columns {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .columns[data-division="8-4"] > :nth-child(1) {
+    grid-column: span 8;
+  }
+  .columns[data-division="8-4"] > :nth-child(2) {
+    grid-column: span 4;
+  }
+  .columns[data-division="4-8"] > :nth-child(1) {
+    grid-column: span 4;
+  }
+  .columns[data-division="4-8"] > :nth-child(2) {
+    grid-column: span 8;
+  }
+  .columns[data-division="6-6"] > * {
+    grid-column: span 6;
+  }
+  .columns[data-division="4-4-4"] > * {
+    grid-column: span 4;
+  }
+}
+/* Blocks stacked in one column; the last one takes the leftover height. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gutter);
+  min-width: 0;
+}
+.stack > :last-child {
+  flex: 1 1 auto;
 }

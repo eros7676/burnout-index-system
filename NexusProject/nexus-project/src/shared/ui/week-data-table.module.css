@@ -21,7 +21,7 @@
   white-space: nowrap;
 }
 .abajo {
-  vertical-align: bottom !important;
+  vertical-align: bottom;
 }
 .semana {
   white-space: nowrap;

@@ -1,7 +1,10 @@
+/* The region bleeds one cell padding past the Section's padding, so the text of the
+   first and last columns sits on the Section's key lines (R5, R6) while row rules and
+   the hover fill reach a little beyond them. */
 .scroll {
   /* Positioned, so visually hidden text inside clips here and not on the page. */
   position: relative;
-  max-width: 100%;
+  margin-inline: calc(-1 * var(--space-3));
   overflow-x: auto;
   /* Rows enter with a transform; keep it from creating a vertical scrollbar. */
   overflow-y: hidden;
@@ -19,17 +22,27 @@
   text-align: left;
   vertical-align: middle;
 }
+/* One header style: 12/16, the step below the body (R21). Labels sit on the data's edge. */
 .table thead th {
   padding-top: var(--space-2);
   padding-bottom: var(--space-2);
   border-bottom-color: var(--line-strong);
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-strong);
   white-space: nowrap;
+  vertical-align: bottom;
 }
 .table tbody th[scope="row"] {
   white-space: nowrap;
+}
+/* One body-row height per table (R19): a row, or a row whose first cell names a person
+   and shows a second line under the name. A row grows only when its content needs it. */
+.table tbody tr {
+  height: var(--row-h);
+}
+.table tbody tr:has(.sub) {
+  height: var(--row-h-2);
 }
 .table tbody tr:last-child > * {
   border-bottom: 0;
@@ -43,7 +56,7 @@
 }
 .muted {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 /* A row's primary link: the person's name. */
 .rowLink {
@@ -55,9 +68,20 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* A row's action or a value that opens its detail ("Ver informe", an index): the accent
+   marks it as interactive (R28), one style on every screen. */
+.cellLink {
+  font-weight: var(--weight-strong);
+  color: var(--accent);
+}
+.cellLink:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .sub {
   display: block;
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-regular);
 }
