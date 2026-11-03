@@ -126,6 +126,13 @@
   padding: var(--space-8) var(--space-8) var(--space-12);
 }
 
+/* The shell lays out a screen's root as one grid with one gutter, so the header, the
+   filter bar and every block are a gutter apart whatever the screen declares (R7, R40). */
+.main > div {
+  display: grid;
+  gap: var(--gutter);
+}
+
 @media (max-width: 900px) {
   .app {
     grid-template-columns: 1fr;

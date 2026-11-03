@@ -112,7 +112,9 @@ the title's line, so brand and h1 share a center.
 8+4 (answer and support, the answer top-left), 4+8, 6+6 and 4+4+4 (peers of
 one kind), built with `Columns`; below 1100 px they stack. The gutter is also
 the row gap, the distance between sections and the distance from the header to
-the first block, so no gap is a compound of two values. Blocks side by side
+the first block, so no gap is a compound of two values. The shell lays out a
+screen's root as one grid with that gutter, so a screen cannot lose the header
+gap. Blocks side by side
 end on one line: the containers stretch (`Columns`, `Stack`) and their content
 stays top-aligned, never stretched.
 
