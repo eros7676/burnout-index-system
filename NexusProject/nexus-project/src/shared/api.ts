@@ -31,6 +31,7 @@ import {
 import {
   RUTAS_IMPORTACIONES,
   type CuerposImportaciones,
+  type ErrorValidacionImportacionTareas,
   type PeticionesImportaciones,
 } from "./contratos/importaciones";
 import {
@@ -181,7 +182,9 @@ export type RespuestaApi<K extends OperacionApi> =
       status: 422;
       body: K extends "validarImportacion"
         ? ErrorValidacionImportacion
-        : ApiError;
+        : K extends "validarImportacionTareas"
+          ? ErrorValidacionImportacionTareas
+          : ApiError;
     };
 
 export const API_DEFAULTS = {

@@ -111,11 +111,30 @@ export type ResultadoImportacionTareas = ResultadoImportacion & {
   excluidas: number;
 };
 
-export const RUTAS_IMPORTACIONES = {} as const;
+export const RUTAS_IMPORTACIONES = {
+  validarImportacionTareas: {
+    method: "POST",
+    path: "/api/importaciones/tareas/validar",
+  },
+  descargarPlantillaImportacion: {
+    method: "GET",
+    path: "/api/importaciones/plantillas/{tipo}",
+  },
+} as const;
 
-export type PeticionesImportaciones = Record<never, never>;
+export type PeticionesImportaciones = {
+  validarImportacionTareas: { file: File };
+  descargarPlantillaImportacion: {
+    params: { tipo: PlantillaImportacion };
+    body?: undefined;
+  };
+};
 
-export type CuerposImportaciones = Record<never, never>;
+/** The template is a CSV file (text/csv), so its success body is the file's text. */
+export type CuerposImportaciones = {
+  validarImportacionTareas: VistaPreviaTareas;
+  descargarPlantillaImportacion: string;
+};
 
 export const vistaPreviaTareasMock: VistaPreviaTareas = {
   importId: "mock-import-tareas-1",
@@ -167,4 +186,8 @@ export const vistaPreviaTareasMock: VistaPreviaTareas = {
   ],
 };
 
-export const MOCKS_IMPORTACIONES = {} satisfies CuerposImportaciones;
+export const MOCKS_IMPORTACIONES = {
+  validarImportacionTareas: vistaPreviaTareasMock,
+  descargarPlantillaImportacion:
+    "employee_id,period_start,period_end,task_id,titulo,origen,origen_ref,asignada_fecha,vencimiento_fecha,completada_fecha,motivo_exclusion\n",
+} satisfies CuerposImportaciones;
