@@ -1,5 +1,6 @@
 import type {
-  Alerta,
+  AlertaListada,
+  PaginaAlertas,
   UsuarioDemoDTO,
   SesionDemoDTO,
   FiltrosAuditoria,
@@ -82,6 +83,7 @@ export const API_ROUTES = {
   obtenerInforme: { method: "GET", path: "/api/evaluaciones/{evaluationId}" },
   obtenerResumen: { method: "GET", path: "/api/resumen" },
   listarAlertas: { method: "GET", path: "/api/alertas" },
+  obtenerAlerta: { method: "GET", path: "/api/alertas/{alertId}" },
   listarNotificaciones: {
     method: "GET",
     path: "/api/alertas/{alertId}/notificaciones",
@@ -121,6 +123,7 @@ export type PeticionesApi = {
   obtenerInforme: { params: { evaluationId: string }; body?: undefined };
   obtenerResumen: { query?: FiltrosComunes; body?: undefined };
   listarAlertas: { query?: FiltrosAlertas; body?: undefined };
+  obtenerAlerta: { params: { alertId: string }; body?: undefined };
   listarNotificaciones: { params: { alertId: string }; body?: undefined };
   prepararNotificacion: {
     params: { alertId: string };
@@ -156,7 +159,8 @@ export type CuerposExito = {
   listarEvaluaciones: Pagina<FilaTablero>;
   obtenerInforme: InformeDTO;
   obtenerResumen: ResumenDTO;
-  listarAlertas: Pagina<Alerta>;
+  listarAlertas: PaginaAlertas;
+  obtenerAlerta: AlertaListada;
   listarNotificaciones: IntentoNotificacion[];
   prepararNotificacion: IntentoNotificacion;
   procesarNotificacion: IntentoNotificacion;

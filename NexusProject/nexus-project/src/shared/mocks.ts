@@ -1,6 +1,8 @@
 import type { CuerposExito, OperacionApi, RespuestaApi } from "./api";
 import type {
   Alerta,
+  AlertaListada,
+  PaginaAlertas,
   ConfiguracionIndice,
   Evaluacion,
   FilaTablero,
@@ -144,6 +146,47 @@ export const alertaMock: Alerta = {
   canal: "INTERNO",
   estadoEnvio: "NO_APLICA",
   createdAt,
+};
+export const alertaListadaMock: AlertaListada = {
+  ...alertaMock,
+  persona: {
+    nombre: "Persona ficticia 001",
+    equipo: "Célula ficticia 1",
+    teamId: "EQ-01",
+    tipo: "TECNICO",
+  },
+  destinatario: "Team Lead ficticio 1",
+  semana: {
+    periodStart: "2026-10-12",
+    periodEnd: "2026-10-18",
+    nivel: "ALTO",
+    indice: 91.21,
+    actualizado: true,
+  },
+  serie: [
+    {
+      periodStart: "2026-10-05",
+      periodEnd: "2026-10-11",
+      nivel: "INCOMPLETO",
+      indice: 83.71,
+      actualizado: true,
+    },
+    {
+      periodStart: "2026-10-12",
+      periodEnd: "2026-10-18",
+      nivel: "ALTO",
+      indice: 91.21,
+      actualizado: true,
+    },
+  ],
+  seguimiento: null,
+};
+export const paginaAlertasMock: PaginaAlertas = {
+  items: [alertaListadaMock],
+  total: 1,
+  page: 1,
+  pageSize: 50,
+  equipos: [{ teamId: "EQ-01", nombre: "Célula ficticia 1" }],
 };
 export const informeMock: InformeDTO = {
   evaluacion: evaluacionAltaMock,
@@ -309,7 +352,8 @@ export const cuerposExitoMock = {
   },
   obtenerInforme: informeMock,
   obtenerResumen: resumenMock,
-  listarAlertas: { items: [alertaMock], total: 1, page: 1, pageSize: 50 },
+  listarAlertas: paginaAlertasMock,
+  obtenerAlerta: alertaListadaMock,
   listarNotificaciones: [intentoNotificacionMock],
   prepararNotificacion: intentoNotificacionMock,
   procesarNotificacion: {
