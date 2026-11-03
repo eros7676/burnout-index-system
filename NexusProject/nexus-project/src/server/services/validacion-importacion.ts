@@ -5,19 +5,18 @@ import type {
   ParPeriodo,
 } from "../../shared/contracts";
 import type { CodigoErrorFila } from "../../shared/errors";
-import { fechaParaDb } from "../repositories/fechas";
 import {
   leerCsvImportacion,
   type ColumnaCsv,
   type FilaCsv,
 } from "./csv-importacion";
+import {
+  hoyEnBuenosAires,
+  validarEmpleadoYSemana,
+  type EmpleadoValidacion,
+} from "./validacion-comun";
 
-export type EmpleadoValidacion = {
-  employeeId: string;
-  activo: boolean;
-  enCobertura: boolean;
-  tipo: string;
-};
+export type { EmpleadoValidacion } from "./validacion-comun";
 export type HistoricoValidacion = ParPeriodo & { fingerprint: string };
 /** Lecturas por lote; el adaptador puede usar PrismaClient o la transacción de T04. */
 export interface FuenteValidacion {
@@ -73,15 +72,7 @@ export async function validarFilasImportacion(
   fuente: FuenteValidacion,
   ahora = new Date(),
 ): Promise<ValidacionImportacion> {
-  if (!Number.isFinite(ahora.getTime())) throw new TypeError("Reloj inválido.");
-  const partes = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Argentina/Buenos_Aires",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(ahora);
-  const parte = (tipo: string) => partes.find((p) => p.type === tipo)!.value;
-  const hoy = `${parte("year")}-${parte("month")}-${parte("day")}`;
+  const hoy = hoyEnBuenosAires(ahora);
   const catalogo = new Map(
     (
       await fuente.empleados([
@@ -102,80 +93,17 @@ export async function validarFilasImportacion(
       detalle: string,
     ) => errores.push({ fila, campo, codigo, detalle });
     const texto = (c: ColumnaCsv) => celdas[c]?.trim() ?? "";
-    const employeeId = texto("employee_id"),
-      periodStart = texto("period_start"),
-      periodEnd = texto("period_end");
-    if (!employeeId)
-      error("employee_id", "OBLIGATORIO", "El empleado es obligatorio.");
-    else {
-      const e = catalogo.get(employeeId);
-      if (!e)
-        error("employee_id", "EMPLEADO_NO_EXISTE", "El empleado no existe.");
-      else if (
-        !e.activo ||
-        !e.enCobertura ||
-        !["TECNICO", "TEAM_LEAD"].includes(e.tipo)
-      )
+    const { employeeId, periodStart, periodEnd, fechasValidas } =
+      validarEmpleadoYSemana(celdas, { catalogo, vigencia, hoy }, error);
+    if (fechasValidas && employeeId) {
+      const k = clave({ employeeId, periodStart, periodEnd });
+      if (vistas.has(k))
         error(
           "employee_id",
-          "EMPLEADO_FUERA_COBERTURA",
-          "El empleado no está activo y dentro de cobertura evaluable.",
+          "DUPLICADO_LOTE",
+          "El legajo y la semana se repiten en otra fila del archivo.",
         );
-    }
-    const fecha = (campo: "period_start" | "period_end") => {
-      if (!texto(campo)) {
-        error(campo, "OBLIGATORIO", "La fecha es obligatoria.");
-        return null;
-      }
-      try {
-        return fechaParaDb(texto(campo));
-      } catch {
-        error(
-          campo,
-          "FECHA_INVALIDA",
-          "Se requiere una fecha real YYYY-MM-DD.",
-        );
-        return null;
-      }
-    };
-    const inicio = fecha("period_start"),
-      fin = fecha("period_end");
-    if (inicio && fin) {
-      if (
-        inicio.getUTCDay() !== 1 ||
-        fin.getUTCDay() !== 0 ||
-        fin.getTime() - inicio.getTime() !== 6 * 86400000
-      )
-        error(
-          "period_start",
-          "SEMANA_INVALIDA",
-          "El período debe cubrir lunes a domingo, inicio + 6 días.",
-        );
-      // Processing needs a rule version in force; without one the job would stop on this pair.
-      if (vigencia === null || periodStart < vigencia)
-        error(
-          "period_start",
-          "FECHA_INVALIDA",
-          vigencia
-            ? `No hay reglas de cálculo para esa semana; rigen desde ${vigencia}.`
-            : "No hay reglas de cálculo publicadas.",
-        );
-      if (periodEnd >= hoy)
-        error(
-          "period_end",
-          "PERIODO_ABIERTO",
-          "El domingo debe haber terminado en Buenos Aires.",
-        );
-      if (employeeId) {
-        const k = clave({ employeeId, periodStart, periodEnd });
-        if (vistas.has(k))
-          error(
-            "employee_id",
-            "DUPLICADO_LOTE",
-            "Empleado y período repetidos dentro del lote.",
-          );
-        vistas.add(k);
-      }
+      vistas.add(k);
     }
     const numero = (
       campo: ColumnaCsv,
