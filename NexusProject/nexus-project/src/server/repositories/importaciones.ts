@@ -1,6 +1,9 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import type { ResultadoImportacion } from "../../shared/contracts";
+import type { ErrorCampo, ResultadoImportacion } from "../../shared/contracts";
 import { ErrorImportacion } from "../services/error-importacion";
+
+/** A validated preview can be confirmed for 30 minutes (T04). */
+export const VIGENCIA_PREVIA_MS = 30 * 60 * 1000;
 
 export async function bloquearImportacion(
   tx: Prisma.TransactionClient,
@@ -47,3 +50,56 @@ export function resultadoGuardado(
 
 export const jsonImportacion = (valor: unknown): Prisma.InputJsonValue =>
   JSON.parse(JSON.stringify(valor)) as Prisma.InputJsonValue;
+
+/**
+ * Stores a validated or rejected file as an Importacion with its temporary rows, inside the
+ * caller's transaction. Both datasets share it; `schemaVersion` tells them apart.
+ */
+export async function crearImportacionTemporal(
+  tx: Prisma.TransactionClient,
+  d: {
+    nombreArchivo: string;
+    sourceHash: string;
+    schemaVersion: string;
+    usuarioId: string;
+    ahora: Date;
+    validacion: {
+      status: "VALIDADA" | "RECHAZADA";
+      totalFilas: number;
+      nuevas: number;
+      omitidas: number;
+      errores: ErrorCampo[];
+      warnings: ErrorCampo[];
+    };
+    /** The parsed rows, trimmed strings, so confirmation can validate again. */
+    filas: unknown;
+    /** The first valid rows, kept as text so numbers keep their precision. */
+    muestra: unknown;
+  },
+) {
+  const expiresAt = new Date(d.ahora.getTime() + VIGENCIA_PREVIA_MS);
+  const creada = await tx.importacion.create({
+    data: {
+      sourceName: d.nombreArchivo.slice(0, 255),
+      sourceHash: d.sourceHash,
+      schemaVersion: d.schemaVersion,
+      uploadedBy: d.usuarioId,
+      uploadedAt: d.ahora,
+      status: d.validacion.status,
+      expiresAt,
+      totalFilas: d.validacion.totalFilas,
+      nuevas: d.validacion.nuevas,
+      omitidas: d.validacion.omitidas,
+      errores: jsonImportacion(d.validacion.errores),
+      warnings: jsonImportacion(d.validacion.warnings),
+      temporal: {
+        create: {
+          datos: jsonImportacion(d.filas),
+          // JSON textual evita el recorte numérico de Prisma/MySQL en la muestra temporal.
+          muestra: JSON.stringify(d.muestra),
+        },
+      },
+    },
+  });
+  return { importId: creada.importId, expiresAt };
+}

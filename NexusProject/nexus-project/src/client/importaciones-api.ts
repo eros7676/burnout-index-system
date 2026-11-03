@@ -6,12 +6,17 @@ import type {
   ResultadoImportacion,
   VistaPrevia,
 } from "../shared/contracts";
+import type {
+  PlantillaImportacion,
+  ResultadoImportacionTareas,
+  VistaPreviaTareas,
+} from "../shared/contratos/importaciones";
 
 export class ErrorImportacionHttp extends Error {
   constructor(
     public status: number,
     public detalle: ApiError,
-    public vistaPrevia?: VistaPrevia,
+    public vistaPrevia?: VistaPrevia | VistaPreviaTareas,
   ) {
     super(detalle.error.mensaje);
   }
@@ -23,7 +28,7 @@ async function solicitar<T>(ruta: string, opciones?: RequestInit): Promise<T> {
     respuesta = await fetch(ruta, { ...opciones, cache: "no-store" });
   } catch {
     throw new Error(
-      "Se perdió la conexión. La operación puede haber llegado al servidor; recuperá su estado antes de iniciar otra carga.",
+      "Se perdió la conexión. Es posible que la operación haya llegado al servidor: recupere su estado antes de iniciar otra importación.",
     );
   }
   let datos;
@@ -31,7 +36,7 @@ async function solicitar<T>(ruta: string, opciones?: RequestInit): Promise<T> {
     datos = await respuesta.json();
   } catch {
     throw new Error(
-      "El servidor no devolvió una respuesta JSON válida. Consultá o recuperá la operación antes de repetirla.",
+      "El servidor devolvió una respuesta inesperada. Consulte o recupere la operación antes de repetirla.",
     );
   }
   if (!respuesta.ok) {
@@ -43,7 +48,7 @@ async function solicitar<T>(ruta: string, opciones?: RequestInit): Promise<T> {
         : {
             error: {
               codigo: "HTTP",
-              mensaje: `Error HTTP ${respuesta.status}.`,
+              mensaje: `No se pudo completar la solicitud (código ${respuesta.status}). Inténtelo nuevamente.`,
               detalles: [],
             },
           },
@@ -58,17 +63,26 @@ const jsonPost = {
   headers: { "Content-Type": "application/json" },
   body: "{}",
 };
+const archivo = (file: File) => {
+  const body = new FormData();
+  body.append("file", file);
+  return { method: "POST", body };
+};
+
+/** Where the browser downloads the template of a dataset (a CSV with a header and an example). */
+export const rutaPlantilla = (tipo: PlantillaImportacion) =>
+  `/api/importaciones/plantillas/${tipo}`;
+
 export const importacionesApi = {
-  validar(file: File) {
-    const body = new FormData();
-    body.append("file", file);
-    return solicitar<VistaPrevia>("/api/importaciones/validar", {
-      method: "POST",
-      body,
-    });
-  },
+  validar: (file: File) =>
+    solicitar<VistaPrevia>("/api/importaciones/validar", archivo(file)),
+  validarTareas: (file: File) =>
+    solicitar<VistaPreviaTareas>(
+      "/api/importaciones/tareas/validar",
+      archivo(file),
+    ),
   confirmar: (id: string) =>
-    solicitar<ResultadoImportacion>(
+    solicitar<ResultadoImportacion | ResultadoImportacionTareas>(
       `/api/importaciones/${encodeURIComponent(id)}/confirmar`,
       jsonPost,
     ),

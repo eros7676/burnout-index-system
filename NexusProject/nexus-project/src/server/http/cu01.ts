@@ -5,7 +5,10 @@ import type {
   ErrorValidacionImportacion,
 } from "../../shared/contracts";
 import { ErrorDominio } from "../../shared/errors";
-import { ErrorFormatoImportacion } from "../services/csv-importacion";
+import {
+  ErrorFormatoImportacion,
+  PLANTILLA_INDICADORES_CSV,
+} from "../services/csv-importacion";
 import { ErrorImportacion } from "../services/error-importacion";
 import {
   cancelarImportacion,
@@ -15,6 +18,9 @@ import {
   type OpcionesImportacion,
 } from "../services/importaciones";
 import { obtenerJob, procesarImportacion } from "../services/procesamientos";
+import { validarImportacionTareas } from "../services/tareas-importacion-flujo";
+import { PLANTILLA_TAREAS_CSV } from "../services/tareas-importacion";
+import type { ErrorValidacionImportacionTareas } from "../../shared/contratos/importaciones";
 
 // El runtime T15a verifica la sesión; los adaptadores internos usan demo-local por defecto.
 const actor = actorDemo;
@@ -45,7 +51,7 @@ export async function respuestaCu01(
     const body: ApiError = {
       error: {
         codigo: "ERROR_INTERNO",
-        mensaje: "No se pudo completar la petición.",
+        mensaje: "No se pudo completar la solicitud.",
         detalles: [],
       },
     };
@@ -107,7 +113,7 @@ async function archivoDePeticion(request: Request): Promise<File> {
     throw new ErrorImportacion(
       400,
       "PETICION_INVALIDA",
-      "Use multipart/form-data con el campo file.",
+      "Envíe el archivo como multipart/form-data, en el campo file.",
     );
   const bytes = await leerCuerpoAcotado(request, MAX_ARCHIVO_CSV + 64 * 1024);
   let form: FormData;
@@ -119,7 +125,7 @@ async function archivoDePeticion(request: Request): Promise<File> {
     throw new ErrorImportacion(
       400,
       "PETICION_INVALIDA",
-      "El multipart es inválido.",
+      "El contenido multipart es inválido.",
     );
   }
   const archivos = form.getAll("file");
@@ -141,7 +147,11 @@ async function exigirObjetoVacio(request: Request) {
     request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !==
     "application/json"
   )
-    throw new ErrorImportacion(400, "PETICION_INVALIDA", "Envíe JSON {}.");
+    throw new ErrorImportacion(
+      400,
+      "PETICION_INVALIDA",
+      "Envíe un cuerpo JSON {}.",
+    );
   const bytes = await leerCuerpoAcotado(request, 4096);
   let body: unknown;
   try {
@@ -175,7 +185,19 @@ function comprobarId(id: string) {
     );
 }
 
-/** Los cinco Route Handlers delegan aquí; cliente y fallos inyectables para integración. */
+const MENSAJE_RECHAZO =
+  "El archivo contiene errores. Corríjalo y valídelo nuevamente.";
+
+/** The downloadable templates: header plus one example row (RFC 4180: CRLF; BOM for Excel). */
+const PLANTILLAS = {
+  indicadores: {
+    archivo: "plantilla-indicadores-semanales.csv",
+    contenido: PLANTILLA_INDICADORES_CSV,
+  },
+  tareas: { archivo: "plantilla-tareas.csv", contenido: PLANTILLA_TAREAS_CSV },
+} as const;
+
+/** Los Route Handlers delegan aquí; cliente y fallos inyectables para integración. */
 export function crearHttpCu01(
   db: PrismaClient,
   opciones: OpcionesImportacion = {},
@@ -194,14 +216,53 @@ export function crearHttpCu01(
             vistaPrevia,
             error: {
               codigo: "FILAS_INVALIDAS",
-              mensaje:
-                "El lote contiene errores; corrija el CSV y valide nuevamente.",
+              mensaje: MENSAJE_RECHAZO,
               detalles: vistaPrevia.errores,
             },
           };
           return json(error, 422);
         }
         return json(vistaPrevia);
+      }),
+    validarTareas: (request: Request) =>
+      respuestaCu01(async () => {
+        const vistaPrevia = await validarImportacionTareas(
+          db,
+          await archivoDePeticion(request),
+          actor(request),
+          opciones,
+        );
+        if (vistaPrevia.status === "RECHAZADA") {
+          const error: ErrorValidacionImportacionTareas = {
+            vistaPrevia,
+            error: {
+              codigo: "FILAS_INVALIDAS",
+              mensaje: MENSAJE_RECHAZO,
+              detalles: vistaPrevia.errores,
+            },
+          };
+          return json(error, 422);
+        }
+        return json(vistaPrevia);
+      }),
+    plantilla: (_request: Request, tipo: string) =>
+      respuestaCu01(async () => {
+        if (!Object.hasOwn(PLANTILLAS, tipo))
+          throw new ErrorImportacion(
+            404,
+            "NO_ENCONTRADO",
+            "La plantilla no existe.",
+          );
+        const { archivo, contenido } =
+          PLANTILLAS[tipo as keyof typeof PLANTILLAS];
+        const cuerpo = `﻿${contenido.replaceAll("\n", "\r\n")}`;
+        return new Response(cuerpo, {
+          headers: {
+            "Content-Type": "text/csv; charset=utf-8",
+            "Content-Disposition": `attachment; filename="${archivo}"`,
+            "Cache-Control": "no-store",
+          },
+        });
       }),
     confirmar: (request: Request, id: string) =>
       respuestaCu01(async () => {
@@ -227,7 +288,14 @@ export function crearHttpCu01(
       respuestaCu01(async () => {
         comprobarId(jobId);
         await exigirObjetoVacio(request);
-        return json(await procesarImportacion(db, jobId, opciones));
+        const quien = actor(request);
+        return json(
+          await procesarImportacion(db, jobId, {
+            ...opciones,
+            actor: quien,
+            reintentadoPor: quien,
+          }),
+        );
       }),
   };
 }

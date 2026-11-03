@@ -1,9 +1,17 @@
 import { useRef } from "react";
-import type { VistaPrevia as Vista } from "@/shared/contracts";
 import { entero } from "@/shared/formato";
 import { useRowsEnter } from "@/shared/motion";
 import { Button, ErrorBox, Figure, Notice, Section } from "@/shared/ui";
+import { StatusTag } from "@/shared/ui/status-tag";
 import { WeekDataTable } from "@/shared/ui/week-data-table";
+import { Conciliacion, MuestraTareas } from "./conciliacion";
+import {
+  CONJUNTOS,
+  conjuntoDe,
+  esVistaTareas,
+  type VistaImportacion,
+} from "./conjuntos";
+import { PieAsistente } from "./pie-asistente";
 import { TablaErrores } from "./tabla-errores";
 import s from "./importaciones.module.css";
 
@@ -26,9 +34,9 @@ export function VistaPrevia({
   pendiente,
   onConfirmar,
   onCancelar,
-  onOtroArchivo,
+  onVolver,
 }: {
-  vista: Vista;
+  vista: VistaImportacion;
   archivo: string | null;
   vencida: boolean;
   msRestantes: number | null;
@@ -37,12 +45,15 @@ export function VistaPrevia({
   pendiente: boolean;
   onConfirmar: () => void;
   onCancelar: () => void;
-  onOtroArchivo: () => void;
+  onVolver: () => void;
 }) {
   const filas = useRef<HTMLTableSectionElement>(null);
   useRowsEnter(filas, vista.muestra);
+  const tareas = esVistaTareas(vista) ? vista : null;
+  const conjunto = CONJUNTOS[conjuntoDe(vista)];
   const rechazada = vista.status === "RECHAZADA";
   const errores = vista.errores.length;
+  const sinConciliar = tareas ? tareas.conciliacion.diferencias : 0;
 
   return (
     <>
@@ -50,10 +61,13 @@ export function VistaPrevia({
         titulo="Vista previa"
         aside={
           <>
-            {archivo && <span className={s.archivo}>{archivo}</span>}
-            <span className={s.estado} data-estado={vista.status}>
-              {rechazada ? "Rechazada" : "Validada"}
+            <span className={s.archivo}>
+              {conjunto.etiqueta}
+              {archivo && ` · ${archivo}`}
             </span>
+            <StatusTag tono={rechazada ? "incidencia" : "exito"}>
+              {rechazada ? "Rechazada" : "Validada"}
+            </StatusTag>
           </>
         }
       >
@@ -66,63 +80,62 @@ export function VistaPrevia({
           <Figure
             etiqueta="Nuevas"
             valor={entero(vista.nuevas)}
-            detalle={rechazada ? "válidas, sin guardar" : "se van a guardar"}
+            detalle={rechazada ? "válidas, sin guardar" : "se guardarán"}
           />
           <Figure
             etiqueta="Omitidas"
             valor={entero(vista.omitidas)}
             detalle="ya estaban cargadas"
           />
+          {tareas && (
+            <Figure
+              etiqueta="Excluidas"
+              valor={entero(tareas.excluidas)}
+              detalle="canceladas o reasignadas"
+            />
+          )}
           {rechazada ? (
             <Figure
               etiqueta="Errores"
               valor={entero(errores)}
-              detalle="hay que corregirlos"
+              detalle="deben corregirse"
             />
           ) : (
             <Figure
               etiqueta="Vence en"
-              valor={vencida || msRestantes === null ? "—" : restante(msRestantes)}
-              detalle="después, hay que validar otra vez"
+              valor={
+                vencida || msRestantes === null ? "—" : restante(msRestantes)
+              }
+              detalle="luego deberá validarse nuevamente"
             />
           )}
         </div>
 
         <div className={s.avisos}>
           {vencida && (
-            <ErrorBox mensaje="La vista previa venció. Volvé a validar el archivo." />
+            <ErrorBox mensaje="La vista previa venció. Valide el archivo nuevamente." />
           )}
           {rechazada && !vencida && (
             <ErrorBox
-              mensaje={`El archivo tiene ${plural(errores, "error", "errores")}. No se guardó nada: corregilo y volvé a validarlo.`}
+              mensaje={`El archivo tiene ${plural(errores, "error", "errores")} y no se guardó ${tareas ? "ninguna tarea" : "ningún registro"}. Corrija el archivo y valídelo nuevamente.`}
             />
+          )}
+          {sinConciliar > 0 && !vencida && (
+            <Notice tono="aviso">
+              {sinConciliar === 1
+                ? "El detalle de una semana no suma lo que informa su resumen semanal."
+                : `El detalle de ${entero(sinConciliar)} semanas no suma lo que informa su resumen semanal.`}{" "}
+              Para no guardar tareas que contradigan los indicadores, se rechaza
+              el archivo completo. Corrija el detalle o los indicadores
+              semanales y valide nuevamente.
+            </Notice>
           )}
           {!rechazada && !vencida && vista.nuevas === 0 && (
             <Notice>
-              Todos los registros ya existen. Confirmar no duplica ningún dato.
+              {tareas
+                ? "Todas las tareas ya están cargadas. Confirmar no duplica ningún dato."
+                : "Todos los registros ya existen. Confirmar no duplica ningún dato."}
             </Notice>
-          )}
-        </div>
-
-        <div className={s.acciones}>
-          <Button
-            variante="primary"
-            disabled={
-              ocupado || vencida || rechazada || errores > 0 || pendiente
-            }
-            onClick={onConfirmar}
-          >
-            Confirmar importación
-          </Button>
-          {!pendiente && (
-            <Button disabled={ocupado} onClick={onCancelar}>
-              Cancelar
-            </Button>
-          )}
-          {(vencida || rechazada) && !pendiente && (
-            <Button variante="quiet" disabled={ocupado} onClick={onOtroArchivo}>
-              Elegir otro archivo
-            </Button>
           )}
         </div>
       </Section>
@@ -130,7 +143,9 @@ export function VistaPrevia({
       {errores > 0 && (
         <Section
           titulo="Errores"
-          aside={<span>{plural(errores, "error", "errores")}, por fila y campo</span>}
+          aside={
+            <span>{plural(errores, "error", "errores")}, por fila y campo</span>
+          }
         >
           <TablaErrores etiqueta="Errores del archivo" items={vista.errores} />
         </Section>
@@ -139,7 +154,7 @@ export function VistaPrevia({
       {vista.warnings.length > 0 && (
         <Section
           titulo="Advertencias"
-          aside={<span>No impiden confirmar; conviene revisarlas</span>}
+          aside={<span>No impiden confirmar; se recomienda revisarlas</span>}
         >
           <TablaErrores
             etiqueta="Advertencias del archivo"
@@ -148,26 +163,62 @@ export function VistaPrevia({
         </Section>
       )}
 
-      {vista.muestra.length > 0 && (
-        <Section
-          titulo="Primeras filas válidas"
-          aside={
-            <span>
-              {vista.muestra.length === 1
-                ? "1 fila, tal como viene en el archivo"
-                : `${vista.muestra.length} filas, tal como vienen en el archivo`}
-            </span>
-          }
-        >
-          <WeekDataTable
-            etiqueta="Muestra de filas válidas"
-            filas={vista.muestra}
-            legajo
-            opcionales
-            cuerpoRef={filas}
-          />
-        </Section>
+      {tareas && tareas.conciliacion.filas.length > 0 && (
+        <Conciliacion resumen={tareas.conciliacion} />
       )}
+
+      {tareas
+        ? tareas.muestraTareas.length > 0 && (
+            <MuestraTareas tareas={tareas.muestraTareas} />
+          )
+        : vista.muestra.length > 0 && (
+            <Section
+              titulo="Primeras filas válidas"
+              aside={
+                <span>
+                  {vista.muestra.length === 1
+                    ? "1 fila, tal como viene en el archivo"
+                    : `${vista.muestra.length} filas, tal como vienen en el archivo`}
+                </span>
+              }
+            >
+              <WeekDataTable
+                etiqueta="Muestra de filas válidas"
+                filas={vista.muestra}
+                legajo
+                opcionales
+                cuerpoRef={filas}
+              />
+            </Section>
+          )}
+
+      <PieAsistente
+        izquierda={
+          !pendiente && (
+            <Button disabled={ocupado} onClick={onCancelar}>
+              Cancelar
+            </Button>
+          )
+        }
+        derecha={
+          <>
+            {!pendiente && (
+              <Button disabled={ocupado} onClick={onVolver}>
+                Volver
+              </Button>
+            )}
+            <Button
+              variante="primary"
+              disabled={
+                ocupado || vencida || rechazada || errores > 0 || pendiente
+              }
+              onClick={onConfirmar}
+            >
+              Confirmar importación
+            </Button>
+          </>
+        }
+      />
     </>
   );
 }

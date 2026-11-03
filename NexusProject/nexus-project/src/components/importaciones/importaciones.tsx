@@ -3,13 +3,13 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ErrorImportacionHttp,
   importacionesApi as api,
+  rutaPlantilla,
 } from "@/client/importaciones-api";
-import type {
-  ErrorCampo,
-  JobDTO,
-  ResultadoImportacion,
-  VistaPrevia as Vista,
-} from "@/shared/contracts";
+import type { ErrorCampo, JobDTO } from "@/shared/contracts";
+import {
+  PLANTILLAS_IMPORTACION,
+  type PlantillaImportacion,
+} from "@/shared/contratos/importaciones";
 import { settle, usePageEnter } from "@/shared/motion";
 import {
   Button,
@@ -21,6 +21,14 @@ import {
 } from "@/shared/ui";
 import { Stepper } from "@/shared/ui/stepper";
 import {
+  CONJUNTOS,
+  conjuntoDe,
+  esResultadoTareas,
+  type ResultadoConfirmacion,
+  type VistaImportacion,
+} from "./conjuntos";
+import { PieAsistente } from "./pie-asistente";
+import {
   ConfirmacionPendiente,
   Procesamiento,
   RecuperarProcesamiento,
@@ -30,7 +38,6 @@ import { TablaErrores } from "./tabla-errores";
 import { VistaPrevia } from "./vista-previa";
 import s from "./importaciones.module.css";
 
-const PASOS = ["Elegir archivo", "Revisar", "Confirmar y procesar"] as const;
 /** Only the last pending importId or jobId survives a reload; never the CSV or its data (T06). */
 const recoveryKey = "nexo-importacion-pendiente";
 type Recuperacion = { importId?: string; jobId?: string };
@@ -50,8 +57,11 @@ export function Importaciones() {
   const pasosRef = useRef<HTMLDivElement>(null);
   usePageEnter(pagina);
   const [file, setFile] = useState<File | null>(null);
-  const [vista, setVista] = useState<Vista | null>(null);
-  const [resultado, setResultado] = useState<ResultadoImportacion | null>(null);
+  const [conjunto, setConjunto] = useState<PlantillaImportacion>("indicadores");
+  const [vista, setVista] = useState<VistaImportacion | null>(null);
+  const [resultado, setResultado] = useState<ResultadoConfirmacion | null>(
+    null,
+  );
   const [job, setJob] = useState<JobDTO | null>(null);
   const [error, setError] = useState("");
   const [detalles, setDetalles] = useState<ErrorCampo[]>([]);
@@ -132,7 +142,7 @@ export function Importaciones() {
 
   async function confirmar(id: string) {
     recordar({ importId: id });
-    let res: ResultadoImportacion;
+    let res: ResultadoConfirmacion;
     try {
       res = await api.confirmar(id);
     } catch (e) {
@@ -196,6 +206,23 @@ export function Importaciones() {
     paso === 3 &&
     !pendiente &&
     (job ? job.estado === "COMPLETADO" : !!resultado);
+  // The dataset the flow is on: the chosen one, or the one the preview or the result belongs to.
+  const activo: PlantillaImportacion = vista
+    ? conjuntoDe(vista)
+    : resultado
+      ? esResultadoTareas(resultado)
+        ? "tareas"
+        : "indicadores"
+      : conjunto;
+  const pasos = ["Seleccionar archivo", "Revisar", CONJUNTOS[activo].pasoFinal];
+
+  function elegirConjunto(tipo: PlantillaImportacion) {
+    setConjunto(tipo);
+    setFile(null);
+    setError("");
+    setDetalles([]);
+    setMensaje("");
+  }
 
   // Each step settles in once when the flow moves to it.
   const pasoPrevio = useRef(paso);
@@ -224,9 +251,9 @@ export function Importaciones() {
     <div ref={pagina} className={s.page} data-paso={paso}>
       <PageHeader
         titulo="Importar datos"
-        contexto="Validá el archivo semanal y revisá qué se guarda antes de confirmar."
+        contexto="Valide el archivo y revise los registros antes de confirmar la importación."
       />
-      <Stepper pasos={PASOS} actual={terminado ? PASOS.length + 1 : paso} />
+      <Stepper pasos={pasos} actual={terminado ? pasos.length + 1 : paso} />
 
       <div className={s.estadoVivo} role="status" aria-live="polite">
         {busy ? (
@@ -246,7 +273,7 @@ export function Importaciones() {
 
       <div ref={pasosRef} className={s.pasos}>
         {paso === 1 && (
-          <Section className={s.elegir}>
+          <Section className={s.elegir} titulo="Datos a importar">
             <form
               className={s.formArchivo}
               onSubmit={(e) => {
@@ -255,11 +282,60 @@ export function Importaciones() {
                   ejecutar("Validando el archivo…", async () => {
                     setVista(null);
                     setCaducada(false);
-                    setVista(await api.validar(file));
+                    setVista(
+                      await (conjunto === "tareas"
+                        ? api.validarTareas(file)
+                        : api.validar(file)),
+                    );
                   });
               }}
             >
-              <div className={s.zona} data-elegido={file ? "" : undefined}>
+              <fieldset className={s.conjuntos} disabled={!!busy}>
+                <legend className={s.leyenda}>Conjunto de datos</legend>
+                {PLANTILLAS_IMPORTACION.map((tipo) => (
+                  <div key={tipo} className={s.opcion}>
+                    <label className={s.opcionEtiqueta}>
+                      <input
+                        type="radio"
+                        name="conjunto"
+                        value={tipo}
+                        checked={conjunto === tipo}
+                        onChange={() => elegirConjunto(tipo)}
+                        aria-labelledby={`conjunto-${tipo}-titulo`}
+                        aria-describedby={`conjunto-${tipo}-detalle`}
+                      />
+                      <span className={s.opcionTexto}>
+                        <span
+                          id={`conjunto-${tipo}-titulo`}
+                          className={s.opcionTitulo}
+                        >
+                          {CONJUNTOS[tipo].etiqueta}
+                        </span>
+                        <span
+                          id={`conjunto-${tipo}-detalle`}
+                          className={s.opcionDetalle}
+                        >
+                          {CONJUNTOS[tipo].descripcion}
+                        </span>
+                      </span>
+                    </label>
+                    <a
+                      className={s.plantilla}
+                      href={rutaPlantilla(tipo)}
+                      download
+                      aria-label={`Descargar plantilla de ${CONJUNTOS[tipo].etiqueta.toLowerCase()}`}
+                    >
+                      Descargar plantilla
+                    </a>
+                  </div>
+                ))}
+              </fieldset>
+
+              <div
+                key={conjunto}
+                className={s.zona}
+                data-elegido={file ? "" : undefined}
+              >
                 <input
                   id="csv"
                   className={s.input}
@@ -285,22 +361,28 @@ export function Importaciones() {
                   <span className={s.zonaNombre}>
                     {file
                       ? `${file.name}, ${tamano(file.size)}`
-                      : "Elegí el archivo o arrastralo acá"}
+                      : "Arrastre el archivo aquí o selecciónelo"}
                   </span>
                 </span>
                 <span className={s.zonaAccion} aria-hidden="true">
-                  {file ? "Cambiar" : "Elegir archivo"}
+                  {file ? "Cambiar archivo" : "Seleccionar archivo"}
                 </span>
               </div>
               <p id="csv-ayuda" className={s.ayuda}>
-                Hasta 5 MB y 1.000 filas, con las columnas de la plantilla y
-                semanas ya terminadas.
+                {CONJUNTOS[conjunto].limites}
               </p>
-              <div className={s.acciones}>
-                <Button type="submit" variante="primary" disabled={!!busy || !file}>
-                  Validar archivo
-                </Button>
-              </div>
+              <PieAsistente
+                izquierda={<ButtonLink href="/home">Cancelar</ButtonLink>}
+                derecha={
+                  <Button
+                    type="submit"
+                    variante="primary"
+                    disabled={!!busy || !file}
+                  >
+                    Validar archivo
+                  </Button>
+                }
+              />
             </form>
           </Section>
         )}
@@ -314,14 +396,19 @@ export function Importaciones() {
             ocupado={!!busy}
             pendiente={!!pendiente}
             onConfirmar={() =>
-              ejecutar("Confirmando y procesando…", async () => {
-                setConfirmando(true);
-                try {
-                  await confirmar(vista.importId);
-                } finally {
-                  setConfirmando(false);
-                }
-              })
+              ejecutar(
+                activo === "tareas"
+                  ? "Confirmando la importación…"
+                  : "Confirmando y procesando…",
+                async () => {
+                  setConfirmando(true);
+                  try {
+                    await confirmar(vista.importId);
+                  } finally {
+                    setConfirmando(false);
+                  }
+                },
+              )
             }
             onCancelar={() =>
               ejecutar("Cancelando la vista previa…", async () => {
@@ -329,12 +416,10 @@ export function Importaciones() {
                 if (vista.status === "VALIDADA")
                   await api.cancelar(vista.importId);
                 nueva();
-                setMensaje(
-                  "Vista previa cancelada. No se guardaron registros laborales.",
-                );
+                setMensaje(CONJUNTOS[conjuntoDe(vista)].cancelada);
               })
             }
-            onOtroArchivo={nueva}
+            onVolver={nueva}
           />
         )}
 

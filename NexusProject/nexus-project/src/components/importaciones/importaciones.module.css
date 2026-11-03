@@ -120,7 +120,7 @@
   flex: none;
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
+  min-height: 32px;
   padding: 0 var(--space-4);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -130,6 +130,96 @@
 .ayuda {
   color: var(--ink-2);
   font-size: var(--text-sm);
+}
+
+/* The dataset to import: plain rows (no boxes inside the section), each with its template. */
+.conjuntos {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.leyenda {
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-weight: var(--weight-strong);
+}
+.opcion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+.opcion:last-child {
+  border-bottom: 0;
+}
+.opcionEtiqueta {
+  display: flex;
+  flex: 1 1 320px;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  cursor: pointer;
+}
+.opcionEtiqueta input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.opcionEtiqueta input:disabled {
+  cursor: not-allowed;
+}
+.opcionTexto {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.opcionTitulo {
+  font-weight: var(--weight-strong);
+}
+.opcionDetalle {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+.plantilla {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--accent);
+  font-weight: var(--weight-strong);
+}
+.plantilla:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Wizard footer (R43): Cancel on the left, Back and the main action on the right. */
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+.pieIzquierda,
+.pieDerecha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.pieDerecha {
+  margin-left: auto;
 }
 
 /* Recovery of a job by id: quiet, collapsed, below the flow. */
@@ -182,7 +272,7 @@
   font-size: var(--text-sm);
 }
 .campoTexto input {
-  min-height: 36px;
+  min-height: 32px;
   padding: 0 var(--space-3);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -199,22 +289,9 @@
   color: var(--ink-2);
   overflow-wrap: anywhere;
 }
-.estado {
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-xs);
-  font-weight: var(--weight-strong);
-}
-.estado[data-estado="VALIDADA"] {
-  background: var(--success-soft);
-  color: var(--success);
-}
-.estado[data-estado="RECHAZADA"] {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
 .figuras {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--space-5);
   padding-bottom: var(--space-5);
   border-bottom: 1px solid var(--line);
@@ -251,6 +328,17 @@
 .detalle {
   color: var(--ink-2);
   min-width: 240px;
+}
+/* Reconciliation: the weekly summary's value, beneath a count the file does not match. */
+.esperado {
+  display: block;
+  color: var(--danger);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+}
+.titulo {
+  min-width: 260px;
+  overflow-wrap: anywhere;
 }
 
 /* Step 3: what was saved beside how the calculation goes. */
@@ -315,10 +403,5 @@
 @media (max-width: 1100px) {
   .resultado {
     grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 900px) {
-  .figuras {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
