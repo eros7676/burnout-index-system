@@ -234,7 +234,7 @@ test("Mis datos: el empleado ve sus semanas con horas y tareas, y ningún índic
   await expect(
     page.getByRole("heading", { level: 1, name: "Persona ficticia 001" }),
   ).toBeVisible();
-  const tabla = page.getByRole("region", { name: "Tus datos por semana" });
+  const tabla = page.getByRole("region", { name: "Sus datos por semana" });
   await expect(
     tabla
       .getByRole("row")
@@ -263,7 +263,11 @@ test("Mis datos: el empleado ve sus semanas con horas y tareas, y ningún índic
   await expect(page.getByRole("link", { name: "Cómo se calcula" })).toHaveCount(
     0,
   );
-  expect([...new Set(lecturas)]).toEqual(["/api/mis-datos"]);
+  // The weeks and the tasks are two reads of the session's own person; nothing else is asked.
+  expect([...new Set(lecturas)].sort()).toEqual([
+    "/api/mis-datos",
+    "/api/mis-datos/tareas",
+  ]);
 });
 
 test("Módulos de lectura: en pantalla angosta no desbordan la página", async ({
@@ -273,7 +277,7 @@ test("Módulos de lectura: en pantalla angosta no desbordan la página", async (
   for (const [usuario, ruta, tabla] of [
     ["demo-rrhh", "/audit", "Eventos de auditoría"],
     ["demo-tl-01", "/rules-config", "Factores del índice"],
-    ["demo-empleado", "/my-data", "Tus datos por semana"],
+    ["demo-empleado", "/my-data", "Sus datos por semana"],
   ] as const) {
     await page.unrouteAll({ behavior: "ignoreErrors" });
     await demo(page, usuario);

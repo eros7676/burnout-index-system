@@ -90,7 +90,13 @@ test("estados y grupos usan palabras neutras, nunca un juicio sobre la persona",
     VENCIDA: "Abiertas al cierre, vencidas",
   });
   const todo = JSON.stringify([ETIQUETA_ESTADO, GRUPO_ESTADO]).toLowerCase();
-  for (const palabra of ["incumpl", "no hizo", "productiv", "ranking", "vigilancia"])
+  for (const palabra of [
+    "incumpl",
+    "no hizo",
+    "productiv",
+    "ranking",
+    "vigilancia",
+  ])
     assert.ok(!todo.includes(palabra), palabra);
 });
 
@@ -151,7 +157,11 @@ test("el enlace a las tareas de una semana conserva solo lo que cambia la vista"
     "/employees/EMP-001/weeks/2026-10-12?recordId=mock-record-2&estado=VENCIDA&tarea=PRJ%2Fa%3A1",
   );
   assert.equal(
-    hrefTareasSemana({ employeeId: "EMP-001", periodStart: "2026-10-12", page: 3 }),
+    hrefTareasSemana({
+      employeeId: "EMP-001",
+      periodStart: "2026-10-12",
+      page: 3,
+    }),
     "/employees/EMP-001/weeks/2026-10-12?page=3",
   );
 });

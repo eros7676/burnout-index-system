@@ -124,3 +124,48 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Print (T10 report on paper). The shell goes in impresion.tsx; here, what the report itself hides or keeps whole.
+   MDN: @page sets the page margins; break-inside: avoid keeps a block on one page;
+   print-color-adjust: exact keeps the bars and tags, which carry level and factor marks. */
+@page {
+  margin: 16mm;
+}
+.soloImpresion {
+  display: none;
+}
+@media print {
+  /* Buttons, links and the notification panel mean nothing on paper. */
+  .controles {
+    display: none;
+  }
+  .soloImpresion {
+    display: block;
+    max-width: 72ch;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+  .page,
+  .page * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    gap: var(--space-4);
+  }
+  /* The back link is a control of the screen. */
+  .page > header > a {
+    display: none;
+  }
+  .grid,
+  .alert[data-con-correo] {
+    grid-template-columns: 1fr;
+  }
+  .page section,
+  .page tr {
+    break-inside: avoid;
+  }
+  .page thead {
+    display: table-header-group;
+  }
+}

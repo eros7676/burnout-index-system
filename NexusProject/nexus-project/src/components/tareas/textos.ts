@@ -58,7 +58,9 @@ export function textoHistorial(cierres: CierreTareaDTO[]) {
     let n = 0;
     for (let i = desde; i < cierres.length; i++) {
       if (cierres[i].estado === "COMPLETADA") break;
-      const salto = i > 0 && dias(cierres[i - 1].periodStart) - dias(cierres[i].periodStart);
+      const salto =
+        i > 0 &&
+        dias(cierres[i - 1].periodStart) - dias(cierres[i].periodStart);
       if (salto !== false && salto !== 7) break;
       n++;
     }

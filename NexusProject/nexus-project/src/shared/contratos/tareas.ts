@@ -188,9 +188,8 @@ export type PeticionesTareas = {
     body?: undefined;
   };
   consultarMisTareas: {
-    query?: Pick<
-      FiltrosTareasSemana,
-      "periodStart" | "estado" | "page" | "pageSize"
+    query?: Partial<
+      Pick<FiltrosTareasSemana, "periodStart" | "estado" | "page" | "pageSize">
     > & { semanas?: number };
     body?: undefined;
   };

@@ -1,0 +1,15 @@
+/* Titles come from the source system: they wrap inside a readable width instead of widening the table. */
+.title {
+  min-width: 240px;
+  max-width: 420px;
+  white-space: normal;
+}
+.link {
+  color: var(--accent);
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+}
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

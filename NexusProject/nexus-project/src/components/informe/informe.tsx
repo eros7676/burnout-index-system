@@ -18,6 +18,7 @@ import {
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import { semanaDe, serieHasta } from "@/shared/semanas";
 import {
+  Button,
   DataTable,
   ErrorBox,
   FactorBullet,
@@ -41,7 +42,9 @@ import {
 } from "../alertas/aviso";
 import { NotificacionAlerta } from "../notificacion-alerta";
 import { useSesion } from "../shell/sesion";
+import { hrefTareasSemana } from "../tareas/textos";
 import { explicacionEnPalabras } from "./explicacion";
+import { EstiloImpresion } from "./impresion";
 import s from "./informe.module.css";
 
 type Datos = { informe: InformeDTO; personas: PersonaDTO[] };
@@ -57,9 +60,9 @@ async function cargar(evaluationId: string, signal: AbortSignal) {
 /** Whether the load held up two weeks in a row, in words (T10 persistence). */
 const MOTIVO: Record<Persistencia["motivo"], string> = {
   SOSTENIDO:
-    "La carga alta se sostiene dos semanas seguidas, con causas en común.",
+    "La carga alta se sostiene dos semanas seguidas, con factores en común.",
   NO_SOSTENIDO:
-    "No se sostiene una carga alta dos semanas seguidas con causas en común.",
+    "No se sostiene una carga alta dos semanas seguidas con factores en común.",
   HISTORIAL_INSUFICIENTE:
     "No hay semana anterior para confirmar si la carga se sostiene.",
 };
@@ -89,7 +92,9 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
     (p) => p.employeeId === informe?.empleado.employeeId,
   );
   const semana =
-    persona && evaluacion ? semanaDe(persona, evaluacion.periodStart) : undefined;
+    persona && evaluacion
+      ? semanaDe(persona, evaluacion.periodStart)
+      : undefined;
   // T14: a superseded or stale result keeps its level, identified as not current.
   const historico = evaluacion?.vigente === false;
   const desactualizado =
@@ -102,10 +107,12 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
       : null;
   const alerta = informe?.alerta ? { ...informe.alerta, ...cambio } : null;
   const persistencia = evaluacion?.persistencia;
+  const tareas = evaluacion?.snapshot.actual.tareasActivas ?? 0;
   const fallo = consulta.estado === "error";
 
   return (
     <div ref={pagina} className={s.page}>
+      <EstiloImpresion />
       <PageHeader
         titulo={informe?.empleado.nombre ?? "Informe semanal"}
         volver={
@@ -124,14 +131,24 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
               ]
                 .filter(Boolean)
                 .join(", ")
-            : "Por qué una semana dio su nivel"
+            : "Motivo del nivel de la semana"
+        }
+        acciones={
+          informe ? (
+            <Button className={s.controles} onClick={() => window.print()}>
+              Imprimir informe
+            </Button>
+          ) : undefined
         }
       />
 
       <Section titulo="Resultado de la semana">
         <div ref={caja} className={s.result}>
           {fallo ? (
-            <ErrorBox mensaje={consulta.mensaje} onRetry={consulta.reintentar} />
+            <ErrorBox
+              mensaje={consulta.mensaje}
+              onRetry={consulta.reintentar}
+            />
           ) : !informe || !evaluacion ? (
             <SkeletonRows filas={3} />
           ) : (
@@ -194,7 +211,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
           <div className={s.grid}>
             <Section
               className={s.factors}
-              titulo="Qué lo explica"
+              titulo="Factores del nivel"
               aside={informe ? <span>Por aporte al índice</span> : undefined}
             >
               {!informe || !evaluacion ? (
@@ -226,6 +243,21 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                           {FACTOR[f.codigo]}
                           {f.excedido && (
                             <span className={s.exceeded}>Supera el umbral</span>
+                          )}
+                          {f.codigo === "CT" && tareas > 0 && (
+                            <Link
+                              className={`${s.inlineLink} ${s.controles}`}
+                              href={hrefTareasSemana({
+                                employeeId: evaluacion!.employeeId,
+                                periodStart: evaluacion!.periodStart,
+                                // The data version this result was computed from, not today's.
+                                recordId: evaluacion!.snapshot.actual.recordId,
+                              })}
+                            >
+                              {tareas === 1
+                                ? "Ver la tarea de la semana"
+                                : `Ver las ${tareas} tareas de la semana`}
+                            </Link>
                           )}
                         </th>
                         <td className={tabla.num}>
@@ -286,7 +318,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                           </dd>
                         </div>
                         <div className={s.wide}>
-                          <dt>Superan el umbral las dos semanas</dt>
+                          <dt>Superan el umbral en ambas semanas</dt>
                           <dd>
                             {persistencia.comunesExcedidas.length
                               ? causasEnPalabras(persistencia.comunesExcedidas)
@@ -299,7 +331,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                 )}
               </Section>
 
-              <Section titulo="Para revisar con la persona">
+              <Section titulo="Recomendaciones">
                 {!informe ? (
                   <SkeletonRows filas={3} />
                 ) : (
@@ -328,7 +360,9 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                     <dt>Destinatario</dt>
                     <dd>
                       {sinDestinatario(alerta) ? (
-                        <StatusTag tono="incidencia">Sin destinatario</StatusTag>
+                        <StatusTag tono="incidencia">
+                          Sin destinatario
+                        </StatusTag>
                       ) : (
                         nombreDestinatario(
                           alerta.destinatarioId!,
@@ -363,22 +397,30 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                     </dd>
                   </div>
                   <div className={s.wide}>
-                    <dt>Causas</dt>
+                    <dt>Factores</dt>
                     <dd>{causasEnPalabras(alerta.causas)}</dd>
                   </div>
                 </dl>
                 {usuario?.rol === "RRHH" && (
-                  <NotificacionAlerta
-                    alerta={alerta}
-                    destinatario={(id) =>
-                      nombreDestinatario(id, datos!.personas)
-                    }
-                    alCambiar={(intento) => setCambio(trasIntento(intento))}
-                  />
+                  <div className={s.controles}>
+                    <NotificacionAlerta
+                      alerta={alerta}
+                      destinatario={(id) =>
+                        nombreDestinatario(id, datos!.personas)
+                      }
+                      alCambiar={(intento) => setCambio(trasIntento(intento))}
+                    />
+                  </div>
                 )}
               </div>
             )}
           </Section>
+          <p className={s.soloImpresion}>
+            Informe de demostración con datos ficticios. El índice señala
+            posible sobrecarga de trabajo: no es un diagnóstico ni mide el
+            desempeño de la persona. La revisión es humana y el sistema no
+            decide.
+          </p>
         </>
       )}
     </div>

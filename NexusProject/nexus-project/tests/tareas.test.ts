@@ -16,7 +16,8 @@ import {
 } from "../src/server/services/tareas-consulta-filtros";
 import { ErrorConsulta } from "../src/server/services/filtros-consultas";
 
-const pedido = (query: string) => new Request(`http://localhost/api/x?${query}`);
+const pedido = (query: string) =>
+  new Request(`http://localhost/api/x?${query}`);
 const rechaza = (accion: () => unknown, status = 400) =>
   assert.throws(
     accion,
@@ -35,7 +36,12 @@ test("el resumen por estado suma los grupos y deja en cero los que no existen", 
   assert.deepEqual(
     resumirGrupos([
       { estado: "VENCIDA", n: 5, diasAtrasoMax: 9, diasAtrasoTotal: 21 },
-      { estado: "COMPLETADA", n: 3, diasAtrasoMax: null, diasAtrasoTotal: null },
+      {
+        estado: "COMPLETADA",
+        n: 3,
+        diasAtrasoMax: null,
+        diasAtrasoTotal: null,
+      },
       { estado: "PENDIENTE", n: 2, diasAtrasoMax: null, diasAtrasoTotal: null },
     ]),
     {
@@ -57,7 +63,10 @@ test("la conciliación deriva activas, pendientes y vencidas del detalle y marca
   ]);
   // The week's summary stores P as every open task, overdue ones included.
   assert.deepEqual(
-    conciliar({ tareasActivas: 10, tareasPendientes: 7, tareasVencidas: 5 }, resumen),
+    conciliar(
+      { tareasActivas: 10, tareasPendientes: 7, tareasVencidas: 5 },
+      resumen,
+    ),
     {
       coincide: true,
       campos: [
@@ -114,13 +123,27 @@ test("solo un enlace https llega al navegador", () => {
     assert.equal(enlaceSeguro(ref), null, String(ref));
 });
 
-const tecnico = { employeeId: "EMP-002", tipo: "TECNICO", teamId: "EQ-02" } as const;
-const lider = { employeeId: "TL-02", tipo: "TEAM_LEAD", teamId: "EQ-02" } as const;
-const usuario = (rol: "RRHH" | "GERENCIA" | "TEAM_LEAD" | "EMPLEADO", teamId: string | null, employeeId: string | null) =>
-  ({ rol, teamId, employeeId });
+const tecnico = {
+  employeeId: "EMP-002",
+  tipo: "TECNICO",
+  teamId: "EQ-02",
+} as const;
+const lider = {
+  employeeId: "TL-02",
+  tipo: "TEAM_LEAD",
+  teamId: "EQ-02",
+} as const;
+const usuario = (
+  rol: "RRHH" | "GERENCIA" | "TEAM_LEAD" | "EMPLEADO",
+  teamId: string | null,
+  employeeId: string | null,
+) => ({ rol, teamId, employeeId });
 
 test("visibilidad del detalle: RR. HH. todo, el Team Lead su equipo, Gerencia solo a los Team Leads", () => {
-  assert.equal(puedeVerDetalleTareas(usuario("RRHH", null, null), tecnico), true);
+  assert.equal(
+    puedeVerDetalleTareas(usuario("RRHH", null, null), tecnico),
+    true,
+  );
   assert.equal(puedeVerDetalleTareas(usuario("RRHH", null, null), lider), true);
 
   const tl = usuario("TEAM_LEAD", "EQ-02", "TL-02");
@@ -191,7 +214,11 @@ test("los filtros de semanas, historial y mis tareas acotan cada consulta", () =
     filtrosSemanas(pedido("employeeId=EMP-001&semanas=52&teamId=EQ-01")),
     { employeeId: "EMP-001", teamId: "EQ-01", semanas: 52 },
   );
-  for (const query of ["", "employeeId=EMP-001&semanas=53", "employeeId=EMP-001&semanas=0"])
+  for (const query of [
+    "",
+    "employeeId=EMP-001&semanas=53",
+    "employeeId=EMP-001&semanas=0",
+  ])
     rechaza(() => filtrosSemanas(pedido(query)));
 
   assert.deepEqual(
