@@ -14,8 +14,8 @@ diagnosis and never rates people. Every screen answers one question in its
 header; everything else on the screen supports that answer.
 
 Audience: RRHH analysts, Team Leads and management on desktop Chrome/Firefox
-(RNF07). UI copy is Spanish (es-AR, voseo). Code, comments and this file are
-English.
+(RNF07). UI copy is Spanish (es-AR) in a formal neutral register (see Content).
+Code, comments and this file are English.
 
 ## Principles
 
@@ -23,7 +23,7 @@ English.
    answers; the first block is that answer (a sorted list, not KPI tiles).
    Overview → filter → detail on demand (Shneiderman).
 2. **Conditions, not people.** Alerts and levels describe workload conditions
-   ("Horas extra y días seguidos sin descanso"), with causes before the score.
+   ("Horas extra y días consecutivos sin descanso"), with factors before the score.
 3. **The week is the unit.** Every value belongs to a week; the eight-week
    strip is the product's signature and appears wherever a person does.
 4. **Say it once.** The demo/"not a diagnosis" disclaimer lives in one place:
@@ -112,15 +112,28 @@ A new pattern is added to the kit first, then used.
 
 ## Content
 
+Register (D1; research work/enterprise/research/ux-writing-es.md §2, after the RAE
+DPD, Microsoft's Spanish style guide and Workday/SAP/Oracle/IBM product copy):
+buttons are an infinitive plus its object ("Confirmar importación"); titles,
+labels and column headers are noun phrases; states, empty states and success
+messages are impersonal ("Se guardaron 120 registros."); *usted* only when the
+user must act ("Corrija el archivo y valídelo nuevamente."); permission errors
+say "No tiene permiso para…". Never voseo, tú, «acá», exclamations, "por favor"
+or emojis. Terms (D2): RR. HH., Gerencia, Team Lead, Empleado as role labels;
+"equipo" for the org unit (data names keep «Célula ficticia N»); "persona" for
+whoever the index covers; "factores", never "causas"; "importar", never
+"cargar" as a noun.
+
 - Levels: Bajo, Medio, Alto, Incompleto (no previous week to confirm), plus
   "Desactualizado" when the stored result is not current (T14).
-- Factors: Horas extra, Días seguidos sin descanso, Carga de tareas, Vacaciones
+- Factors: Horas extra, Días consecutivos sin descanso, Carga de tareas, Vacaciones
   pendientes — always with units ("16 h", "9 días").
 - Weeks: "12–18 oct 2026", built from the date string (no browser time zone).
 - Numbers: decimal comma, two decimals for indices ("91,21").
 - Buttons say what happens ("Validar archivo", "Simular envío"); an action keeps
   its name through its result.
-- Empty: what would appear here + how to fill it. Error: what failed + retry.
+- Empty: what would appear here + how to fill it. Error: what failed
+  ("No se pudo…") + the remedy in *usted*.
 
 ## Motion
 

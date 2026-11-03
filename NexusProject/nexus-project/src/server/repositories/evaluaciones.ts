@@ -215,7 +215,7 @@ export async function guardarEvaluacion(
       AND leaseUntil > UTC_TIMESTAMP(3) FOR UPDATE`;
     if (jobs.length !== 1)
       throw reprocesar(
-        "El ejecutor perdió su lease/token o el período no pertenece al job.",
+        "El procesamiento se interrumpió antes de terminar. Reintente el procesamiento.",
       );
     if (preparada) await comprobarPar(tx, propietario, preparada.periodoId);
   }
@@ -236,7 +236,7 @@ export async function guardarEvaluacion(
       huellaEvaluacion(preparada.snapshot) !== preparada.processingFingerprint)
   )
     throw reprocesar(
-      "Cambiaron los datos, antecedentes o reglas. Volver a calcular antes de publicar.",
+      "Cambiaron los datos o las reglas de la semana. Reintente el procesamiento.",
     );
   const calculo = calcularEvaluacion(
     entrada.snapshot.actual,

@@ -72,7 +72,7 @@ test("un pico aislado queda explicado como MEDIO", () => {
   });
   const texto = explicarInforme(pico);
   assert.match(texto, /91,21 puntos, nivel MEDIO/);
-  assert.match(texto, /corte alto 70/);
+  assert.match(texto, /límite de Alto \(70\)/);
   assert.match(texto, /NO_SOSTENIDO/);
   assert.doesNotMatch(texto, /nivel ALTO/);
 });
@@ -109,6 +109,6 @@ test("las recomendaciones siguen el ranking de los factores excedidos", () => {
   assert.match(textos[0], /vacaciones/);
   assert.match(textos[1], /horas extra/);
   assert.deepEqual(recomendacionesDe(["HE", "DS", "CT", "VP"], []), [
-    "Ningún factor figura como excedido. No corresponde una acción automática.",
+    "Ningún factor supera su umbral.",
   ]);
 });
