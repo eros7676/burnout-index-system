@@ -1,10 +1,13 @@
-import { randomUUID } from "node:crypto";
 import {
   idActor,
   registrarEvento,
   type Actor,
 } from "../repositories/auditoria";
-import { ErrorFormatoImportacion } from "./csv-importacion";
+import {
+  comprobarArchivoCsv,
+  ErrorFormatoImportacion,
+  MAX_ARCHIVO_CSV,
+} from "./csv-importacion";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import type {
   ResultadoCancelacion,
@@ -13,9 +16,11 @@ import type {
 } from "../../shared/contracts";
 import {
   bloquearImportacion,
+  crearImportacionTemporal,
   eliminarTemporalesVencidos,
   jsonImportacion,
   resultadoGuardado,
+  VIGENCIA_PREVIA_MS,
 } from "../repositories/importaciones";
 import { transaccionImportacion } from "../repositories/transaccion-importacion";
 import { fuenteValidacionPrisma } from "../repositories/validacion-importacion";
@@ -35,34 +40,21 @@ import {
   type OpcionesProcesamiento,
 } from "./procesamientos";
 import { ErrorImportacion } from "./error-importacion";
+import {
+  confirmarTareasEnTransaccion,
+  registrarRechazoDeFormato,
+} from "./tareas-importacion-flujo";
+import {
+  ESQUEMA_INDICADORES,
+  ESQUEMA_TAREAS,
+} from "../../shared/contratos/importaciones";
 
-export const MAX_ARCHIVO_CSV = 5 * 1024 * 1024;
-export const VIGENCIA_PREVIA_MS = 30 * 60 * 1000;
+export { comprobarArchivoCsv, MAX_ARCHIVO_CSV, VIGENCIA_PREVIA_MS };
 export type OpcionesImportacion = OpcionesProcesamiento & {
   ahora?: () => Date;
+  /** Rows per INSERT when storing task detail; tests lower it to fail between chunks. */
+  tamanoLoteTareas?: number;
 };
-
-export function comprobarArchivoCsv(archivo: File) {
-  if (archivo.size > MAX_ARCHIVO_CSV)
-    throw new ErrorImportacion(413, "ARCHIVO_EXCESIVO", "Máximo 5 MiB de CSV.");
-  const mime = archivo.type.toLowerCase().split(";")[0];
-  if (
-    !/\.csv$/i.test(archivo.name) ||
-    ![
-      "",
-      "text/csv",
-      "application/csv",
-      "text/plain",
-      "application/octet-stream",
-      "application/vnd.ms-excel",
-    ].includes(mime)
-  )
-    throw new ErrorImportacion(
-      415,
-      "FORMATO_NO_CSV",
-      "Seleccione un archivo CSV UTF-8.",
-    );
-}
 
 async function validarImportacionInterna(
   db: PrismaClient,
@@ -81,30 +73,17 @@ async function validarImportacionInterna(
     ahora,
   );
   await eliminarTemporalesVencidos(db, ahora);
-  const expiresAt = new Date(ahora.getTime() + VIGENCIA_PREVIA_MS);
   const carga = await db.$transaction(async (tx) => {
-    const creada = await tx.importacion.create({
-      data: {
-        sourceName: archivo.name.slice(0, 255),
-        sourceHash,
-        uploadedBy: idActor(actor),
-        uploadedAt: ahora,
-        status: validacion.status,
-        expiresAt,
-        totalFilas: validacion.totalFilas,
-        nuevas: validacion.nuevas,
-        omitidas: validacion.omitidas,
-        errores: jsonImportacion(validacion.errores),
-        warnings: jsonImportacion(validacion.warnings),
-        temporal: {
-          create: {
-            // Las celdas recortadas son strings: conservan precisión y también las filas omitidas.
-            datos: jsonImportacion(filas),
-            // JSON textual evita el recorte numérico de Prisma/MySQL en la muestra temporal.
-            muestra: JSON.stringify(validacion.muestra),
-          },
-        },
-      },
+    const creada = await crearImportacionTemporal(tx, {
+      nombreArchivo: archivo.name,
+      sourceHash,
+      schemaVersion: ESQUEMA_INDICADORES,
+      usuarioId: idActor(actor),
+      ahora,
+      validacion,
+      // Las celdas recortadas son strings: conservan precisión y también las filas omitidas.
+      filas,
+      muestra: validacion.muestra,
     });
     await registrarEvento(tx, {
       accion:
@@ -116,7 +95,7 @@ async function validarImportacionInterna(
       actor,
       detalles: {
         sourceHash,
-        schemaVersion: "indicadores-v1",
+        schemaVersion: ESQUEMA_INDICADORES,
         totalFilas: validacion.totalFilas,
         nuevas: validacion.nuevas,
         omitidas: validacion.omitidas,
@@ -129,7 +108,7 @@ async function validarImportacionInterna(
     validacion;
   return {
     importId: carga.importId,
-    expiresAt: expiresAt.toISOString(),
+    expiresAt: carga.expiresAt.toISOString(),
     status,
     totalFilas,
     nuevas,
@@ -156,14 +135,7 @@ export async function validarImportacion(
       error instanceof ErrorFormatoImportacion ||
       error instanceof ErrorImportacion
     ) {
-      await db.$transaction((tx) =>
-        registrarEvento(tx, {
-          accion: "IMPORTACION_RECHAZADA",
-          recursoId: randomUUID(),
-          actor,
-          detalles: { etapa: "FORMATO", codigo: error.codigo },
-        }),
-      );
+      await registrarRechazoDeFormato(db, actor, error, ESQUEMA_INDICADORES);
     }
     throw error;
   }
@@ -190,14 +162,25 @@ export async function confirmarImportacion(
         throw new ErrorImportacion(
           410,
           "VISTA_PREVIA_VENCIDA",
-          "La vista previa venció; valide el archivo nuevamente.",
+          "La vista previa venció. Valide el archivo nuevamente.",
         );
       if (carga.status !== "VALIDADA" || !carga.temporal)
         throw new ErrorImportacion(
           409,
           "ESTADO_INCOMPATIBLE",
-          "La importación no está validada para confirmar.",
+          "La importación no está validada, por lo que no puede confirmarse.",
         );
+      if (carga.schemaVersion === ESQUEMA_TAREAS)
+        return {
+          repetida: false,
+          resultado: await confirmarTareasEnTransaccion(
+            tx,
+            { importId, sourceHash: carga.sourceHash, temporal: carga.temporal },
+            actor,
+            reloj(),
+            opciones,
+          ),
+        };
       const filas = carga.temporal.datos as unknown as FilaCsv[];
       const validacion = await validarFilasImportacion(
         filas,
@@ -208,7 +191,7 @@ export async function confirmarImportacion(
         throw new ErrorImportacion(
           409,
           "REVALIDACION_FALLIDA",
-          "Cambió el catálogo o hay un conflicto; valide el archivo nuevamente.",
+          "Cambiaron los datos de las personas o hay un conflicto con otra importación. Valide el archivo nuevamente.",
           validacion.errores,
         );
       // Orden estable reduce deadlocks entre lotes que comparten períodos.
@@ -293,7 +276,7 @@ export async function confirmarImportacion(
         actor,
         detalles: {
           sourceHash: carga.sourceHash,
-          schemaVersion: "indicadores-v1",
+          schemaVersion: ESQUEMA_INDICADORES,
           insertados: nuevas.length,
           omitidos: validacion.omitidas,
           jobId,
@@ -310,7 +293,7 @@ export async function confirmarImportacion(
       throw new ErrorImportacion(
         409,
         "CONFLICTO_CONCURRENTE",
-        "Otra carga modificó los períodos; valide nuevamente.",
+        "Otra importación modificó las mismas semanas. Valide el archivo nuevamente.",
       );
     throw error;
   }
@@ -354,7 +337,7 @@ export async function cancelarImportacion(
       throw new ErrorImportacion(
         409,
         "ESTADO_INCOMPATIBLE",
-        "Una importación confirmada no se puede cancelar.",
+        "Una importación confirmada no puede cancelarse.",
       );
     // Contract §4: only VALIDADA may become CANCELADA. A rejected batch keeps its status;
     // its temporary rows expire with the preview like any other.
@@ -362,13 +345,13 @@ export async function cancelarImportacion(
       throw new ErrorImportacion(
         409,
         "ESTADO_INCOMPATIBLE",
-        "Una importación rechazada no se puede cancelar; valide un CSV corregido.",
+        "Una importación rechazada no puede cancelarse. Valide un archivo corregido.",
       );
     if (carga.expiresAt <= reloj())
       throw new ErrorImportacion(
         410,
         "VISTA_PREVIA_VENCIDA",
-        "La vista previa venció; valide nuevamente.",
+        "La vista previa venció. Valide el archivo nuevamente.",
       );
     await tx.importacionTemporal.deleteMany({ where: { importId } });
     await tx.importacion.update({
@@ -380,7 +363,10 @@ export async function cancelarImportacion(
       recursoId: importId,
       correlacionId: importId,
       actor,
-      detalles: { estadoAnterior: carga.status },
+      detalles: {
+        estadoAnterior: carga.status,
+        schemaVersion: carga.schemaVersion,
+      },
     });
     return { importId, status: "CANCELADA" };
   });

@@ -1,0 +1,443 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { test } from "node:test";
+import { PrismaClient } from "@prisma/client";
+import { sembrarBase } from "../prisma/seed-base";
+import { crearHttpCu01 } from "../src/server/http/cu01";
+import { fuenteTareasPrisma } from "../src/server/repositories/tareas-importacion";
+import type { OpcionesImportacion } from "../src/server/services/importaciones";
+import {
+  COLUMNAS_TAREAS,
+  huellaTareas,
+  type ColumnaTarea,
+} from "../src/server/services/tareas-importacion";
+import type { ResultadoImportacion } from "../src/shared/contracts";
+import type {
+  ResultadoImportacionTareas,
+  VistaPreviaTareas,
+} from "../src/shared/contratos/importaciones";
+
+const ejemplo = readFileSync("templates/ejemplo-dos-semanas.csv", "utf8");
+const SEMANAS = [
+  { inicio: "2026-10-05", fin: "2026-10-11", vence: "2026-10-09", tarde: "2026-10-02", plazo: "2026-10-15", hecha: "2026-10-08" },
+  { inicio: "2026-10-12", fin: "2026-10-18", vence: "2026-10-16", tarde: "2026-10-09", plazo: "2026-10-23", hecha: "2026-10-15" },
+];
+
+type FilaT = Partial<Record<ColumnaTarea, string>>;
+const csvDe = (filas: FilaT[]) =>
+  `${COLUMNAS_TAREAS.join(",")}\n${filas
+    .map((f) =>
+      COLUMNAS_TAREAS.map((c) => {
+        const v = f[c] ?? "";
+        return /[",\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
+      }).join(","),
+    )
+    .join("\n")}\n`;
+
+/** Per week: 3 completed, 2 open on time, 5 overdue → A 10, P 7, V 5 (the example's counts). */
+function filasTareas(employeeId: string): FilaT[] {
+  return SEMANAS.flatMap((w, i) =>
+    Array.from({ length: 10 }, (_, n): FilaT => {
+      const base: FilaT = {
+        employee_id: employeeId,
+        period_start: w.inicio,
+        period_end: w.fin,
+        task_id: `OPS-${i}${String(n).padStart(2, "0")}`,
+        titulo: n === 0 ? 'Calibrar sensor, línea "A"' : `Revisar el nodo ${i}-${n}`,
+        origen: "Mesa de ayuda",
+        asignada_fecha: "2026-09-28",
+      };
+      if (n < 3) return { ...base, vencimiento_fecha: w.vence, completada_fecha: w.hecha };
+      if (n < 5) return { ...base, vencimiento_fecha: w.plazo };
+      return { ...base, vencimiento_fecha: w.tarde };
+    }),
+  );
+}
+
+async function peticion(
+  manejador: (request: Request, ...ids: string[]) => Promise<Response>,
+  texto: string,
+  nombre = "tareas.csv",
+) {
+  const form = new FormData();
+  form.append("file", new File([texto], nombre, { type: "text/csv" }));
+  const respuesta = await manejador(
+    new Request("http://localhost/api", { method: "POST", body: form }),
+  );
+  return { status: respuesta.status, body: await respuesta.json() };
+}
+
+async function escenario(
+  db: PrismaClient,
+  comprobar: (s: Awaited<ReturnType<typeof crear>>) => Promise<void>,
+  opciones: OpcionesImportacion = {},
+) {
+  const s = await crear(db, opciones);
+  try {
+    await comprobar(s);
+  } finally {
+    const importId = { in: s.imports };
+    const periodos = await db.periodoEmpleado.findMany({
+      where: { employeeId: s.employeeId },
+    });
+    const periodoId = { in: periodos.map((p) => p.periodoId) };
+    const jobs = await db.processingJob.findMany({
+      where: { importId },
+      select: { jobId: true },
+    });
+    await db.$transaction(async (tx) => {
+      await tx.tareaSemana.deleteMany({ where: { employeeId: s.employeeId } });
+      await tx.processingJobPar.deleteMany({
+        where: { OR: [{ job: { importId } }, { periodoId }] },
+      });
+      await tx.processingJob.deleteMany({ where: { importId } });
+      await tx.alerta.deleteMany({ where: { evaluacion: { periodoId } } });
+      await tx.periodoEmpleado.updateMany({
+        where: { periodoId },
+        data: { registroVigenteId: null, evaluacionVigenteId: null },
+      });
+      await tx.evaluacion.updateMany({
+        where: { periodoId },
+        data: { supersedesEvaluationId: null },
+      });
+      await tx.evaluacion.deleteMany({ where: { periodoId } });
+      await tx.registroLaboral.deleteMany({ where: { periodoId } });
+      await tx.periodoEmpleado.deleteMany({ where: { periodoId } });
+      await tx.importacionTemporal.deleteMany({ where: { importId } });
+      await tx.importacion.deleteMany({ where: { importId } });
+      await tx.eventoAuditoria.deleteMany({
+        where: {
+          OR: [
+            { correlacionId: importId },
+            { recursoId: importId },
+            { recursoId: { in: jobs.map((j) => j.jobId) } },
+          ],
+        },
+      });
+      await tx.empleado.delete({ where: { employeeId: s.employeeId } });
+    });
+  }
+}
+
+async function crear(db: PrismaClient, opciones: OpcionesImportacion) {
+  const employeeId = `T3-${randomUUID()}`;
+  await db.empleado.create({
+    data: {
+      employeeId,
+      nombre: "Persona ficticia T3",
+      tipo: "TECNICO",
+      teamId: "EQ-01",
+      responsableId: "TL-01",
+    },
+  });
+  const http = crearHttpCu01(db, opciones);
+  const imports: string[] = [];
+  const indicadores = ejemplo.replaceAll("EMP-001", employeeId);
+  const tareas = csvDe(filasTareas(employeeId));
+  const registrar = (r: { body: { importId?: string; vistaPrevia?: { importId: string } } }) => {
+    const id = r.body.vistaPrevia?.importId ?? r.body.importId;
+    if (id) imports.push(id);
+  };
+  async function confirmar(id: string) {
+    const r = await http.confirmar(
+      new Request("http://localhost/api", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{}",
+      }),
+      id,
+    );
+    return { status: r.status, body: await r.json() };
+  }
+  /** The weekly summary comes first, as in production. */
+  async function importarIndicadores() {
+    const v = await peticion(http.validar, indicadores, "indicadores.csv");
+    registrar(v);
+    assert.equal(v.status, 200, JSON.stringify(v.body));
+    const c = await confirmar(v.body.importId);
+    assert.equal(c.status, 200, JSON.stringify(c.body));
+    assert.equal((c.body as ResultadoImportacion).procesamiento?.estado, "COMPLETADO");
+    return c.body as ResultadoImportacion;
+  }
+  async function validarTareas(texto = tareas) {
+    const r = await peticion(http.validarTareas, texto);
+    registrar(r);
+    return r as { status: number; body: VistaPreviaTareas & { vistaPrevia?: VistaPreviaTareas; error?: { codigo: string } } };
+  }
+  return {
+    db,
+    http,
+    employeeId,
+    imports,
+    tareas,
+    importarIndicadores,
+    validarTareas,
+    confirmar,
+    eventos: (accion: string) =>
+      db.eventoAuditoria.findMany({
+        where: { accion, correlacionId: { in: imports } },
+        orderBy: { createdAt: "asc" },
+      }),
+  };
+}
+
+test("MySQL tareas-v1: confirmación atómica, idempotente y con eventos", async (t) => {
+  const url = process.env.TEST_DATABASE_URL;
+  assert.ok(url);
+  assert.match(new URL(url).pathname, /^\/[A-Za-z0-9_]+_test$/);
+  const db = new PrismaClient({ datasourceUrl: url });
+  await db.$transaction((tx) => sembrarBase(tx));
+  try {
+    await t.test(
+      "confirma el detalle de dos semanas sin mover el índice ni crear procesamientos",
+      () =>
+        escenario(db, async (s) => {
+          await s.importarIndicadores();
+          const antes = {
+            evaluaciones: await db.evaluacion.findMany({
+              where: { employeeId: s.employeeId },
+              orderBy: { createdAt: "asc" },
+            }),
+            periodos: await db.periodoEmpleado.findMany({
+              where: { employeeId: s.employeeId },
+              orderBy: { periodStart: "asc" },
+            }),
+            trabajos: await db.processingJob.count(),
+            alertas: await db.alerta.count({ where: { employeeId: s.employeeId } }),
+          };
+          assert.equal(antes.evaluaciones.length, 2);
+
+          const v = await s.validarTareas();
+          assert.equal(v.status, 200, JSON.stringify(v.body));
+          assert.equal(v.body.esquema, "tareas-v1");
+          assert.equal(v.body.status, "VALIDADA");
+          assert.equal(v.body.nuevas, 20);
+          assert.equal(v.body.conciliacion.coinciden, 2);
+          assert.deepEqual(v.body.muestra, []);
+          assert.equal(v.body.muestraTareas.length, 10);
+          // Validating writes the preview only.
+          assert.equal(await db.tareaSemana.count({ where: { employeeId: s.employeeId } }), 0);
+          const carga = await db.importacion.findUniqueOrThrow({
+            where: { importId: v.body.importId },
+          });
+          assert.equal(carga.schemaVersion, "tareas-v1");
+          assert.equal(carga.status, "VALIDADA");
+
+          const c = await s.confirmar(v.body.importId);
+          assert.equal(c.status, 200, JSON.stringify(c.body));
+          const resultado = c.body as ResultadoImportacionTareas;
+          assert.equal(resultado.esquema, "tareas-v1");
+          assert.equal(resultado.insertados, 20);
+          assert.equal(resultado.omitidos, 0);
+          assert.equal(resultado.semanas, 2);
+          assert.deepEqual(resultado.afectados, []);
+          assert.equal(resultado.procesamiento, null);
+
+          const filas = await db.tareaSemana.findMany({
+            where: { employeeId: s.employeeId },
+          });
+          assert.equal(filas.length, 20);
+          assert.ok(filas.every((f) => f.sourceImportId === v.body.importId));
+          for (const periodo of antes.periodos) {
+            const registro = await db.registroLaboral.findUniqueOrThrow({
+              where: { recordId: periodo.registroVigenteId! },
+            });
+            const deSemana = filas.filter((f) => f.recordId === registro.recordId);
+            assert.equal(deSemana.length, 10);
+            const cuenta = (e: string) => deSemana.filter((f) => f.estadoCierre === e).length;
+            // The stored rows reproduce the week's stored counts.
+            assert.equal(deSemana.length, registro.tareasActivas);
+            assert.equal(cuenta("PENDIENTE") + cuenta("VENCIDA"), registro.tareasPendientes);
+            assert.equal(cuenta("VENCIDA"), registro.tareasVencidas);
+            assert.ok(
+              deSemana
+                .filter((f) => f.estadoCierre === "VENCIDA")
+                .every((f) => f.diasAtraso !== null && f.diasAtraso > 0),
+            );
+            assert.ok(
+              deSemana
+                .filter((f) => f.estadoCierre !== "VENCIDA")
+                .every((f) => f.diasAtraso === null),
+            );
+            assert.equal(registro.huellaTareas?.length, 64);
+            assert.ok(
+              deSemana.every(
+                (f) => f.periodoId === periodo.periodoId && f.periodStart.getTime() === periodo.periodStart.getTime(),
+              ),
+            );
+          }
+          assert.ok(
+            filas.some((f) => f.titulo === 'Calibrar sensor, línea "A"'),
+            "commas and quotes survive the round trip",
+          );
+
+          // Attaching evidence must not move the index: same evaluations, no job, no alert.
+          const despues = await db.evaluacion.findMany({
+            where: { employeeId: s.employeeId },
+            orderBy: { createdAt: "asc" },
+          });
+          assert.deepEqual(
+            despues.map((e) => [e.evaluationId, Number(e.indice), e.nivel]),
+            antes.evaluaciones.map((e) => [e.evaluationId, Number(e.indice), e.nivel]),
+          );
+          assert.deepEqual(
+            (await db.periodoEmpleado.findMany({ where: { employeeId: s.employeeId }, orderBy: { periodStart: "asc" } })).map((p) => [p.registroVigenteId, p.evaluacionVigenteId]),
+            antes.periodos.map((p) => [p.registroVigenteId, p.evaluacionVigenteId]),
+          );
+          assert.equal(await db.processingJob.count(), antes.trabajos);
+          assert.equal(await db.alerta.count({ where: { employeeId: s.employeeId } }), antes.alertas);
+
+          // The same confirmation again answers the same and stores nothing more.
+          assert.deepEqual((await s.confirmar(v.body.importId)).body, resultado);
+          assert.equal(await db.tareaSemana.count({ where: { employeeId: s.employeeId } }), 20);
+
+          const [validada] = await s.eventos("IMPORTACION_VALIDADA").then((e) => e.filter((x) => x.recursoId === v.body.importId));
+          const [confirmada] = await s.eventos("IMPORTACION_CONFIRMADA").then((e) => e.filter((x) => x.recursoId === v.body.importId));
+          for (const evento of [validada, confirmada]) {
+            assert.equal(evento.correlacionId, v.body.importId);
+            assert.equal(evento.entidad, "IMPORTACION");
+            assert.equal((evento.detalles as { schemaVersion: string }).schemaVersion, "tareas-v1");
+          }
+          assert.equal((confirmada.detalles as { insertados: number }).insertados, 20);
+          assert.equal((confirmada.detalles as { semanas: number }).semanas, 2);
+        }),
+    );
+
+    await t.test("la misma carga con otro orden se omite y no duplica", () =>
+      escenario(db, async (s) => {
+        await s.importarIndicadores();
+        const primera = await s.validarTareas();
+        assert.equal((await s.confirmar(primera.body.importId)).status, 200);
+        const reordenada = csvDe([...filasTareas(s.employeeId)].reverse()).replaceAll("\n", "\r\n");
+        const v = await s.validarTareas(reordenada);
+        assert.equal(v.status, 200);
+        assert.equal(v.body.nuevas, 0);
+        assert.equal(v.body.omitidas, 20);
+        assert.equal(v.body.semanasOmitidas, 2);
+        const c = await s.confirmar(v.body.importId);
+        assert.equal(c.status, 200);
+        assert.equal((c.body as ResultadoImportacionTareas).insertados, 0);
+        assert.equal((c.body as ResultadoImportacionTareas).omitidos, 20);
+        assert.equal(await db.tareaSemana.count({ where: { employeeId: s.employeeId } }), 20);
+
+        // The same week with different detail is a conflict: nothing is replaced.
+        const distinto = filasTareas(s.employeeId);
+        distinto[0] = { ...distinto[0], titulo: "Otro título" };
+        const rechazada = await s.validarTareas(csvDe(distinto));
+        assert.equal(rechazada.status, 422);
+        assert.ok(
+          rechazada.body.vistaPrevia!.errores.some((e) => e.codigo === "CONFLICTO_HISTORICO"),
+        );
+      }),
+    );
+
+    await t.test("un descuadre rechaza el lote entero y no escribe nada", () =>
+      escenario(db, async (s) => {
+        await s.importarIndicadores();
+        const filas = filasTareas(s.employeeId);
+        filas.pop(); // the second week now adds up to 9
+        const v = await s.validarTareas(csvDe(filas));
+        assert.equal(v.status, 422);
+        const vista = v.body.vistaPrevia!;
+        assert.equal(vista.status, "RECHAZADA");
+        assert.equal(vista.conciliacion.coinciden, 1);
+        assert.equal(vista.conciliacion.diferencias, 1);
+        assert.ok(vista.errores.every((e) => e.codigo === "TAREAS_NO_COINCIDEN"));
+        assert.match(vista.errores[0].detalle, new RegExp(s.employeeId));
+        assert.equal((await s.confirmar(vista.importId)).status, 409);
+        assert.equal(await db.tareaSemana.count({ where: { employeeId: s.employeeId } }), 0);
+        assert.equal(
+          await db.registroLaboral.count({ where: { employeeId: s.employeeId, huellaTareas: { not: null } } }),
+          0,
+        );
+        const [rechazo] = await s.eventos("IMPORTACION_RECHAZADA");
+        assert.equal(rechazo.correlacionId, vista.importId);
+        const detalles = rechazo.detalles as { schemaVersion: string; codigosError: string[] };
+        assert.equal(detalles.schemaVersion, "tareas-v1");
+        assert.deepEqual(detalles.codigosError, ["TAREAS_NO_COINCIDEN"]);
+      }),
+    );
+
+    await t.test("una semana sin resumen cargado se rechaza", () =>
+      escenario(db, async (s) => {
+        const v = await s.validarTareas();
+        assert.equal(v.status, 422);
+        assert.ok(v.body.vistaPrevia!.errores.some((e) => e.codigo === "SEMANA_SIN_RESUMEN"));
+        assert.equal(v.body.vistaPrevia!.conciliacion.sinResumen, 2);
+      }),
+    );
+
+    await t.test("un fallo a mitad de la inserción revierte todo el lote", () =>
+      escenario(
+        db,
+        async (s) => {
+          await s.importarIndicadores();
+          const v = await s.validarTareas();
+          assert.equal(v.status, 200);
+          // After validating, a task of the second week appears from another source:
+          // the unique key (record, task) fails once the first chunks are already in.
+          const segunda = await db.registroLaboral.findFirstOrThrow({
+            where: { employeeId: s.employeeId, periodo: { periodStart: new Date("2026-10-12T00:00:00Z") } },
+          });
+          await db.tareaSemana.create({
+            data: {
+              recordId: segunda.recordId,
+              periodoId: segunda.periodoId,
+              employeeId: s.employeeId,
+              periodStart: new Date("2026-10-12T00:00:00Z"),
+              sourceImportId: segunda.sourceImportId,
+              taskId: "OPS-107",
+              titulo: "Tarea ajena",
+              origen: "Planilla",
+              asignadaEl: new Date("2026-09-28T00:00:00Z"),
+              estadoCierre: "PENDIENTE",
+            },
+          });
+          const c = await s.confirmar(v.body.importId);
+          assert.equal(c.status, 409);
+          assert.equal(c.body.error.codigo, "CONFLICTO_CONCURRENTE");
+          assert.equal(await db.tareaSemana.count({ where: { employeeId: s.employeeId } }), 1);
+          assert.equal(
+            await db.registroLaboral.count({ where: { employeeId: s.employeeId, huellaTareas: { not: null } } }),
+            0,
+          );
+          assert.equal(
+            (await db.importacion.findUniqueOrThrow({ where: { importId: v.body.importId } })).status,
+            "VALIDADA",
+          );
+          assert.equal(await db.importacionTemporal.count({ where: { importId: v.body.importId } }), 1);
+          assert.equal((await s.eventos("IMPORTACION_CONFIRMADA")).length, 1, "only the indicadores confirmation");
+        },
+        { tamanoLoteTareas: 5 },
+      ),
+    );
+
+    await t.test("la lectura de resúmenes agrupa las semanas en pocas consultas", async () => {
+      const pares = Array.from({ length: 2500 }, (_, i) => ({
+        employeeId: `NO-EXISTE-${i}`,
+        periodStart: "2026-10-12",
+        periodEnd: "2026-10-18",
+      }));
+      assert.deepEqual(await fuenteTareasPrisma(db).semanas(pares), []);
+    });
+
+    await t.test("cancelar una vista previa de tareas no guarda nada", () =>
+      escenario(db, async (s) => {
+        await s.importarIndicadores();
+        const v = await s.validarTareas();
+        const r = await s.http.cancelar(
+          new Request("http://localhost/api", { method: "DELETE" }),
+          v.body.importId,
+        );
+        assert.equal(r.status, 200);
+        assert.equal(await db.tareaSemana.count({ where: { employeeId: s.employeeId } }), 0);
+        const [cancelada] = await s.eventos("IMPORTACION_CANCELADA");
+        assert.equal((cancelada.detalles as { schemaVersion: string }).schemaVersion, "tareas-v1");
+        assert.equal(huellaTareas([]).length, 64);
+      }),
+    );
+  } finally {
+    await db.$disconnect();
+  }
+});
