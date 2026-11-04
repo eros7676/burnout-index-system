@@ -75,6 +75,7 @@ export async function consultarDirectorio(
       estado: filtros.estado,
       q: filtros.q,
       nivel: filtros.nivel,
+      tipo: filtros.tipo,
       orden: filtros.orden,
       page: filtros.page,
       pageSize: filtros.pageSize,

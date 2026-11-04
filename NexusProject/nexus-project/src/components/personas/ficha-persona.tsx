@@ -44,7 +44,8 @@ import {
   estadoDe,
   paginaDe,
 } from "@/components/tareas";
-import { hrefTareasSemana, type VistaTareas } from "../tareas/textos";
+import { tareasApi } from "../tareas/tareas-api";
+import { diasAtrasoTexto, hrefTareasSemana, type VistaTareas } from "../tareas/textos";
 import { organizacionApi } from "../organizacion/api";
 import { rutaHistorial } from "../organizacion/rutas";
 import { MOTIVO, PUESTO, fechaCorta } from "../organizacion/textos";
@@ -144,6 +145,18 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
 
   // Gerencia reads a technician's counts, not their task rows (the server decides; this only hides the way in).
   const verTareas = !!persona && !(usuario?.rol === "GERENCIA" && persona.tipo === "TECNICO");
+  // The oldest overdue task of the last week, behind its count: one count read, no rows.
+  const ultima = vista?.actual;
+  const atraso = useConsulta(
+    (signal) => tareasApi.semanas({ employeeId, semanas: 1 }, signal),
+    usuario && verTareas && ultima && ultima.tareasVencidas > 0
+      ? `atraso:${employeeId}:${ultima.periodStart}`
+      : null,
+  );
+  const atrasoMax =
+    atraso.estado === "listo"
+      ? atraso.datos.semanas.find((w) => w.periodStart === ultima?.periodStart)?.resumen.diasAtrasoMax
+      : undefined;
   const volver = { href: "/employees", texto: "Personas" };
   const base = `/employees/${encodeURIComponent(employeeId)}`;
 
@@ -308,7 +321,8 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                     detalle={
                       verTareas && vista.actual.tareasVencidas > 0 ? (
                         <>
-                          de {entero(vista.actual.tareasActivas)} tareas.{" "}
+                          de {entero(vista.actual.tareasActivas)} tareas
+                          {atrasoMax ? `; la más antigua, ${diasAtrasoTexto(atrasoMax)} de atraso` : ""}.{" "}
                           <Link
                             className={s.link}
                             scroll={false}

@@ -36,6 +36,7 @@ import {
 } from "@/shared/ui";
 import { DEFINICION } from "../definiciones";
 import { StatusTag } from "@/shared/ui/status-tag";
+import { TextoTareas } from "@/shared/ui/tareas";
 import {
   causasEnPalabras,
   envio,
@@ -260,6 +261,16 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                           {FACTOR[f.codigo]}
                           {f.excedido && (
                             <span className={s.exceeded}>Supera el umbral</span>
+                          )}
+                          {f.codigo === "CT" && tareas > 0 && (
+                            // The ratio's counts in words: what the value is made of.
+                            <span className={s.cuentas}>
+                              <TextoTareas
+                                activas={tareas}
+                                pendientes={evaluacion!.snapshot.actual.tareasPendientes}
+                                vencidas={evaluacion!.snapshot.actual.tareasVencidas}
+                              />
+                            </span>
                           )}
                           {f.codigo === "CT" && tareas > 0 && (
                             <Link

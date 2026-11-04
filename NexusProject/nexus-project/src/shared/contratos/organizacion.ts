@@ -26,7 +26,15 @@ export type MotivoCambio = Extract<
 export type EstadoPersona = "ACTIVAS" | "BAJAS";
 export type EstadoEquipo = "ACTIVOS" | "INACTIVOS";
 export type FiltroNivel = Nivel | "DESACTUALIZADO";
-export type OrdenDirectorio = "indice" | "nombre";
+/** «indice» and the load orders read the chosen week; people with no value there come last. */
+export type OrdenDirectorio = "indice" | "nombre" | "vencidas" | "horasExtra" | "diasSinDescanso";
+export const ORDENES_DIRECTORIO: OrdenDirectorio[] = [
+  "indice",
+  "nombre",
+  "vencidas",
+  "horasExtra",
+  "diasSinDescanso",
+];
 
 export type Referencia = { employeeId: string; nombre: string };
 
@@ -38,6 +46,8 @@ export type FiltrosDirectorio = {
   /** Name or legajo, case and accent insensitive. */
   q?: string;
   nivel?: FiltroNivel;
+  /** Puesto: Team Lead or Técnico. */
+  tipo?: "TECNICO" | "TEAM_LEAD";
   orden?: OrdenDirectorio;
   page?: number;
   pageSize?: number;

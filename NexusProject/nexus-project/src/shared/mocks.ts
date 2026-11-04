@@ -184,6 +184,7 @@ export const alertaListadaMock: AlertaListada = {
 export const paginaAlertasMock: PaginaAlertas = {
   items: [alertaListadaMock],
   total: 1,
+  personas: 1,
   page: 1,
   pageSize: 50,
   equipos: [{ teamId: "EQ-01", nombre: "Célula ficticia 1" }],

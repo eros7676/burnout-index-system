@@ -56,6 +56,7 @@ export function directorio(filtro: Record<string, string>): DirectorioPersonasDT
   const filas = enAlcance
     .filter((p) => activas && ACTIVOS.includes(p.employeeId))
     .filter((p) => !q || sinTildes(`${p.nombre} ${p.employeeId}`).includes(q))
+    .filter((p) => !filtro.tipo || p.tipo === filtro.tipo)
     .map((p) => ({ p, w: periodStart ? p.semanas.find((x) => x.periodStart === periodStart) : undefined }))
     .filter(({ w }) =>
       !filtro.nivel
@@ -66,7 +67,17 @@ export function directorio(filtro: Record<string, string>): DirectorioPersonasDT
     )
     .sort((a, b) => {
       const nombre = a.p.nombre.localeCompare(b.p.nombre, "es", { numeric: true });
-      return filtro.orden === "nombre" ? nombre : (vigente(b.w) ?? -1) - (vigente(a.w) ?? -1) || nombre;
+      if (filtro.orden === "nombre") return nombre;
+      // Same as the SQL: the chosen week's value, highest first, no value last.
+      const valor = (w: (typeof a)["w"]) =>
+        filtro.orden === "vencidas"
+          ? w?.tareasVencidas
+          : filtro.orden === "horasExtra"
+            ? w?.horasExtra
+            : filtro.orden === "diasSinDescanso"
+              ? w?.diasConsecutivosSinDescanso
+              : vigente(w);
+      return (valor(b.w) ?? -1) - (valor(a.w) ?? -1) || nombre;
     });
   const page = Number(filtro.page ?? 1);
   const pageSize = Number(filtro.pageSize ?? 50);

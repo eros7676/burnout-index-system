@@ -565,6 +565,10 @@ test("filtros del directorio: valores por defecto, límites y rechazo de lo desc
     },
   );
   assert.equal(f("nivel=DESACTUALIZADO").nivel, "DESACTUALIZADO");
+  assert.equal(f("orden=vencidas").orden, "vencidas");
+  assert.equal(f("orden=horasExtra").orden, "horasExtra");
+  assert.equal(f("orden=diasSinDescanso").orden, "diasSinDescanso");
+  assert.equal(f("tipo=TEAM_LEAD").tipo, "TEAM_LEAD");
   for (const mala of [
     "pageSize=101",
     "page=0",
@@ -572,6 +576,7 @@ test("filtros del directorio: valores por defecto, límites y rechazo de lo desc
     "estado=TODAS",
     "nivel=CRITICO",
     "orden=variacion",
+    "tipo=GERENCIA",
     "periodStart=2026-10-13",
     "teamId=a%20b",
     "q=" + "x".repeat(81),

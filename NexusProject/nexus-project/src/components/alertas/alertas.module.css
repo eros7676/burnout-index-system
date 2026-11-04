@@ -49,3 +49,12 @@
   gap: var(--space-1);
   white-space: nowrap;
 }
+/* A part of the summary that filters the list to it. */
+.parte {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.parte:hover {
+  color: var(--accent-hover);
+}

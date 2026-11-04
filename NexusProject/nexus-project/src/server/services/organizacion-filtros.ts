@@ -8,6 +8,7 @@ import type {
   FiltrosDirectorio,
   OrdenDirectorio,
 } from "../../shared/contratos/organizacion";
+import { ORDENES_DIRECTORIO } from "../../shared/contratos/organizacion";
 import { ErrorOrganizacion } from "./organizacion-errores";
 import { esFechaReal, esLunes } from "./organizacion-validacion";
 
@@ -60,7 +61,7 @@ export function filtrosDirectorio(params: URLSearchParams): FiltrosDirectorio & 
   orden: OrdenDirectorio;
 } {
   exigirPermitidos(params, [
-    "periodStart", "teamId", "estado", "q", "nivel", "orden", "page", "pageSize",
+    "periodStart", "teamId", "estado", "q", "nivel", "tipo", "orden", "page", "pageSize",
   ]);
   const q = params.get("q")?.trim() ?? "";
   if (q.length > 80) throw rechazar("La búsqueda admite hasta 80 caracteres.");
@@ -68,7 +69,7 @@ export function filtrosDirectorio(params: URLSearchParams): FiltrosDirectorio & 
     page: entero(params, "page", 1, Number.MAX_SAFE_INTEGER),
     pageSize: entero(params, "pageSize", 50, 100),
     estado: opcion<EstadoPersona>(params, "estado", ["ACTIVAS", "BAJAS"]) ?? "ACTIVAS",
-    orden: opcion<OrdenDirectorio>(params, "orden", ["indice", "nombre"]) ?? "indice",
+    orden: opcion<OrdenDirectorio>(params, "orden", ORDENES_DIRECTORIO) ?? "indice",
   };
   const periodStart = lunes(params);
   if (periodStart) filtros.periodStart = periodStart;
@@ -78,6 +79,8 @@ export function filtrosDirectorio(params: URLSearchParams): FiltrosDirectorio & 
     "BAJO", "MEDIO", "ALTO", "INCOMPLETO", "DESACTUALIZADO",
   ]);
   if (nivel) filtros.nivel = nivel;
+  const tipo = opcion<"TECNICO" | "TEAM_LEAD">(params, "tipo", ["TECNICO", "TEAM_LEAD"]);
+  if (tipo) filtros.tipo = tipo;
   return filtros;
 }
 

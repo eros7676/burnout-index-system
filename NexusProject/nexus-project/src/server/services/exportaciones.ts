@@ -97,6 +97,7 @@ async function tablaAlertas(
     dicho.push(`Responsable = ${u?.nombre ?? filtros.asignadoA}`);
   }
   if (filtros.vencido) dicho.push("Solo seguimientos vencidos");
+  if (filtros.dirigidas) dicho.push("Solo alertas dirigidas a quien exporta");
   return {
     titulo: "Alertas con seguimiento",
     nombreArchivo: `alertas-${hoyEnBuenosAires(ahora)}.csv`,

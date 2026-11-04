@@ -36,12 +36,14 @@ import { StatusTag } from "@/shared/ui/status-tag";
 import { BotonExportar } from "../exportaciones/boton-exportar";
 import { organizacionApi } from "../organizacion/api";
 import { SelectorSemanas, finDeSemana } from "../organizacion/piezas";
-import { contar } from "../organizacion/textos";
+import { PUESTO, contar } from "../organizacion/textos";
 import { useSesion } from "../shell/sesion";
 import s from "./lista-personas.module.css";
 
 const NIVELES: Nivel[] = ["ALTO", "MEDIO", "BAJO", "INCOMPLETO"];
 const TAMANO_PAGINA = 50;
+/** The people list filters by these two; Gerencia is not a row of it. */
+type Puesto = "TECNICO" | "TEAM_LEAD";
 
 /** Waits for the typing to pause before the search reaches the server. */
 function useRetraso<T>(valor: T, ms = 300) {
@@ -66,6 +68,7 @@ export function ListaPersonas() {
   const [busqueda, setBusqueda] = useState("");
   const [nivel, setNivel] = useState<"" | FiltroNivel>("");
   const [orden, setOrden] = useState<OrdenDirectorio>("indice");
+  const [tipo, setTipo] = useState<"" | Puesto>("");
   const [estado, setEstado] = useState<EstadoPersona>("ACTIVAS");
   const [equipo, setEquipo] = useState(equipoUrl);
   const [numero, setNumero] = useState(1);
@@ -97,6 +100,7 @@ export function ListaPersonas() {
           estado,
           q: q || undefined,
           nivel: nivel || undefined,
+          tipo: tipo || undefined,
           orden,
           page: numero,
           pageSize: TAMANO_PAGINA,
@@ -104,7 +108,7 @@ export function ListaPersonas() {
         signal,
       ),
     usuario
-      ? JSON.stringify(["directorio", elegida, equipoActivo, estado, q, nivel, orden, numero])
+      ? JSON.stringify(["directorio", elegida, equipoActivo, estado, q, nivel, tipo, orden, numero])
       : null,
   );
   // While the next page loads, the last one stays on screen instead of flashing a skeleton.
@@ -115,7 +119,10 @@ export function ListaPersonas() {
   useRowsEnter(filas, datos ? `${datos.periodStart}|${datos.page}|${datos.total}` : undefined);
 
   const semana = datos?.periodStart ?? undefined;
-  const filtrado = !!(q || equipoActivo || nivel || estado !== "ACTIVAS");
+  const filtrado = !!(q || equipoActivo || nivel || tipo || estado !== "ACTIVAS");
+  // The column the list is ordered by says so to assistive technology.
+  const ordenadaPor = (o: OrdenDirectorio) =>
+    orden === o ? (o === "nombre" ? "ascending" : "descending") : undefined;
   const cambiar = <T,>(poner: (v: T) => void) => (v: T) => {
     poner(v);
     setNumero(1);
@@ -124,6 +131,7 @@ export function ListaPersonas() {
     setBusqueda("");
     setEquipo("");
     setNivel("");
+    setTipo("");
     setEstado("ACTIVAS");
     setNumero(1);
   };
@@ -208,12 +216,26 @@ export function ListaPersonas() {
             ))}
             <option value="DESACTUALIZADO">Desactualizado</option>
           </SelectField>
+          {!esTeamLead && (
+            <SelectField
+              etiqueta="Puesto"
+              value={tipo}
+              onChange={(e) => cambiar(setTipo)(e.target.value as "" | Puesto)}
+            >
+              <option value="">Todos los puestos</option>
+              <option value="TECNICO">{PUESTO.TECNICO}</option>
+              <option value="TEAM_LEAD">{PUESTO.TEAM_LEAD}</option>
+            </SelectField>
+          )}
           <SelectField
             etiqueta="Ordenar"
             value={orden}
             onChange={(e) => cambiar(setOrden)(e.target.value as OrdenDirectorio)}
           >
             <option value="indice">Por índice</option>
+            <option value="vencidas">Por tareas vencidas</option>
+            <option value="horasExtra">Por horas extra</option>
+            <option value="diasSinDescanso">Por días sin descanso</option>
             <option value="nombre">Por nombre</option>
           </SelectField>
         </Toolbar>
@@ -243,23 +265,29 @@ export function ListaPersonas() {
               <DataTable etiqueta="Personas">
                 <thead>
                   <tr>
-                    <th scope="col">Persona</th>
+                    <th scope="col" aria-sort={ordenadaPor("nombre")}>Persona</th>
                     <th scope="col" className={tabla.centro}>
                       Últimas 8 semanas
                     </th>
                     <th scope="col" className={tabla.centro}>
                       <Tip contenido={DEFINICION.nivel}>Nivel</Tip>
                     </th>
-                    <th scope="col" className={tabla.num}>
+                    <th scope="col" className={tabla.num} aria-sort={ordenadaPor("indice")}>
                       <Tip contenido={DEFINICION.indice}>Índice</Tip>
                     </th>
-                    <th scope="col" className={tabla.num}>
+                    <th scope="col" className={tabla.num} aria-sort={ordenadaPor("horasExtra")}>
                       <Tip contenido={DEFINICION_FACTOR.HE}>Horas extra</Tip>
                     </th>
-                    <th scope="col" className={`${tabla.num} ${s.wrap}`}>
+                    <th
+                      scope="col"
+                      className={`${tabla.num} ${s.wrap}`}
+                      aria-sort={ordenadaPor("diasSinDescanso")}
+                    >
                       <Tip contenido={DEFINICION_FACTOR.DS}>Días consecutivos sin descanso</Tip>
                     </th>
-                    <th scope="col"><Tip contenido={DEFINICION_FACTOR.CT}>Tareas</Tip></th>
+                    <th scope="col" aria-sort={ordenadaPor("vencidas")}>
+                      <Tip contenido={DEFINICION_FACTOR.CT}>Tareas</Tip>
+                    </th>
                     <th scope="col" className={`${tabla.num} ${s.wrap}`}>
                       <Tip contenido={DEFINICION_FACTOR.VP}>Vacaciones pendientes</Tip>
                     </th>

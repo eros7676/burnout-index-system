@@ -37,6 +37,7 @@ export type PaginaDirectorio = {
   estado: EstadoPersona;
   q?: string;
   nivel?: FiltroNivel;
+  tipo?: "TECNICO" | "TEAM_LEAD";
   orden: OrdenDirectorio;
   page: number;
   pageSize: number;
@@ -44,8 +45,8 @@ export type PaginaDirectorio = {
 
 /**
  * The ids of one page of people, filtered and ordered in SQL, and the total that matches.
- * Ordering and the level filter read the result in force for the chosen week; people without a
- * current result come last. Without a loaded week there is no result to order by.
+ * Ordering by index and the level filter read the result in force for the chosen week; ordering by
+ * load reads the week's current record. People without a value come last. Without a loaded week there is no result to order by.
  */
 export async function paginaDirectorio(
   tx: Prisma.TransactionClient,
@@ -61,6 +62,7 @@ export async function paginaDirectorio(
       Prisma.sql`(e.nombre COLLATE ${COTEJO} LIKE ${patron} OR e.employeeId COLLATE ${COTEJO} LIKE ${patron})`,
     );
   }
+  if (f.tipo) condiciones.push(Prisma.sql`e.tipo = ${f.tipo}`);
   if (f.nivel === "DESACTUALIZADO")
     condiciones.push(Prisma.sql`p.registroVigenteId IS NOT NULL AND v.evaluationId IS NULL`);
   else if (f.nivel) condiciones.push(Prisma.sql`v.nivel = ${f.nivel}`);
@@ -68,11 +70,20 @@ export async function paginaDirectorio(
     FROM Empleado e
     LEFT JOIN PeriodoEmpleado p ON p.employeeId = e.employeeId AND p.periodStart = ${semana}
     ${evaluacionVigenteSql}
+    LEFT JOIN RegistroLaboral r ON r.recordId = p.registroVigenteId
     WHERE ${Prisma.join(condiciones, " AND ")}`;
-  const orden =
-    f.orden === "indice"
-      ? Prisma.sql`(v.indice IS NULL) ASC, v.indice DESC, e.nombre COLLATE ${COTEJO} ASC, e.employeeId ASC`
-      : Prisma.sql`e.nombre COLLATE ${COTEJO} ASC, e.employeeId ASC`;
+  const porNombre = Prisma.sql`e.nombre COLLATE ${COTEJO} ASC, e.employeeId ASC`;
+  // Highest first; a person with no value for the week (no record, no current result) comes last.
+  const columna = {
+    indice: Prisma.sql`v.indice`,
+    vencidas: Prisma.sql`r.tareasVencidas`,
+    horasExtra: Prisma.sql`r.horasExtra`,
+    diasSinDescanso: Prisma.sql`r.diasConsecutivosSinDescanso`,
+    nombre: null,
+  }[f.orden];
+  const orden = columna
+    ? Prisma.sql`(${columna} IS NULL) ASC, ${columna} DESC, ${porNombre}`
+    : porNombre;
   const filas = await tx.$queryRaw<{ employeeId: string }[]>`
     SELECT e.employeeId AS employeeId ${desde}
     ORDER BY ${orden}

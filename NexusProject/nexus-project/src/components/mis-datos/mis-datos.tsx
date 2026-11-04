@@ -3,7 +3,8 @@ import { useMemo, useRef } from "react";
 import { tableroApi } from "@/client/tablero-api";
 import { useConsulta } from "@/client/use-consulta";
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
-import { semana as textoSemana } from "@/shared/formato";
+import type { DatosSemana } from "@/shared/contracts";
+import { entero, semana as textoSemana } from "@/shared/formato";
 import {
   Empty,
   ErrorBox,
@@ -34,6 +35,24 @@ function hallazgoHoras(
   )} trabajadas. Hubo horas extra en ${conExtra} de ${conDato.length} ${
     conDato.length === 1 ? "semana cargada" : "semanas cargadas"
   }.`;
+}
+
+const contar = (n: number, una: string, varias: string) => `${entero(n)} ${n === 1 ? una : varias}`;
+
+/**
+ * The newest week in one sentence, before its table: rest, overdue tasks and leave, as loaded.
+ * Facts only: no threshold word, no index, no level (RF10).
+ */
+function hallazgoSemana(w: DatosSemana) {
+  return `${textoSemana(w.periodStart, w.periodEnd)}: ${contar(
+    w.diasConsecutivosSinDescanso,
+    "día consecutivo sin descanso",
+    "días consecutivos sin descanso",
+  )}, ${contar(w.tareasVencidas, "tarea vencida", "tareas vencidas")} al cierre y ${contar(
+    w.vacacionesPendientesDias,
+    "día de vacaciones pendiente",
+    "días de vacaciones pendientes",
+  )}.`;
 }
 
 const PARA_QUE =
@@ -125,21 +144,25 @@ export function MisDatos() {
         </div>
       </Section>
 
+      {/* Tasks before the table: the most actionable fact of the week reads second, not last. */}
+      {!vacio && consulta.estado !== "error" && datos && <TareasPropias />}
+
       {!vacio && consulta.estado !== "error" && (
         <Section titulo="Semana a semana">
           {!datos ? (
             <SkeletonRows filas={6} />
           ) : (
-            <WeekDataTable
-              etiqueta="Sus datos por semana"
-              filas={datos.semanas}
-              cuerpoRef={filas}
-            />
+            <div className={s.horas}>
+              <p className={s.hallazgo}>{hallazgoSemana(datos.semanas[0])}</p>
+              <WeekDataTable
+                etiqueta="Sus datos por semana"
+                filas={datos.semanas}
+                cuerpoRef={filas}
+              />
+            </div>
           )}
         </Section>
       )}
-
-      {!vacio && consulta.estado !== "error" && datos && <TareasPropias />}
     </div>
   );
 }

@@ -382,6 +382,28 @@ export async function tareasMocks(page: Page, perfil: Perfil = "completo") {
       ),
     });
   });
+  // Counts per week (the person page reads the newest one for its oldest overdue task).
+  await page.route(api("/api/tareas/semanas"), (route) => {
+    const url = new URL(route.request().url());
+    pedidos.push(url);
+    const w = semana(SEMANA_CON_DETALLE, {}, perfil);
+    return route.fulfill({
+      json: {
+        persona: w.persona,
+        semanas: [
+          {
+            periodStart: w.semana.periodStart,
+            periodEnd: w.semana.periodEnd,
+            recordId: w.semana.recordId,
+            indicadores: w.indicadores,
+            detalle: w.detalle,
+            resumen: w.resumen,
+            coincide: true,
+          },
+        ],
+      },
+    });
+  });
   await page.route(api("/api/tareas/equipo"), (route) => {
     const url = new URL(route.request().url());
     pedidos.push(url);

@@ -523,6 +523,26 @@ test("MySQL organización: altas, cambios, bajas, líder, importación y lectura
       assert.deepEqual(ordenada.semanas.slice(0, 4), [...semanas].reverse());
       const soloAlto = await consultarDirectorio(db, filtrosDirectorio(new URLSearchParams(`teamId=${equipoA}&periodStart=2026-10-12&nivel=ALTO`)));
       assert.deepEqual(soloAlto.items.map((i) => i.employeeId), [id]);
+
+      // The load orders read the week's current record, highest first, people without one last.
+      const enSemana = (i: (typeof ordenada.items)[number]) => i.semanas.find((w) => w.periodStart === "2026-10-12");
+      for (const [orden, valor] of [
+        ["vencidas", (i: (typeof ordenada.items)[number]) => enSemana(i)?.tareasVencidas],
+        ["horasExtra", (i: (typeof ordenada.items)[number]) => enSemana(i)?.horasExtra],
+        ["diasSinDescanso", (i: (typeof ordenada.items)[number]) => enSemana(i)?.diasConsecutivosSinDescanso],
+      ] as const) {
+        const lista = await consultarDirectorio(db, filtrosDirectorio(new URLSearchParams(`teamId=${equipoA}&periodStart=2026-10-12&orden=${orden}`)));
+        const valores = lista.items.map((i) => valor(i) ?? -1);
+        assert.ok(valores.length > 1, orden);
+        assert.deepEqual(valores, [...valores].sort((x, y) => y - x), orden);
+      }
+      // Puesto narrows to Team Leads or technicians.
+      for (const tipo of ["TECNICO", "TEAM_LEAD"] as const) {
+        const lista = await consultarDirectorio(db, filtrosDirectorio(new URLSearchParams(`teamId=${equipoA}&tipo=${tipo}`)));
+        assert.ok(lista.items.every((i) => i.tipo === tipo), tipo);
+      }
+      const tecnicos = await consultarDirectorio(db, filtrosDirectorio(new URLSearchParams(`teamId=${equipoA}&tipo=TECNICO`)));
+      assert.ok(tecnicos.total > 0);
     });
 
     await t.test("equipos pequeños no muestran agregados, y el tamaño mínimo cuenta personas evaluadas", async () => {

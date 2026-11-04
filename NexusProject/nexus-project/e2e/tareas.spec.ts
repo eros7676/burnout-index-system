@@ -42,7 +42,9 @@ test("Ficha: las tareas de una semana se abren en la misma ficha, sin leerlas ha
   await expect(seccion(page)).toContainText("Elija una semana para ver sus tareas");
   await expect(seccion(page).getByRole("button", { name: "Ver las tareas de 12–18 oct 2026" })).toBeVisible();
   // The newest week says how many tasks were overdue and leads straight to them.
-  await expect(page.getByRole("region", { name: "Última semana" })).toContainText(/Tareas vencidas\s*5\s*de 10 tareas\./);
+  await expect(page.getByRole("region", { name: "Última semana" })).toContainText(
+    /Tareas vencidas\s*5\s*de 10 tareas; la más antigua, 17 días de atraso\./,
+  );
   await expect(page.getByRole("link", { name: "Ver cuáles" })).toHaveAttribute("href", `${SEMANA}&estado=VENCIDA`);
   // The weekly table carries the counts and one way in per week.
   await expect(await celda(semanas(page), "12–18 oct 2026", "Tareas")).toHaveText("7 pendientes de 10, 5 vencidas");
@@ -402,8 +404,11 @@ test("Informe: la carga de tareas enlaza con las tareas de esa semana, con el re
   const enlace = factores.getByRole("link", { name: "Ver las 10 tareas de la semana" });
   // The data version the result was computed from travels in the link, not "today's" one.
   await expect(enlace).toHaveAttribute("href", `${SEMANA}&recordId=mock-record-2`);
-  // Only the task factor carries it.
+  // Only the task factor carries it, with the counts behind its ratio in words.
   await expect(factores.getByRole("link")).toHaveCount(1);
+  await expect(factores.getByRole("rowheader", { name: /Carga de tareas/ })).toContainText(
+    "7 pendientes de 10, 5 vencidas",
+  );
 
   await enlace.click();
   await expect(page).toHaveURL(/\/employees\/EMP-001\?semana=2026-10-12&recordId=mock-record-2$/);
