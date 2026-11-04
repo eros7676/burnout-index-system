@@ -38,6 +38,7 @@ import {
   WeekStrip,
   tabla,
 } from "@/shared/ui";
+import { BotonExportar } from "../exportaciones/boton-exportar";
 import { useSesion } from "../shell/sesion";
 import s from "./resumen.module.css";
 
@@ -157,11 +158,14 @@ export function Resumen() {
             : "Seguimiento semanal de la carga de trabajo"
         }
         acciones={
-          usuario?.rol === "RRHH" ? (
-            <ButtonLink variante="primary" href="/importaciones">
-              Importar datos
-            </ButtonLink>
-          ) : undefined
+          <>
+            <BotonExportar tipo="equipos" filtros={{ periodStart: semana }} />
+            {usuario?.rol === "RRHH" && (
+              <ButtonLink variante="primary" href="/importaciones">
+                Importar datos
+              </ButtonLink>
+            )}
+          </>
         }
       />
 
