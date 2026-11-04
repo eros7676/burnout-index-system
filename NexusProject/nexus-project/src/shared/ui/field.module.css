@@ -86,23 +86,95 @@
 
 /* Forms (form.tsx): dedicated pages use 24 px between fields, 32 px before the actions (R42). */
 .form {
+  container-type: inline-size;
+}
+.formCuerpo {
   display: grid;
   gap: var(--space-8);
   max-width: 640px;
 }
+/* A form label reads before its help: body size in ink, the help stays small and muted. */
+.formLabel {
+  color: var(--ink);
+  font-size: var(--text-md);
+}
 .group {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-1);
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
 }
+/* Floated, the legend is an ordinary grid item (HTML: it is no longer the "rendered legend"), so it
+   can sit in the layout's left column while it still names the fieldset. */
 .legend {
+  float: left;
   padding: 0;
-  margin-bottom: var(--space-1);
   font-size: var(--text-lg);
   font-weight: var(--weight-strong);
+}
+.groupNote {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-body);
+}
+.legend + .stack,
+.legend + .row,
+.groupNote + .stack,
+.groupNote + .row {
+  margin-top: var(--space-3);
+}
+/* Annotated layout (R47), as the rules form: title and note on the left third, everything else
+   (fields, notices, error summary, actions) on the right two thirds; a hairline between groups. */
+@container (min-width: 760px) {
+  .formCuerpo {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    column-gap: var(--space-8);
+    row-gap: var(--space-6);
+    max-width: none;
+  }
+  .formCuerpo > * {
+    grid-column: 2;
+    max-width: 640px;
+  }
+  .formCuerpo > .group {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-rows: auto 1fr;
+    column-gap: var(--space-8);
+    max-width: none;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--line);
+  }
+  .formCuerpo > .group:first-child,
+  .formCuerpo > :not(.group) + .group {
+    padding-top: 0;
+    border-top: 0;
+  }
+  .formCuerpo > .group > .legend {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .formCuerpo > .group > .groupNote {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+  }
+  .formCuerpo > .group > .stack,
+  .formCuerpo > .group > .row {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin-top: 0;
+  }
+  .formCuerpo > .group > .stack {
+    max-width: 640px;
+  }
+  .formCuerpo > .formActions {
+    padding-top: var(--space-2);
+  }
 }
 .stack {
   display: grid;

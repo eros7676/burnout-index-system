@@ -2,11 +2,10 @@
   display: grid;
   gap: var(--space-5);
 }
-/* One column of form, as wide as its fields need (R41). */
+/* The form and what it acts on; Form (form.tsx) sets the columns and the field widths (R41, R47). */
 .formulario {
   display: grid;
   gap: var(--space-8);
-  max-width: 560px;
 }
 .resumen {
   padding: var(--space-3) var(--space-4);

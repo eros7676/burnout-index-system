@@ -36,7 +36,7 @@ function Envoltorio({
 }: Campo & { id: string; children: ReactNode }) {
   return (
     <div className={s.field} data-ancho={ancho}>
-      <label className={s.label} htmlFor={id}>
+      <label className={`${s.label} ${s.formLabel}`} htmlFor={id}>
         {etiqueta}
         {opcional && <span className={s.optional}> (opcional)</span>}
       </label>
@@ -161,19 +161,23 @@ export function CheckboxField({
   );
 }
 
-/** One column of fields with the page's spacing; groups go in FormGroup. */
+/**
+ * The fields of a create or edit page. In a wide container it takes the annotated layout of the
+ * rules form (R47): each group's title and description on the left third, its fields, notices and
+ * actions on the right; in a narrow one, a single column.
+ */
 export function Form({
   children,
   ...props
 }: FormHTMLAttributes<HTMLFormElement> & { children: ReactNode }) {
   return (
     <form className={s.form} noValidate {...props}>
-      {children}
+      <div className={s.formCuerpo}>{children}</div>
     </form>
   );
 }
 
-/** Related fields under one heading; `fila` puts short related fields on one row (Desde–Hasta). */
+/** Related fields under one title; `fila` puts short related fields on one row (Desde–Hasta). */
 export function FormGroup({
   titulo,
   descripcion,
@@ -188,7 +192,7 @@ export function FormGroup({
   return (
     <fieldset className={s.group}>
       {titulo && <legend className={s.legend}>{titulo}</legend>}
-      {descripcion && <p className={s.help}>{descripcion}</p>}
+      {descripcion && <p className={s.groupNote}>{descripcion}</p>}
       <div className={fila ? s.row : s.stack}>{children}</div>
     </fieldset>
   );
