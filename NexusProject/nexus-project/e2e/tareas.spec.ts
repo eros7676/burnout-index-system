@@ -32,15 +32,17 @@ async function abrir(page: Page, usuario: Parameters<typeof demo>[1], perfil?: P
   return tareasMocks(page, perfil);
 }
 
-test("Ficha: las tareas de una semana se abren en la misma ficha, sin leerlas hasta que se piden", async ({
+test("Ficha: las tareas de la última semana están al abrir la ficha, y cada semana se abre ahí mismo", async ({
   page,
 }) => {
   const pedidos = await abrir(page, "demo-rrhh");
   await page.goto(FICHA);
 
-  // Opening the person reads no task rows: RRHH reads them on demand, and each read is recorded.
-  await expect(seccion(page)).toContainText("Elija una semana para ver sus tareas");
-  await expect(seccion(page).getByRole("button", { name: "Ver las tareas de 12–18 oct 2026" })).toBeVisible();
+  // Opening the person shows the newest week's tasks, with no click: one read, recorded per person.
+  await expect(filas(page)).toHaveCount(11);
+  await expect(page.getByRole("combobox", { name: "Semana" })).toHaveValue("2026-10-12");
+  await expect(semanas(page).getByRole("row", { name: /12–18 oct 2026/ })).toHaveAttribute("aria-current", "true");
+  expect(lecturas(pedidos)).toHaveLength(1);
   // The newest week says how many tasks were overdue and leads straight to them.
   await expect(page.getByRole("region", { name: "Última semana" })).toContainText(
     /Tareas vencidas\s*5\s*de 10 tareas; la más antigua, 17 días de atraso\./,
@@ -48,8 +50,8 @@ test("Ficha: las tareas de una semana se abren en la misma ficha, sin leerlas ha
   await expect(page.getByRole("link", { name: "Ver cuáles" })).toHaveAttribute("href", `${SEMANA}&estado=VENCIDA`);
   // The weekly table carries the counts and one way in per week.
   await expect(await celda(semanas(page), "12–18 oct 2026", "Tareas")).toHaveText("7 pendientes de 10, 5 vencidas");
-  expect(lecturas(pedidos)).toHaveLength(0);
 
+  // Its own «Ver tareas» names the week in the URL; the rows on screen are not read again.
   await semanas(page).getByRole("link", { name: "Ver tareas de 12–18 oct 2026" }).click();
   await expect(page).toHaveURL(/\/employees\/EMP-001\?semana=2026-10-12$/);
   await expect(semanas(page).getByRole("row", { name: /12–18 oct 2026/ })).toHaveAttribute("aria-current", "true");

@@ -81,21 +81,6 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
   const router = useRouter();
   const buscar = useSearchParams();
   const elegida = buscar.get("semana");
-  const vistaTareas: VistaTareas | null = elegida
-    ? {
-        employeeId,
-        periodStart: elegida,
-        recordId: buscar.get("recordId") ?? undefined,
-        estado: estadoDe(buscar.get("estado")),
-        page: paginaDe(buscar.get("page")),
-        tarea: buscar.get("tarea") ?? undefined,
-      }
-    : null;
-  const irATareas = (cambio: Partial<VistaTareas>) =>
-    router.replace(
-      hrefTareasSemana({ employeeId, periodStart: elegida ?? "", ...vistaTareas, ...cambio }),
-      { scroll: false },
-    );
   const pagina = useRef<HTMLDivElement>(null);
   const caja = useRef<HTMLDivElement>(null);
   const filas = useRef<HTMLTableSectionElement>(null);
@@ -136,6 +121,23 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
     };
   }, [respuesta]);
   useRowsEnter(filas, vista?.recientes);
+  // The week whose tasks show: the one in the URL, else the newest, so the tasks are there on arrival.
+  const semanaTareas = elegida ?? vista?.actual?.periodStart ?? null;
+  const vistaTareas: VistaTareas | null = semanaTareas
+    ? {
+        employeeId,
+        periodStart: semanaTareas,
+        recordId: buscar.get("recordId") ?? undefined,
+        estado: estadoDe(buscar.get("estado")),
+        page: paginaDe(buscar.get("page")),
+        tarea: buscar.get("tarea") ?? undefined,
+      }
+    : null;
+  const irATareas = (cambio: Partial<VistaTareas>) =>
+    router.replace(
+      hrefTareasSemana({ employeeId, periodStart: semanaTareas ?? "", ...vistaTareas, ...cambio }),
+      { scroll: false },
+    );
   // Arriving with a week chosen, or choosing one in the table, brings its tasks into view.
   const conDatos = respuesta !== null;
   useEffect(() => {
@@ -436,8 +438,8 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                   return (
                     <tr
                       key={w.periodStart}
-                      aria-current={w.periodStart === elegida ? "true" : undefined}
-                      className={w.periodStart === elegida ? s.elegida : undefined}
+                      aria-current={w.periodStart === semanaTareas ? "true" : undefined}
+                      className={w.periodStart === semanaTareas ? s.elegida : undefined}
                     >
                       <th scope="row">{periodo}</th>
                       <td className={tabla.centro}>
