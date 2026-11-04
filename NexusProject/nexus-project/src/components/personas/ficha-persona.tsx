@@ -290,10 +290,11 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
           aside={
             reglas.estado === "listo" ? (
               <span>
-                Líneas en {entero(reglas.datos.vigente.mediumLimit)} y{" "}
+                Bandas en {entero(reglas.datos.vigente.mediumLimit)} y{" "}
                 {entero(reglas.datos.vigente.highLimit)}: límites de Medio y
-                Alto. Superar el límite de Alto una sola semana queda en Medio;
-                pasa a Alto si se repite en dos semanas seguidas.
+                Alto. Un punto hueco superó el límite de Alto sin repetirlo la
+                semana anterior, por eso queda en Medio. Pase el cursor o use
+                las flechas para ver cada semana.
               </span>
             ) : undefined
           }

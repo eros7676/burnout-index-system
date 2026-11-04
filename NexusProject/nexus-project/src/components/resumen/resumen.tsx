@@ -405,8 +405,9 @@ export function Resumen() {
             ) : (
               <div className={s.trend}>
                 <p className={s.note}>
-                  Personas por nivel, semana a semana. La semana elegida se
-                  muestra en color pleno y las demás, atenuadas.
+                  Personas por nivel, semana a semana; la semana elegida lleva
+                  su cantidad en Alto. Pase el cursor o use las flechas para ver
+                  cada semana.
                 </p>
                 <WeekColumns semanas={vista.evolucion} actual={semana} />
               </div>

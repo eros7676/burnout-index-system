@@ -287,6 +287,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                             valor={f.valor}
                             umbral={f.umbral}
                             excedido={f.excedido}
+                            puntaje={f.score}
                           />
                         </td>
                         <td className={tabla.num}>{decimal(f.score)}</td>

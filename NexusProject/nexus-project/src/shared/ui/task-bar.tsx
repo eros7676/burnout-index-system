@@ -1,5 +1,7 @@
+"use client";
 import { entero } from "../formato";
 import s from "./task-bar.module.css";
+import { type Lectura, useLectura } from "./tip";
 
 /** A week's task counts as imported: vencidas ⊆ pendientes ⊆ activas. */
 export type Tareas = { activas: number; pendientes: number; vencidas: number };
@@ -26,28 +28,53 @@ export function TaskBar({
   escala = activas,
 }: Tareas & { escala?: number }) {
   const partes = [
-    { clave: "vencidas", valor: vencidas },
-    { clave: "pendientes", valor: pendientes - vencidas },
-    { clave: "completadas", valor: activas - pendientes },
-  ];
+    { clave: "vencidas", nombre: "Vencidas", valor: vencidas, color: "var(--ink)" },
+    {
+      clave: "pendientes",
+      nombre: "Pendientes sin vencer",
+      valor: pendientes - vencidas,
+      color: "var(--ink-3)",
+    },
+    {
+      clave: "completadas",
+      nombre: "Completadas",
+      valor: activas - pendientes,
+      color: "var(--chart-quiet)",
+    },
+  ].filter((p) => p.valor > 0);
+  const lectura = (i: number): Lectura => ({
+    titulo: partes[i].nombre,
+    filas: [
+      {
+        etiqueta: `de ${contar(activas, "tarea", "tareas")}`,
+        valor: entero(partes[i].valor),
+        clave: partes[i].color,
+      },
+    ],
+  });
+  const { contenedor, marca, burbuja, vivo } = useLectura(partes.length, lectura);
   return (
     <span className={s.tasks}>
-      <span className={s.frame} aria-hidden="true">
+      <span className={s.frame}>
         {activas > 0 && (
           <span
+            {...contenedor}
             className={s.bar}
+            role="group"
+            aria-label={`Tareas: ${partes.map((p) => `${p.nombre} ${p.valor}`).join(", ")}.`}
             style={{ width: `${(activas / Math.max(escala, activas)) * 100}%` }}
           >
-            {partes.map(({ clave, valor }) =>
-              valor > 0 ? (
-                <span
-                  key={clave}
-                  className={s.part}
-                  data-parte={clave}
-                  style={{ flexGrow: valor }}
-                />
-              ) : null,
-            )}
+            {partes.map(({ clave, valor }, i) => (
+              <span
+                key={clave}
+                className={s.part}
+                data-parte={clave}
+                style={{ flexGrow: valor }}
+                {...marca(i)}
+              />
+            ))}
+            {burbuja}
+            {vivo}
           </span>
         )}
       </span>

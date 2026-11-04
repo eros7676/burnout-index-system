@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { type Lectura, useLectura } from "@/shared/ui/tip";
 import { useRef, useState } from "react";
 import { useConsulta } from "@/client/use-consulta";
 import type { Nivel } from "@/shared/contracts";
@@ -40,7 +41,10 @@ import s from "./equipos.module.css";
 
 const NIVELES: Nivel[] = ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"];
 
-/** People in Alto per week, oldest → newest; the chosen week stands out. */
+/**
+ * People in Alto per week, oldest → newest, as a stat tile's trend: past weeks in the quiet
+ * neutral, the chosen week in Alto's colour. Each week has a readout (hover, arrow keys, tap).
+ */
 export function TendenciaAlto({
   puntos,
   maximo,
@@ -50,20 +54,33 @@ export function TendenciaAlto({
   maximo: number;
   actual: string;
 }) {
+  const lectura = (i: number): Lectura => ({
+    titulo: textoSemana(puntos[i].periodStart, finDeSemana(puntos[i].periodStart)),
+    filas: [
+      {
+        etiqueta: puntos[i].alto === 1 ? "persona en Alto" : "personas en Alto",
+        valor: String(puntos[i].alto),
+        clave: "var(--level-alto)",
+      },
+    ],
+    nota: `Escala común a todos los equipos: hasta ${maximo}.`,
+  });
+  const { contenedor, marca, burbuja, vivo } = useLectura(puntos.length, lectura);
   return (
     <span
+      {...contenedor}
       className={s.trend}
-      role="img"
+      role="group"
       aria-label={`En Alto por semana: ${puntos
         .map((p) => `${diaCorto(p.periodStart)}, ${p.alto}`)
         .join("; ")}.`}
     >
-      {puntos.map((p) => (
+      {puntos.map((p, i) => (
         <span
           key={p.periodStart}
           className={s.trendWeek}
           data-actual={p.periodStart === actual || undefined}
-          title={`${textoSemana(p.periodStart, finDeSemana(p.periodStart))}: ${p.alto} en Alto`}
+          {...marca(i)}
         >
           {p.alto > 0 && (
             <span
@@ -73,6 +90,8 @@ export function TendenciaAlto({
           )}
         </span>
       ))}
+      {burbuja}
+      {vivo}
     </span>
   );
 }

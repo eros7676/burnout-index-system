@@ -1,0 +1,90 @@
+/* Two columns (axis, plot) and two rows (plot, week labels). Every weekly chart shares the
+   plot height (--plot-h, R39). */
+.plot {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  grid-template-rows: var(--plot-h) auto;
+  column-gap: var(--space-2);
+  row-gap: var(--space-2);
+  border-radius: var(--radius-xs);
+}
+.ejeY {
+  position: relative;
+}
+.tick {
+  position: absolute;
+  right: 0;
+  transform: translateY(50%);
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.area {
+  position: relative;
+}
+/* Recessive references: hairline, solid, one step off the surface. */
+.grilla {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1px solid var(--line);
+}
+.grilla[data-base] {
+  border-top-color: var(--line-strong);
+}
+/* Level bands: a wash, never a block; they say where the limits are, not that something is wrong. */
+.banda {
+  position: absolute;
+  left: 0;
+  right: 0;
+  opacity: 0.45;
+}
+.banda[data-tono="bajo"] {
+  background: var(--level-bajo-soft);
+}
+.banda[data-tono="medio"] {
+  background: var(--level-medio-soft);
+}
+.banda[data-tono="alto"] {
+  background: var(--level-alto-soft);
+}
+.semanas {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--semanas), minmax(0, 1fr));
+}
+/* The slot is the hit target; the active one lifts with a faint wash and a hairline. */
+.semana {
+  position: relative;
+  height: 100%;
+}
+.semana[data-activo] {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+.ejeX {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--semanas), minmax(0, 1fr));
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  text-align: center;
+  white-space: nowrap;
+}
+.ejeX [data-actual] {
+  color: var(--ink);
+  font-weight: var(--weight-strong);
+}
+/* A narrow plot shows every second week label (the latest always). */
+@container (max-width: 520px) {
+  .ejeX span:nth-last-child(even) {
+    visibility: hidden;
+  }
+}
+.plot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}

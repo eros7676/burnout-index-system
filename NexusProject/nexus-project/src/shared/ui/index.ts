@@ -1,7 +1,8 @@
 // The UI kit (DESIGN.md › Components). Screens compose these; new patterns are added here first.
 export { Button, ButtonLink } from "./button";
 export { PageHeader, Section, Figure, Columns, Stack } from "./layout";
-export { LevelTag, LevelMark, WeekStrip, type CeldaSemana } from "./level";
+export { LevelTag, LevelMark, WeekStrip, REGLA_NIVEL, type CeldaSemana } from "./level";
+export { Tip, useLectura, type Lectura } from "./tip";
 export { StatusTag } from "./status-tag";
 export {
   DistributionBar,

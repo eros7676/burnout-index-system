@@ -77,15 +77,22 @@
   width: 10px;
   height: 100%;
 }
+.trend:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+/* Past weeks recede in the quiet neutral; the chosen week carries Alto's colour. */
 .trendBar {
   width: 100%;
   min-height: 3px;
   border-radius: var(--radius-2xs) var(--radius-2xs) 0 0;
-  background: var(--level-alto);
-  opacity: var(--quiet);
+  background: var(--chart-quiet);
 }
 .trendWeek[data-actual] .trendBar {
-  opacity: 1;
+  background: var(--level-alto);
+}
+.trendWeek[data-activo] {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
 /* The level key keeps its counts next to the labels instead of at the far edge of a wide card; the

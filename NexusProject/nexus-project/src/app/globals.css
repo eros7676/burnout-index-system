@@ -23,18 +23,26 @@
   --strip-control: #263241;
   --on-strip-error: #ffd2cc;
 
-  /* Level scale: sequential from calm to urgent; never shown without its word. */
-  --level-bajo: #3f7559;
+  /* Level scale: sequential from calm to urgent; never shown without its word. The fill
+     (marks, bars) passes the palette validator against the surface (owner, 2026-11-04:
+     Medio and Alto were indistinguishable with deuteranopia); -ink is the same hue dark
+     enough for text on its -soft background (≥ 4.5:1). */
+  --level-bajo: #1a8c63;
+  --level-bajo-ink: #146b4b;
   --level-bajo-soft: #e3efe8;
-  --level-medio: #9a5b0b;
+  --level-medio: #bf7f0c;
+  --level-medio-ink: #8a5a00;
   --level-medio-soft: #fbefd9;
-  --level-alto: #b42318;
+  --level-alto: #a3192b;
+  --level-alto-ink: #a3192b;
   --level-alto-soft: #fce7e4;
-  /* Calm and middle weeks recede on the strip: the same hue, mixed toward the surface. */
-  --level-bajo-mute: color-mix(in srgb, var(--level-bajo) 55%, var(--surface));
-  --level-medio-mute: color-mix(in srgb, var(--level-medio) 85%, var(--surface));
   --level-incompleto: #5c6875;
   --level-incompleto-soft: #eceef1;
+  /* The quiet neutral of a chart: the part that is not the point (completed tasks, regular
+     hours). Its value is always in words beside it or in the readout. */
+  --chart-quiet: #aab3bc;
+  /* Secondary text inside a tooltip bubble (on --ink): 4.5:1 or more. */
+  --tip-ink-2: #c3cad3;
 
   /* State colors (errors, completed actions, simulated or pending): hues of their
      own, never the level hues (R27), and always paired with an icon. */
