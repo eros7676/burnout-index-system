@@ -333,10 +333,13 @@ test("Auditoría: el período usa días de Buenos Aires y un rango invertido no 
   await page.getByLabel("Desde", { exact: true }).fill("2026-10-10");
   await page.getByLabel("Hasta", { exact: true }).fill("2026-10-12");
   await expect(page.getByLabel("Período", { exact: true })).toHaveValue("personalizado");
+  // Each fill is its own query; wait for the one that carries both ends.
   await expect
-    .poll(() => pedidos.at(-1)!.searchParams.get("desde"))
-    .toBe("2026-10-10T03:00:00.000Z");
-  expect(pedidos.at(-1)!.searchParams.get("hasta")).toBe("2026-10-13T02:59:59.999Z");
+    .poll(() => {
+      const ultimo = pedidos.at(-1)!.searchParams;
+      return [ultimo.get("desde"), ultimo.get("hasta")];
+    })
+    .toEqual(["2026-10-10T03:00:00.000Z", "2026-10-13T02:59:59.999Z"]);
 
   const consultas = pedidos.length;
   await page.getByLabel("Desde", { exact: true }).fill("2026-10-20");
