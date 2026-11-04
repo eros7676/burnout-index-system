@@ -46,10 +46,7 @@ export async function construirInformePublicado(
     empleado,
     factores: factoresInforme(evaluacion),
     explicacion: explicarInforme(evaluacion),
-    recomendaciones: recomendacionesDe(
-      evaluacion.ranking,
-      evaluacion.excedidas,
-    ),
+    recomendaciones: recomendacionesDe(evaluacion),
     alerta,
   };
 }

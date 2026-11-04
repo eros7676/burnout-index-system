@@ -1,5 +1,5 @@
 import type { Factor } from "../../shared/contracts";
-import { recomendacionesDe } from "./recomendaciones";
+import { recomendacionesDe, type EntradaRecomendaciones } from "./recomendaciones";
 
 type TipoPersona = "TECNICO" | "TEAM_LEAD" | "GERENCIA";
 
@@ -59,12 +59,12 @@ export function causasDe(
   return ranking.filter((codigo) => excedido.has(codigo));
 }
 
-export function contenidoAlerta(evaluacion: {
-  ranking: readonly Factor[];
-  excedidas: readonly Factor[];
-}): { causas: Factor[]; sugerencias: string[] } {
+export function contenidoAlerta(evaluacion: EntradaRecomendaciones): {
+  causas: Factor[];
+  sugerencias: string[];
+} {
   return {
     causas: causasDe(evaluacion.ranking, evaluacion.excedidas),
-    sugerencias: recomendacionesDe(evaluacion.ranking, evaluacion.excedidas),
+    sugerencias: recomendacionesDe(evaluacion),
   };
 }

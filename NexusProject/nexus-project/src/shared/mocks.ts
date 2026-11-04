@@ -25,11 +25,12 @@ import { MOCKS_EXPORTACIONES } from "./contratos/exportaciones";
 /** Datos fijos para desarrollar consumidores. No son seed, motor ni API real. */
 const createdAt = "2026-10-19T12:00:00.000Z";
 const factores = ["HE", "DS", "CT", "VP"] as const;
+// What recomendacionesDe writes for evaluacionAltaMock (tests/informes.test.ts holds the same lines).
 const recomendaciones = [
-  "Revisar las horas extra.",
-  "Revisar los descansos.",
-  "Revisar pendientes y vencimientos.",
-  "Planificar el saldo de vacaciones.",
+  "Horas extra: 16 h extra en la semana, el doble del umbral (8 h); también lo superó la semana anterior (16 h). Evitar asignaciones adicionales y revisar qué tareas se pueden redistribuir.",
+  "Días consecutivos sin descanso: 16 días seguidos sin descanso, más del doble del umbral (6 días); también lo superó la semana anterior (9 días). Evaluar un día de descanso en los próximos días.",
+  "Carga de tareas: 7 tareas pendientes de 10 al cierre, 5 vencidas; la semana anterior, 7 de 10. Revisar la asignación y los vencimientos: reasignar tareas o acordar nuevas fechas.",
+  "Vacaciones pendientes: 14 días de vacaciones pendientes, 4 días por encima del umbral (10 días); las últimas vacaciones fueron hace 127 días. Evaluar un descanso programado.",
 ];
 
 export const reglasMock: ConfiguracionIndice = {

@@ -199,7 +199,7 @@ test("MySQL T11: alerta interna única para ALTO vigente", async (t) => {
         assert.deepEqual(informe.alerta?.causas, ["HE", "DS", "CT", "VP"]);
         assert.deepEqual(
           informe.alerta?.sugerencias,
-          recomendacionesDe(alta.ranking, alta.excedidas),
+          recomendacionesDe(alta),
         );
 
         const repetida = await crearAlertaSiCorresponde(db, alta.evaluationId);

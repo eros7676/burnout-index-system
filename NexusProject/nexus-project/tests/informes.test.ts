@@ -4,6 +4,7 @@ import type { Evaluacion, Factor } from "../src/shared/contracts";
 import {
   evaluacionAltaMock,
   evaluacionIncompletaMock,
+  informeMock,
 } from "../src/shared/mocks";
 import {
   explicarInforme,
@@ -104,11 +105,60 @@ test("los factores siguen el ranking y los umbrales del snapshot", () => {
 });
 
 test("las recomendaciones siguen el ranking de los factores excedidos", () => {
-  const textos = recomendacionesDe(["VP", "HE", "DS", "CT"], ["HE", "VP"]);
+  const textos = recomendacionesDe({
+    ...evaluacionAltaMock,
+    ranking: ["VP", "HE", "DS", "CT"],
+    excedidas: ["HE", "VP"],
+  });
   assert.equal(textos.length, 2);
-  assert.match(textos[0], /vacaciones/);
-  assert.match(textos[1], /horas extra/);
-  assert.deepEqual(recomendacionesDe(["HE", "DS", "CT", "VP"], []), [
+  assert.match(textos[0], /^Vacaciones pendientes: /);
+  assert.match(textos[1], /^Horas extra: /);
+  assert.deepEqual(recomendacionesDe({ ...evaluacionAltaMock, excedidas: [] }), [
     "Ningún factor supera su umbral.",
   ]);
+});
+
+test("cada recomendación dice el dato de la semana, cuánto supera el umbral y la semana anterior", () => {
+  // Week: HE 16 h, DS 16 days, 7 of 10 pending with 5 overdue, VP 14 days, last leave 127 days ago.
+  // Week before: HE 16 h, DS 9 days, 7 of 10. Thresholds: HE 8, DS 6, VP 10.
+  const [he, ds, ct, vp] = recomendacionesDe({ ...evaluacionAltaMock, ranking: ["HE", "DS", "CT", "VP"] });
+  assert.equal(
+    he,
+    "Horas extra: 16 h extra en la semana, el doble del umbral (8 h); también lo superó la semana anterior (16 h). " +
+      "Evitar asignaciones adicionales y revisar qué tareas se pueden redistribuir.",
+  );
+  assert.equal(
+    ds,
+    "Días consecutivos sin descanso: 16 días seguidos sin descanso, más del doble del umbral (6 días); " +
+      "también lo superó la semana anterior (9 días). Evaluar un día de descanso en los próximos días.",
+  );
+  assert.equal(
+    ct,
+    "Carga de tareas: 7 tareas pendientes de 10 al cierre, 5 vencidas; la semana anterior, 7 de 10. " +
+      "Revisar la asignación y los vencimientos: reasignar tareas o acordar nuevas fechas.",
+  );
+  assert.equal(
+    vp,
+    "Vacaciones pendientes: 14 días de vacaciones pendientes, 4 días por encima del umbral (10 días); " +
+      "las últimas vacaciones fueron hace 127 días. Evaluar un descanso programado.",
+  );
+  // The consumers' mock says what the server says for the same evaluation.
+  assert.deepEqual(informeMock.recomendaciones, recomendacionesDe(evaluacionAltaMock));
+});
+
+test("sin semana anterior no la menciona, y una semana anterior dentro del umbral lo dice", () => {
+  const { actual, anterior } = evaluacionAltaMock.snapshot;
+  const base = { ...evaluacionAltaMock, ranking: ["HE", "CT"] as Factor[], excedidas: ["HE", "CT"] as Factor[] };
+  const sola = recomendacionesDe({ ...base, snapshot: { ...base.snapshot, anterior: null } });
+  assert.doesNotMatch(sola.join(" "), /semana anterior/);
+  const tranquila = recomendacionesDe({
+    ...base,
+    snapshot: {
+      ...base.snapshot,
+      actual: { ...actual, horasExtra: 10.5, tareasVencidas: 0 },
+      anterior: anterior && { ...anterior, horasExtra: 3 },
+    },
+  });
+  assert.match(tranquila[0], /10,5 h extra en la semana, 2,5 h por encima del umbral \(8 h\); la semana anterior estaba dentro del umbral \(3 h\)\./);
+  assert.match(tranquila[1], /ninguna vencida; .*Revisar la asignación: priorizar o redistribuir las pendientes\.$/);
 });
