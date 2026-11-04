@@ -35,6 +35,8 @@ export async function consultarResultados(
           INCOMPLETO: 0,
         };
         for (const f of vigentes) conteo[f.nivel!]++;
+        const excedidas: ResumenDTO["excedidas"] = { HE: 0, DS: 0, CT: 0, VP: 0 };
+        for (const r of resultados) for (const factor of r.excedidas) excedidas[factor]++;
         const porcentajes = { ...conteo };
         for (const key of Object.keys(conteo) as (keyof typeof conteo)[])
           porcentajes[key] = vigentes.length
@@ -47,6 +49,7 @@ export async function consultarResultados(
           noProcesados: resultados.length - vigentes.length,
           promedioIndice: promedioIndices(vigentes.map((f) => f.indice!)),
           muestraPromedio: vigentes.length,
+          excedidas,
         };
         return resumen;
       }

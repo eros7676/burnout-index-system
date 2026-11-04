@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import type { FilaTablero } from "../../shared/contracts";
+import type { Factor, FilaTablero } from "../../shared/contracts";
 import type { Consulta } from "../services/filtros-consultas";
 import {
   ENGINE_VERSION,
@@ -7,6 +7,7 @@ import {
 } from "../services/huella-evaluacion";
 import { registroDesdeDb, reglasDesdeDb } from "./evaluaciones";
 import { fechaDesdeDb, fechaParaDb } from "./fechas";
+import { decodificarJsonExacto } from "./json-exacto";
 import { leerAlertaEvaluacion } from "./informes";
 
 /** Lecturas por lote dentro de la misma instantánea. No evalúa ni modifica jobs/alertas. */
@@ -120,7 +121,10 @@ export async function leerResultados(
     const registro = p.registroVigente
       ? registroDesdeDb(p.registroVigente, par)
       : null;
-    return { fila, alerta, registro };
+    // The factors over threshold, only for a current result (an outdated one is not counted, T14).
+    const excedidas =
+      actualizado && evaluacion ? (decodificarJsonExacto(evaluacion.excedidas) as Factor[]) : [];
+    return { fila, alerta, registro, excedidas };
   });
 }
 
