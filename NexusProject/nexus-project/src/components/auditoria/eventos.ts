@@ -108,6 +108,17 @@ export function detalles(evento: EventoAuditoria) {
     }));
 }
 
+/**
+ * The line under an actor's name: their role, or, when the name already is the role ("RR. HH."),
+ * where the event came from, so the same words never show twice.
+ */
+export const complementoActor = (evento: EventoAuditoria, usuarios: Directorio) => {
+  const rol = rolActor(evento, usuarios);
+  return rol && rol !== nombreActor(evento, usuarios)
+    ? rol
+    : etiquetaOrigen(evento.origen);
+};
+
 /** The person the event is about, by name; "no disponible" when the record no longer resolves. */
 export const nombrePersona = (evento: EventoAuditoria) =>
   evento.sujetoNombre ?? "Persona no disponible";

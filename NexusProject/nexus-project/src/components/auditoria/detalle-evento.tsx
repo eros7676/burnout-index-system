@@ -63,6 +63,8 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
   const persona = evento && enlacePersona(evento);
   const pares = evento ? detalles(evento) : [];
   const operacion = datos?.operacion;
+  const actor = evento ? nombreActor(evento, usuarios) : "";
+  const rolDelActor = evento ? rolActor(evento, usuarios) : null;
 
   return (
     <div ref={pagina} className={s.page}>
@@ -96,11 +98,11 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
                     </time>
                   ),
                 },
-                { termino: "Actor", valor: nombreActor(evento, usuarios) },
-                {
-                  termino: "Rol",
-                  valor: rolActor(evento, usuarios) ?? "No registrado",
-                },
+                { termino: "Actor", valor: actor },
+                // The role is a second fact only when it adds something to the name.
+                ...(rolDelActor === actor
+                  ? []
+                  : [{ termino: "Rol", valor: rolDelActor ?? "No registrado" }]),
                 { termino: "Origen", valor: etiquetaOrigen(evento.origen) },
                 {
                   termino: "Resultado",
@@ -109,14 +111,6 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
                 {
                   termino: "Motivo",
                   valor: etiquetaMotivo(evento.motivo) ?? "No aplica",
-                },
-                {
-                  termino: "Solicitud",
-                  valor: evento.solicitudId ? (
-                    <span className="num">{evento.solicitudId}</span>
-                  ) : (
-                    "No registrada"
-                  ),
                 },
               ]}
             />
@@ -170,7 +164,7 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
           </Stack>
 
           <Stack>
-            <Section titulo="Sobre qué">
+            <Section titulo="Datos afectados">
               <KeyFacts
                 items={[
                   { termino: "Tipo", valor: recurso.tipo },
@@ -182,7 +176,7 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
                       </Link>
                     ) : (
                       (recurso.nombre ?? (
-                        <span className="num">{recurso.codigo}</span>
+                        <span className={s.codigo}>{recurso.codigo}</span>
                       ))
                     ),
                   },
@@ -217,12 +211,16 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
               <KeyFacts
                 items={[
                   {
-                    termino: "Instante (UTC)",
-                    valor: <span className="num">{evento.createdAt}</span>,
+                    termino: "Código del evento",
+                    valor: <span className={s.codigo}>{evento.eventoId}</span>,
                   },
                   {
-                    termino: "Evento",
-                    valor: <span className="num">{evento.eventoId}</span>,
+                    termino: "Código de la solicitud",
+                    valor: evento.solicitudId ? (
+                      <span className={s.codigo}>{evento.solicitudId}</span>
+                    ) : (
+                      "No registrado"
+                    ),
                   },
                   ...(operacion
                     ? [

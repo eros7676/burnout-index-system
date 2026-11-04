@@ -26,6 +26,10 @@
   justify-items: start;
   gap: var(--space-1);
 }
+/* A state, not a sentence: it never breaks across lines. */
+.sinSeguimiento {
+  white-space: nowrap;
+}
 .texto {
   max-width: 72ch;
   color: var(--ink-2);

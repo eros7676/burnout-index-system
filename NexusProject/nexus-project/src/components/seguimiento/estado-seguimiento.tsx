@@ -28,7 +28,9 @@ export function ResumenSeguimientoCelda({
   resumen: ResumenSeguimiento | null;
   usuarioId?: string;
 }) {
-  if (!resumen) return <span className={tabla.sub}>Sin seguimiento</span>;
+  if (!resumen) return (
+      <span className={`${tabla.sub} ${s.sinSeguimiento}`}>Sin seguimiento</span>
+    );
   const responsable =
     resumen.asignadoA.userId === usuarioId
       ? `${resumen.asignadoA.nombre} (usted)`

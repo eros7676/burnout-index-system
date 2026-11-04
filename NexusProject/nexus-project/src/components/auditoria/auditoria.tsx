@@ -34,17 +34,16 @@ import { auditoriaApi, type ResultadoExportacion } from "./cliente";
 import {
   cantidadEventos,
   chipsDeCodigos,
+  complementoActor,
   elemento,
   enlacePersona,
   enlaceRecurso,
   etiquetaAccion,
   etiquetaMotivo,
-  etiquetaOrigen,
   fechaHora,
   gruposDeAcciones,
   nombreActor,
   nombrePersona,
-  rolActor,
 } from "./eventos";
 import {
   FILTROS_INICIALES,
@@ -181,14 +180,14 @@ export function Auditoria() {
               aria-busy={exportando === "csv"}
               onClick={() => exportar("csv")}
             >
-              Exportar CSV
+              Exportar a CSV
             </Button>
             <Button
               disabled={exportando !== null || invertido}
               aria-busy={exportando === "json"}
               onClick={() => exportar("json")}
             >
-              Exportar JSON
+              Exportar a JSON
             </Button>
           </>
         }
@@ -429,7 +428,6 @@ export function Auditoria() {
                   const recurso = elemento(evento);
                   const enlace = enlaceRecurso(evento);
                   const persona = enlacePersona(evento);
-                  const rol = rolActor(evento, usuarios);
                   return (
                     <tr key={evento.eventoId}>
                       <th scope="row">
@@ -445,7 +443,7 @@ export function Auditoria() {
                       <td>
                         {nombreActor(evento, usuarios)}
                         <span className={tabla.sub}>
-                          {rol ?? etiquetaOrigen(evento.origen)}
+                          {complementoActor(evento, usuarios)}
                         </span>
                       </td>
                       <td>{etiquetaAccion(evento)}</td>
