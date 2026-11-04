@@ -12,7 +12,12 @@ export type UsuarioDemoDTO = {
   rol: 'RRHH' | 'GERENCIA' | 'TEAM_LEAD' | 'EMPLEADO';
   employeeId: string | null; teamId: string | null;
 };
-export type SesionDemoDTO = { usuario: UsuarioDemoDTO | null; usuarios: readonly UsuarioDemoDTO[] };
+export type SesionDemoDTO = {
+  usuario: UsuarioDemoDTO | null;
+  usuarios: readonly UsuarioDemoDTO[];
+  /** How an alert's notice leaves: real mail when the server has SMTP configured, simulated otherwise. */
+  correo: "REAL" | "SIMULADO";
+};
 export type ResultadoAuditoria = 'EXITO' | 'FALLO' | 'DENEGADO';
 export type OrigenAuditoria = 'WEB' | 'CLI' | 'SISTEMA';
 /** One audit event as the screens and the export read it (audit-trail §2.1). */
@@ -151,7 +156,7 @@ export type Alerta = {
   causas: Factor[];
   sugerencias: string[];
   vigencia: 'ACTIVA' | 'SUPERADA';
-  canal: 'INTERNO' | 'SIMULADO';
+  canal: 'INTERNO' | 'SIMULADO' | 'CORREO';
   estadoEnvio: 'NO_APLICA' | 'PENDIENTE' | 'ENVIADO'
     | 'FALLIDO' | 'SIN_DESTINATARIO';
   createdAt: string;
@@ -199,6 +204,8 @@ export type IntentoNotificacion = {
   numero: number;
   destinatarioId: string | null;
   resultado: ResultadoSimulado;
+  /** SIMULADO, or CORREO when the attempt sent (or tried to send) real mail. */
+  canal: "SIMULADO" | "CORREO";
   estado: "PENDIENTE" | "ENVIADO" | "FALLIDO" | "SIN_DESTINATARIO";
   detalle: string | null;
   createdAt: string;

@@ -104,6 +104,7 @@ enum MotivoDestinatario {
 enum CanalAlerta {
   INTERNO
   SIMULADO
+  CORREO
 }
 
 enum EstadoEnvio {
@@ -459,6 +460,7 @@ model IntentoNotificacion {
   numero         Int
   destinatarioId String?                   @db.VarChar(64)
   resultado      ResultadoSimulado
+  canal          CanalAlerta               @default(SIMULADO)
   estado         EstadoIntentoNotificacion @default(PENDIENTE)
   detalle        String?                   @db.VarChar(255)
   createdAt      DateTime                  @default(now()) @db.DateTime(3)

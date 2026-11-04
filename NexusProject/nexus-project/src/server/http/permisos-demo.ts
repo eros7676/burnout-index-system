@@ -6,7 +6,8 @@ import {
 } from "node:crypto";
 import type { PrismaClient } from "@prisma/client";
 import type { MotivoAuditoria } from "../../shared/auditoria-catalogo";
-import type { UsuarioDemoDTO } from "../../shared/contracts";
+import type { SesionDemoDTO, UsuarioDemoDTO } from "../../shared/contracts";
+import { configCorreo } from "../correo";
 import { tienePermiso, type Permiso, type Rol } from "../../shared/permisos";
 import {
   registrarEvento,
@@ -269,7 +270,8 @@ export async function sesionDemo(db: PrismaClient, request: Request) {
       {
         usuario: usuarios.find((u) => u.userId === userId) ?? null,
         usuarios,
-      },
+        correo: configCorreo() ? "REAL" : "SIMULADO",
+      } satisfies SesionDemoDTO,
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e) {
