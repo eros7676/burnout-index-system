@@ -65,34 +65,29 @@
 /* Alto per week: eight small columns on one baseline. */
 .trend {
   display: inline-flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: var(--control-h);
-  border-bottom: 1px solid var(--line-strong);
+  gap: 2px;
   vertical-align: middle;
 }
 .trendWeek {
-  display: flex;
-  align-items: flex-end;
-  width: 10px;
-  height: 100%;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-2xs);
+  background: color-mix(in srgb, var(--level-alto) var(--intensidad), var(--surface));
+}
+.trendWeek[data-cero] {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 .trend:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
-/* Past weeks recede in the quiet neutral; the chosen week carries Alto's colour. */
-.trendBar {
-  width: 100%;
-  min-height: 3px;
-  border-radius: var(--radius-2xs) var(--radius-2xs) 0 0;
-  background: var(--chart-quiet);
-}
-.trendWeek[data-actual] .trendBar {
-  background: var(--level-alto);
-}
+/* The chosen week and the active readout: an ink ring outside a surface gap. */
+.trendWeek[data-actual],
 .trendWeek[data-activo] {
-  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  box-shadow:
+    0 0 0 1px var(--surface),
+    0 0 0 2px var(--ink);
 }
 
 /* The level key keeps its counts next to the labels instead of at the far edge of a wide card; the

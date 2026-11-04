@@ -3,18 +3,38 @@ import { useMemo, useRef } from "react";
 import { tableroApi } from "@/client/tablero-api";
 import { useConsulta } from "@/client/use-consulta";
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
+import { semana as textoSemana } from "@/shared/formato";
 import {
   Empty,
   ErrorBox,
   PageHeader,
   Section,
   SkeletonRows,
+  TrendLine,
 } from "@/shared/ui";
-import { HoursColumns } from "@/shared/ui/hours-columns";
 import { WeekDataTable } from "@/shared/ui/week-data-table";
 import { useSesion } from "../shell/sesion";
 import { TareasPropias } from "../tareas/tareas-propias";
 import s from "./mis-datos.module.css";
+
+// Hours are not rounded: a loaded 7,5 h stays 7,5 h.
+const HORAS = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
+const horas = (valor: number) => `${HORAS.format(valor)} h`;
+
+/** The finding first: the latest week's extra hours and how many loaded weeks had any. */
+function hallazgoHoras(
+  semanas: { periodStart: string; periodEnd: string; valor: number | null; trabajadas: number | null }[],
+) {
+  const conDato = semanas.filter((w) => w.valor !== null);
+  const ultima = conDato.at(-1);
+  if (!ultima) return "Los archivos cargados no traen sus horas.";
+  const conExtra = conDato.filter((w) => w.valor! > 0).length;
+  return `${textoSemana(ultima.periodStart, ultima.periodEnd)}: ${horas(ultima.valor!)} extra sobre ${horas(
+    ultima.trabajadas!,
+  )} trabajadas. Hubo horas extra en ${conExtra} de ${conDato.length} ${
+    conDato.length === 1 ? "semana cargada" : "semanas cargadas"
+  }.`;
+}
 
 const PARA_QUE =
   "Sus datos de trabajo, semana a semana, que se usan para revisar la carga del equipo.";
@@ -45,8 +65,9 @@ export function MisDatos() {
       [...(datos?.semanas ?? [])].reverse().map((w) => ({
         periodStart: w.periodStart,
         periodEnd: w.periodEnd,
+        // A week whose file left the hours empty has no extra hours to show either.
+        valor: w.horasTrabajadas === null ? null : w.horasExtra,
         trabajadas: w.horasTrabajadas,
-        extra: w.horasExtra,
       })),
     [datos],
   );
@@ -60,7 +81,7 @@ export function MisDatos() {
       />
 
       <Section
-        titulo="Horas por semana"
+        titulo="Horas extra por semana"
         aside={
           datos && !vacio ? (
             <span>
@@ -85,7 +106,21 @@ export function MisDatos() {
               una semana con su legajo.
             </Empty>
           ) : (
-            <HoursColumns semanas={cronologico} />
+            <div className={s.horas}>
+              <p className={s.hallazgo}>{hallazgoHoras(cronologico)}</p>
+              <TrendLine
+                nombre="Horas extra por semana"
+                etiqueta="horas extra"
+                puntos={cronologico}
+                formato={horas}
+                nota={(i) => {
+                  const trabajadas = cronologico[i].trabajadas;
+                  return trabajadas === null
+                    ? "El archivo no trae las horas de esta semana."
+                    : `${horas(trabajadas)} trabajadas en total.`;
+                }}
+              />
+            </div>
           )}
         </div>
       </Section>

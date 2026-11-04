@@ -35,32 +35,40 @@
 }
 .teamList {
   display: grid;
-  gap: var(--space-4);
 }
-/* The name and its count share a baseline. */
-.teamHead {
+/* One line per team: its name and how many of its people are in Alto, on one baseline. */
+.teamRow {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-2);
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--line);
 }
-.teamHead span {
+.teamRow:last-child {
+  border-bottom: 0;
+}
+.teamRow > span {
   color: var(--ink-2);
   font-size: var(--text-xs);
+  white-space: nowrap;
 }
-/* The level key sits in the section head, as on Equipos. */
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-4);
-}
-.key {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+.teamRow > span[data-alto] {
+  color: var(--ink);
+  font-weight: var(--weight-strong);
 }
 .trend {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
+}
+/* The finding reads before the chart. */
+.hallazgo {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--ink);
+}
+/* The small-group notice may wrap; a count never does. */
+.teamRow > .note {
+  white-space: normal;
+  text-align: right;
 }

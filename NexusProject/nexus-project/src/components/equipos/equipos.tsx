@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { type Lectura, useLectura, Tip } from "@/shared/ui/tip";
 import { DEFINICION } from "../definiciones";
-import { useRef, useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { useConsulta } from "@/client/use-consulta";
 import type { Nivel } from "@/shared/contracts";
 import type {
@@ -43,8 +43,10 @@ import s from "./equipos.module.css";
 const NIVELES: Nivel[] = ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"];
 
 /**
- * People in Alto per week, oldest → newest, as a stat tile's trend: past weeks in the quiet
- * neutral, the chosen week in Alto's colour. Each week has a readout (hover, arrow keys, tap).
+ * People in Alto per week, oldest → newest, as a heat strip: one equal cell per week, shaded from
+ * the surface (none) to Alto's full colour (the common maximum across teams), so rows compare as
+ * the person strips do. The chosen week is outlined. Each week has a readout (hover, arrow keys,
+ * tap).
  */
 export function TendenciaAlto({
   puntos,
@@ -81,15 +83,11 @@ export function TendenciaAlto({
           key={p.periodStart}
           className={s.trendWeek}
           data-actual={p.periodStart === actual || undefined}
+          data-cero={p.alto === 0 || undefined}
+          // A floor of 25 % keeps one person visible next to the surface.
+          style={{ "--intensidad": `${25 + (Math.min(p.alto, maximo) / maximo) * 75}%` } as CSSProperties}
           {...marca(i)}
-        >
-          {p.alto > 0 && (
-            <span
-              className={s.trendBar}
-              style={{ height: `${(p.alto / maximo) * 100}%` }}
-            />
-          )}
-        </span>
+        />
       ))}
       {burbuja}
       {vivo}

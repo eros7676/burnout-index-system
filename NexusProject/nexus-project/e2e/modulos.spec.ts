@@ -76,9 +76,11 @@ test("Mis datos: el empleado ve sus semanas con horas y tareas, y ningún índic
       .filter({ hasText: "5–11 oct 2026" })
       .getByRole("cell"),
   ).toHaveText(["—", "7,5 h", "1 día", "12", "8", "0", "14 días"]);
+  // The chart plots extra hours; its finding names the latest week with hours loaded.
   await expect(
-    page.getByRole("table", { name: "Horas por semana" }),
-  ).toContainText("56 h");
+    page.getByRole("table", { name: "Horas extra por semana" }),
+  ).toContainText("16 h");
+  await expect(page.getByText("12–18 oct 2026: 16 h extra sobre 56 h trabajadas.")).toBeVisible();
 
   // RF10: nothing on the page states an index or a level, not even the shell.
   await expect(menu(page).getByRole("link")).toHaveText(["Mis datos"]);

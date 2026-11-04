@@ -6,7 +6,6 @@ import { useConsulta } from "@/client/use-consulta";
 import type { Alerta, Nivel, PersonaDTO } from "@/shared/contracts";
 import {
   FACTOR,
-  NIVEL,
   decimal,
   entero,
   semana as textoSemana,
@@ -29,14 +28,13 @@ import {
   ErrorBox,
   FilterBar,
   Figure,
-  LevelMark,
   Notice,
   PageHeader,
   Section,
   SelectField,
   SkeletonRows,
   Stack,
-  WeekColumns,
+  TrendLine,
   WeekStrip,
   tabla,
   Tip,
@@ -46,7 +44,29 @@ import { BotonExportar } from "../exportaciones/boton-exportar";
 import { useSesion } from "../shell/sesion";
 import s from "./resumen.module.css";
 
-const NIVELES: Nivel[] = ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"];
+/** People with a level in a week (Incompleto has none yet). */
+const conNivel = (c: Record<Nivel, number>) => c.BAJO + c.MEDIO + c.ALTO;
+
+/** The finding first: the chosen week's people in Alto against the week before. */
+function hallazgoAlto(
+  evolucion: { periodStart: string; periodEnd: string; conteo: Record<Nivel, number> }[],
+  semana: string | undefined,
+) {
+  const i = evolucion.findIndex((e) => e.periodStart === semana);
+  const actual = evolucion[i];
+  if (!actual) return "";
+  const n = actual.conteo.ALTO;
+  const enAlto = `${entero(n)} ${n === 1 ? "persona" : "personas"} en Alto`;
+  const previa = evolucion[i - 1];
+  const fecha = textoSemana(actual.periodStart, actual.periodEnd);
+  if (!previa || !conNivel(previa.conteo)) return `${fecha}: ${enAlto}.`;
+  const d = n - previa.conteo.ALTO;
+  const cambio =
+    d === 0
+      ? "igual que la semana anterior"
+      : `${entero(Math.abs(d))} ${d > 0 ? "más" : "menos"} que la semana anterior`;
+  return `${fecha}: ${enAlto}, ${cambio}.`;
+}
 
 type Datos = {
   personas: PersonaDTO[];
@@ -353,30 +373,20 @@ export function Resumen() {
                   ) : (
                     <ul className={s.teamList}>
                       {vista.equipos.map((e) => (
-                        <li key={e.teamId}>
-                          <div className={s.teamHead}>
-                            <Link
-                              href={`/teams/${e.teamId}`}
-                              className={tabla.rowLink}
-                            >
-                              {e.nombre}
-                            </Link>
-                            <span className="num">
-                              {e.conteo.ALTO
-                                ? `${e.conteo.ALTO} en Alto`
-                                : "Ninguna en Alto"}
-                            </span>
-                          </div>
+                        <li key={e.teamId} className={s.teamRow}>
+                          <Link href={`/teams/${e.teamId}`} className={tabla.rowLink}>
+                            {e.nombre}
+                          </Link>
                           {e.miembros < GRUPO_MINIMO ? (
-                            <p className={s.note}>
-                              No se muestra: el equipo tiene menos de{" "}
-                              {GRUPO_MINIMO} personas.
-                            </p>
+                            <span className={s.note}>
+                              No se muestra: el equipo tiene menos de {GRUPO_MINIMO} personas.
+                            </span>
                           ) : (
-                            <DistributionBar
-                              conteo={e.conteo}
-                              leyenda={false}
-                            />
+                            <span className="num" data-alto={e.conteo.ALTO > 0 || undefined}>
+                              {e.conteo.ALTO
+                                ? `${entero(e.conteo.ALTO)} en Alto de ${entero(e.miembros)}`
+                                : `Ninguna en Alto de ${entero(e.miembros)}`}
+                            </span>
                           )}
                         </li>
                       ))}
@@ -387,31 +397,31 @@ export function Resumen() {
             </Stack>
           </Columns>
 
-          <Section
-            titulo="Evolución"
-            aside={
-              vista ? (
-                <ul className={s.legend} aria-label="Referencia de niveles">
-                  {NIVELES.map((n) => (
-                    <li key={n} className={s.key}>
-                      <LevelMark nivel={n} />
-                      {NIVEL[n]}
-                    </li>
-                  ))}
-                </ul>
-              ) : undefined
-            }
-          >
+          <Section titulo="En Alto por semana">
             {!vista ? (
               <SkeletonRows filas={4} />
             ) : (
               <div className={s.trend}>
-                <p className={s.note}>
-                  Personas por nivel, semana a semana; la semana elegida lleva
-                  su cantidad en Alto. Pase el cursor, toque o use las flechas para ver
-                  cada semana.
-                </p>
-                <WeekColumns semanas={vista.evolucion} actual={semana} />
+                <p className={s.hallazgo}>{hallazgoAlto(vista.evolucion, semana)}</p>
+                <TrendLine
+                  nombre="Personas en Alto por semana"
+                  etiqueta="personas en Alto"
+                  tono="alto"
+                  enteros
+                  puntos={vista.evolucion.map((e) => ({
+                    periodStart: e.periodStart,
+                    periodEnd: e.periodEnd,
+                    valor: conNivel(e.conteo) ? e.conteo.ALTO : null,
+                  }))}
+                  actual={semana}
+                  formato={entero}
+                  nota={(i) => {
+                    const c = vista.evolucion[i].conteo;
+                    return conNivel(c)
+                      ? `De ${entero(conNivel(c))} con nivel; ${entero(c.MEDIO)} en Medio, ${entero(c.BAJO)} en Bajo.`
+                      : "Ninguna persona tiene nivel esta semana: falta la semana anterior.";
+                  }}
+                />
               </div>
             )}
           </Section>

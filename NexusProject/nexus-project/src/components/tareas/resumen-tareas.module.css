@@ -7,12 +7,6 @@
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--space-4) var(--space-6);
 }
-.bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-6);
-}
 .note {
   max-width: 72ch;
   color: var(--ink-2);

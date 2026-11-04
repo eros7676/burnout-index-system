@@ -32,7 +32,7 @@ import {
   Toolbar,
 } from "@/shared/ui";
 import { Pagination } from "@/shared/ui/pagination";
-import { textoTareas } from "@/shared/ui/task-bar";
+import { textoTareas } from "@/shared/ui/tareas";
 import { DEFINICION, DEFINICION_FACTOR } from "../definiciones";
 import { useSesion } from "../shell/sesion";
 import { HistorialTarea } from "./historial-tarea";

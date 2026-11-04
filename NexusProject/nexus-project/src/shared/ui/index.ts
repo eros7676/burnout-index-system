@@ -6,14 +6,13 @@ export { Tip, useLectura, type Lectura } from "./tip";
 export { StatusTag } from "./status-tag";
 export {
   DistributionBar,
-  WeekColumns,
+  TrendLine,
   IndexChart,
   FactorBullet,
-  type ColumnaSemana,
+  type PuntoTendencia,
   type PuntoIndice,
 } from "./charts";
-export { HoursColumns, type SemanaHoras } from "./hours-columns";
-export { TaskBar, TaskLegend, textoTareas, type Tareas } from "./task-bar";
+export { TextoTareas, textoTareas, type Tareas } from "./tareas";
 export { Skeleton, SkeletonRows, Empty, ErrorBox, Notice } from "./states";
 export { DataTable, tabla } from "./table";
 export { WeekDataTable } from "./week-data-table";

@@ -87,93 +87,133 @@ export function DistributionBar({
   );
 }
 
-export type ColumnaSemana = {
+export type PuntoTendencia = {
   periodStart: string;
   periodEnd: string;
-  conteo: Record<Nivel, number>;
+  /** null: no data for the week; the line breaks there, it never drops to zero. */
+  valor: number | null;
 };
 
-/** Level mix per week on a people axis: Alto sits on the baseline so its growth reads first. */
-export function WeekColumns({
-  semanas,
+// Axis ticks are round numbers (escalaLinda): at most one decimal, never an index-like «7,50».
+const TICK = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 1 });
+
+/** The y position of v on a 0–tope axis, in the plot's 0–100 viewBox (0 at the top). */
+const alturaEn = (v: number, tope: number) => 100 - (Math.min(v, tope) / tope) * 100;
+
+/** One path per run of consecutive weeks with a value: a gap breaks the line. */
+function tramosDeLinea(valores: (number | null)[], y: (v: number) => number) {
+  const n = valores.length;
+  const x = (i: number) => ((i + 0.5) / n) * 100;
+  const tramos: string[] = [];
+  let tramo: string[] = [];
+  valores.forEach((v, i) => {
+    if (v !== null) tramo.push(`${tramo.length ? "L" : "M"}${x(i)} ${y(v)}`);
+    else {
+      if (tramo.length > 1) tramos.push(tramo.join(" "));
+      tramo = [];
+    }
+  });
+  if (tramo.length > 1) tramos.push(tramo.join(" "));
+  return tramos;
+}
+
+/**
+ * One quantity per week, oldest to newest: a 2 px line broken at weeks without data, a point on
+ * every week and the value of the week the page is about labelled beside its point. It answers
+ * "is it rising or falling?"; the finding goes in the section's text, above it.
+ */
+export function TrendLine({
+  nombre,
+  puntos,
   actual,
+  etiqueta,
+  formato,
+  tono = "neutro",
+  enteros = false,
+  nota,
 }: {
-  semanas: ColumnaSemana[];
+  /** What the line measures, for its accessible name and hidden table. */
+  nombre: string;
+  puntos: PuntoTendencia[];
+  /** periodStart of the week the page is about; the newest week with a value otherwise. */
   actual?: string;
+  /** The readout's row label (e.g. «personas en Alto»). */
+  etiqueta: string;
+  formato: (v: number) => string;
+  /** "alto": the line counts people in Alto and wears its colour and diamond. */
+  tono?: "alto" | "neutro";
+  enteros?: boolean;
+  /** An extra line for a week's readout. */
+  nota?: (i: number) => string | undefined;
 }) {
-  const totales = semanas.map((c) => ORDEN.reduce((suma, n) => suma + c.conteo[n], 0));
-  const { tope, ticks } = escalaLinda(
-    // Headroom for the one direct label above the tallest column.
-    Math.max(1, ...totales) * 1.1,
-    { entero: true, marcas: 5 },
-  );
-  const pila: Nivel[] = ["ALTO", "MEDIO", "BAJO", "INCOMPLETO"];
-  const iActual = semanas.findIndex((c) => c.periodStart === actual);
-  const etiquetado = iActual >= 0 ? iActual : semanas.length - 1;
+  const valores = puntos.map((p) => p.valor);
+  const maximo = Math.max(0, ...valores.filter((v): v is number => v !== null));
+  // Headroom so the labelled value never meets the top of the plot.
+  const { tope, ticks } = escalaLinda(Math.max(1, maximo * 1.15), { entero: enteros });
+  const iActual = puntos.findIndex((p) => p.periodStart === actual);
+  const rotulado = iActual >= 0 && valores[iActual] !== null ? iActual : valores.findLastIndex((v) => v !== null);
+  const clave = tono === "alto" ? "var(--level-alto)" : "var(--ink)";
   const lectura = (i: number): Lectura => {
-    const c = semanas[i];
+    const v = valores[i];
     return {
-      titulo: textoSemana(c.periodStart, c.periodEnd),
-      filas: pila.map((n) => ({
-        etiqueta: NIVEL[n],
-        valor: entero(c.conteo[n]),
-        clave: CLAVE_NIVEL[n],
-      })),
-      nota: `${personas(totales[i])}; ${porcentaje(c.conteo.ALTO, totales[i])} % en Alto.`,
+      titulo: textoSemana(puntos[i].periodStart, puntos[i].periodEnd),
+      filas: v === null ? [] : [{ etiqueta, valor: formato(v), clave }],
+      nota: nota?.(i) ?? (v === null ? "Sin dato para esta semana." : undefined),
     };
   };
   return (
     <figure className={s.figura}>
       <Plot
-        nombre="Personas por nivel en cada semana"
-        etiquetas={semanas.map((c) => diaCorto(c.periodStart))}
-        actual={iActual >= 0 ? iActual : undefined}
+        nombre={nombre}
+        etiquetas={puntos.map((p) => diaCorto(p.periodStart))}
+        actual={iActual >= 0 ? iActual : puntos.length - 1}
         tope={tope}
         ticks={ticks}
+        formatoTick={(v) => TICK.format(v)}
         lectura={lectura}
-        marca={(i) => (
-          <div
-            className={s.pila}
-            style={{ height: `${(totales[i] / tope) * 100}%` }}
+        capa={
+          <svg
+            className={s.linea}
+            data-tono={tono}
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
           >
-            {i === etiquetado && semanas[i].conteo.ALTO > 0 && (
-              <span className={`${s.rotulo} num`}>
-                {entero(semanas[i].conteo.ALTO)} en Alto
-              </span>
-            )}
-            {pila.map((n) =>
-              semanas[i].conteo[n] ? (
-                <span
-                  key={n}
-                  className={s.lvl}
-                  data-nivel={n}
-                  style={{ flexGrow: semanas[i].conteo[n] }}
-                />
-              ) : null,
-            )}
-          </div>
-        )}
+            {tramosDeLinea(valores, (v) => alturaEn(v, tope)).map((d) => (
+              <path key={d} d={d} />
+            ))}
+          </svg>
+        }
+        marca={(i) => {
+          const v = valores[i];
+          if (v === null) return <span className={s.sinDato} />;
+          const alto = `${(Math.min(v, tope) / tope) * 100}%`;
+          return (
+            <>
+              <span className={s.punto} data-tono={tono} style={{ bottom: alto }} />
+              {i === rotulado && (
+                <span className={`${s.valorFinal} num`} style={{ bottom: alto }}>
+                  {formato(v)}
+                </span>
+              )}
+            </>
+          );
+        }}
       />
       <div className="sr-only">
         <table>
-          <caption>Personas por nivel en cada semana</caption>
+          <caption>{nombre}</caption>
           <thead>
             <tr>
               <th scope="col">Semana</th>
-              {ORDEN.map((n) => (
-                <th key={n} scope="col">
-                  {NIVEL[n]}
-                </th>
-              ))}
+              <th scope="col">{etiqueta}</th>
             </tr>
           </thead>
           <tbody>
-            {semanas.map((c) => (
-              <tr key={c.periodStart}>
-                <th scope="row">{textoSemana(c.periodStart, c.periodEnd)}</th>
-                {ORDEN.map((n) => (
-                  <td key={n}>{c.conteo[n]}</td>
-                ))}
+            {puntos.map((p) => (
+              <tr key={p.periodStart}>
+                <th scope="row">{textoSemana(p.periodStart, p.periodEnd)}</th>
+                <td>{p.valor === null ? "Sin dato" : formato(p.valor)}</td>
               </tr>
             ))}
           </tbody>
@@ -220,19 +260,11 @@ export function IndexChart({
 }) {
   const n = puntos.length;
   const vigente = (p: PuntoIndice) => p.actualizado && p.indice !== null && p.nivel !== null;
-  const x = (i: number) => ((i + 0.5) / n) * 100;
-  const y = (v: number) => 100 - Math.min(100, Math.max(0, v));
   // The line breaks at every gap: one path per run of consecutive weeks with a result.
-  const tramos: string[] = [];
-  let tramo: string[] = [];
-  puntos.forEach((p, i) => {
-    if (vigente(p)) tramo.push(`${tramo.length ? "L" : "M"}${x(i)} ${y(p.indice!)}`);
-    else {
-      if (tramo.length > 1) tramos.push(tramo.join(" "));
-      tramo = [];
-    }
-  });
-  if (tramo.length > 1) tramos.push(tramo.join(" "));
+  const tramos = tramosDeLinea(
+    puntos.map((p) => (vigente(p) ? Math.max(0, p.indice!) : null)),
+    (v) => alturaEn(v, 100),
+  );
   const ultimo = puntos.findLastIndex(vigente);
   const lectura = (i: number): Lectura => {
     const p = puntos[i];
@@ -256,9 +288,9 @@ export function IndexChart({
         tope={100}
         ticks={[0, medio, alto, 100]}
         bandas={[
-          { desde: 0, hasta: medio, tono: "bajo" },
-          { desde: medio, hasta: alto, tono: "medio" },
-          { desde: alto, hasta: 100, tono: "alto" },
+          { desde: 0, hasta: medio, tono: "bajo", rotulo: NIVEL.BAJO },
+          { desde: medio, hasta: alto, tono: "medio", rotulo: NIVEL.MEDIO },
+          { desde: alto, hasta: 100, tono: "alto", rotulo: NIVEL.ALTO },
         ]}
         lectura={lectura}
         capa={

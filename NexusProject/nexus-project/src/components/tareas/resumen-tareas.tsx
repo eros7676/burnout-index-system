@@ -4,7 +4,6 @@ import type {
 } from "@/shared/contratos/tareas";
 import { entero, momentoConAnio } from "@/shared/formato";
 import { Figure, Notice } from "@/shared/ui";
-import { TaskBar, TaskLegend } from "@/shared/ui/task-bar";
 import { GRUPO_ESTADO, diasAtrasoTexto } from "./textos";
 import s from "./resumen-tareas.module.css";
 
@@ -85,16 +84,6 @@ export function ResumenTareas({ semana }: { semana: TareasSemanaDTO }) {
           }
         />
       </div>
-      {indicadores.tareasActivas > 0 && (
-        <div className={s.bar}>
-          <TaskBar
-            activas={indicadores.tareasActivas}
-            pendientes={indicadores.tareasPendientes}
-            vencidas={indicadores.tareasVencidas}
-          />
-          <TaskLegend />
-        </div>
-      )}
       <Linaje semana={semana} />
       <p className={s.note}>
         Estas tareas son la carga registrada que se usó en el cálculo. No miden
