@@ -8,7 +8,7 @@ import type {
   EstadoBorradorReglas,
   VersionReglasDTO,
 } from "@/shared/contratos/reglas";
-import { FACTOR, momento, valorFactor } from "@/shared/formato";
+import { FACTOR, momentoConAnio, valorFactor } from "@/shared/formato";
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import { tienePermiso } from "@/shared/permisos";
 import {
@@ -374,7 +374,7 @@ function Borradores({ edita }: { edita: boolean }) {
                     {b.motivo || "Sin motivo todavía"}
                   </td>
                   <td>{b.creadoPor.nombre}</td>
-                  <td>{momento(b.updatedAt)}</td>
+                  <td>{momentoConAnio(b.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>

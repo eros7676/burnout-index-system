@@ -67,6 +67,26 @@ export function momento(iso: string) {
   return `${Number(p.day)} ${MESES[Number(p.month) - 1]}, ${p.hour}:${p.minute}`;
 }
 
+const RELOJ_CON_ANIO = new Intl.DateTimeFormat("es-AR", {
+  day: "numeric",
+  month: "numeric",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+  timeZone: "America/Argentina/Buenos_Aires",
+});
+
+/** "4 nov 2026, 03:22" (with `segundos`, "4 nov 2026, 03:22:47"): an instant with its year, for records people keep. */
+export function momentoConAnio(iso: string, segundos = false) {
+  const p = Object.fromEntries(
+    RELOJ_CON_ANIO.formatToParts(new Date(iso)).map((x) => [x.type, x.value]),
+  );
+  const hora = `${p.hour}:${p.minute}${segundos ? `:${p.second}` : ""}`;
+  return `${Number(p.day)} ${MESES[Number(p.month) - 1]} ${p.year}, ${hora}`;
+}
+
 const DOS = new Intl.NumberFormat("es-AR", {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,

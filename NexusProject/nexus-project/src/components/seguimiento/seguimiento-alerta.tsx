@@ -9,7 +9,7 @@ import {
   type SeguimientoAlertaDTO,
   type UsuarioReferencia,
 } from "@/shared/contratos/seguimiento";
-import { momento } from "@/shared/formato";
+import { momentoConAnio } from "@/shared/formato";
 import {
   ErrorBox,
   KeyFacts,
@@ -39,7 +39,7 @@ function datosDelCaso(caso: CasoSeguimientoDTO, usuarioId: string | undefined) {
     },
     {
       termino: "Abierto",
-      valor: `${nombreDe(caso.abiertoPor, usuarioId)}, ${momento(caso.createdAt)}`,
+      valor: `${nombreDe(caso.abiertoPor, usuarioId)}, ${momentoConAnio(caso.createdAt)}`,
     },
   ];
   if (caso.estado === "CERRADO" && caso.motivoCierre && caso.cerradoPor)
@@ -47,7 +47,7 @@ function datosDelCaso(caso: CasoSeguimientoDTO, usuarioId: string | undefined) {
       { termino: "Motivo de cierre", valor: MOTIVO_CIERRE[caso.motivoCierre] },
       {
         termino: "Cerrado",
-        valor: `${nombreDe(caso.cerradoPor, usuarioId)}, ${momento(caso.cerradoAt ?? caso.createdAt)}`,
+        valor: `${nombreDe(caso.cerradoPor, usuarioId)}, ${momentoConAnio(caso.cerradoAt ?? caso.createdAt)}`,
       },
     );
   return hechos;

@@ -7,6 +7,7 @@ import {
   decimal,
   diaCorto,
   diaCompleto,
+  momentoConAnio,
   semana,
   valorFactor,
   variacion,
@@ -43,4 +44,17 @@ test("formato: variación semanal con signo y sin ruido", () => {
   assert.equal(variacion(40, 45.5), "−5,50");
   assert.equal(variacion(40, 40), "=");
   assert.equal(variacion(40, null), null);
+});
+
+test("formato: un instante lleva el año y usa los meses del producto", () => {
+  assert.equal(momentoConAnio("2026-11-04T06:22:47.413Z"), "4 nov 2026, 03:22");
+  assert.equal(
+    momentoConAnio("2026-11-04T06:22:47.413Z", true),
+    "4 nov 2026, 03:22:47",
+  );
+  assert.equal(momentoConAnio("2026-09-02T12:05:00.000Z"), "2 sep 2026, 09:05");
+  assert.equal(
+    momentoConAnio("2027-01-01T01:00:00.000Z"),
+    "31 dic 2026, 22:00",
+  );
 });

@@ -12,7 +12,6 @@ import {
 } from "@/shared/formato";
 import { useArrival, usePageEnter } from "@/shared/motion";
 import {
-  ButtonLink,
   ErrorBox,
   KeyFacts,
   LevelTag,
@@ -64,19 +63,15 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
           alerta?.persona ? `Alerta de ${alerta.persona.nombre}` : "Alerta"
         }
         contexto="Factores de la alerta y estado de su seguimiento"
-        acciones={
-          alerta && (
-            <ButtonLink href={`/reports/${alerta.evaluationId}`}>
-              Ver informe
-            </ButtonLink>
-          )
-        }
       />
 
       <div ref={caja} className={s.contenido}>
         {consulta.estado === "error" ? (
           <Section>
-            <ErrorBox mensaje={consulta.mensaje} onRetry={consulta.reintentar} />
+            <ErrorBox
+              mensaje={consulta.mensaje}
+              onRetry={consulta.reintentar}
+            />
           </Section>
         ) : !alerta ? (
           <Section aria-label="Datos de la alerta">
@@ -107,6 +102,12 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
                       <span className={s.semana}>
                         {textoSemana(semana.periodStart, semana.periodEnd)}
                         <WeekStrip semanas={alerta.serie} />
+                        <Link
+                          className={tabla.cellLink}
+                          href={`/reports/${alerta.evaluationId}`}
+                        >
+                          Ver informe
+                        </Link>
                       </span>
                     ) : (
                       "—"
@@ -130,7 +131,9 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
                     valor: (
                       <span className={s.destinatario}>
                         {sinDestinatario(alerta) ? (
-                          <StatusTag tono="incidencia">Sin destinatario</StatusTag>
+                          <StatusTag tono="incidencia">
+                            Sin destinatario
+                          </StatusTag>
                         ) : (
                           <span>
                             {alerta.destinatario ?? "Responsable"}
@@ -142,7 +145,9 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
                         {estadoEnvio &&
                           alerta.estadoEnvio !== "SIN_DESTINATARIO" &&
                           (estadoEnvio.tono === "neutro" ? (
-                            <span className={tabla.sub}>{estadoEnvio.texto}</span>
+                            <span className={tabla.sub}>
+                              {estadoEnvio.texto}
+                            </span>
                           ) : (
                             <StatusTag tono={estadoEnvio.tono}>
                               {estadoEnvio.texto}
@@ -196,7 +201,6 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
               {notifica && (
                 <Section titulo="Correo simulado" className={s.apoyo}>
                   <NotificacionAlerta
-                    sinMarco
                     alerta={alerta}
                     destinatario={(id) =>
                       id === alerta.destinatarioId

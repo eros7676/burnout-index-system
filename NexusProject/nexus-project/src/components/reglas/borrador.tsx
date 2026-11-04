@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { momento } from "@/shared/formato";
+import { momentoConAnio } from "@/shared/formato";
 import { usePageEnter } from "@/shared/motion";
 import { tienePermiso } from "@/shared/permisos";
 import {
@@ -212,14 +212,14 @@ export function VistaBorrador({
               {
                 termino: "Aprobación",
                 valor: datos.aprobadoPor
-                  ? `${datos.aprobadoPor.nombre}, ${momento(datos.aprobadoAt ?? datos.updatedAt)}`
+                  ? `${datos.aprobadoPor.nombre}, ${momentoConAnio(datos.aprobadoAt ?? datos.updatedAt)}`
                   : datos.requiereAprobacion
                     ? "Requerida de Gerencia"
                     : "No requerida",
               },
               {
                 termino: "Creado por",
-                valor: `${datos.creadoPor.nombre}, ${momento(datos.createdAt)}`,
+                valor: `${datos.creadoPor.nombre}, ${momentoConAnio(datos.createdAt)}`,
               },
             ]}
           />
@@ -272,7 +272,7 @@ export function VistaBorrador({
       <Section
         titulo="Impacto estimado"
         aside={
-          datos?.simulacion && <span>Calculado el {momento(datos.simulacion.calculadaAt)}</span>
+          datos?.simulacion && <span>Calculado el {momentoConAnio(datos.simulacion.calculadaAt)}</span>
         }
       >
         {!datos ? (
