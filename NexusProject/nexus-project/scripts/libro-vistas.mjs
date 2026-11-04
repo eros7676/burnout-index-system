@@ -10,23 +10,47 @@ import { chromium } from "@playwright/test";
 const outDir = resolve(process.argv[2] ?? "../../Docs/libro-de-vistas");
 const baseURL = process.argv[3] ?? "http://localhost:3000";
 const ROLES = {
-  "demo-rrhh": "RRHH",
+  "demo-rrhh": "RR. HH.",
   "demo-gerencia": "Gerencia",
   "demo-tl-01": "Team Lead",
   "demo-empleado": "Empleado",
 };
 
-/** Ids that only exist in data: the person with the highest current index, one of their reports, and one team. */
+/**
+ * Ids that only exist in data: the person with the highest current index, one of their reports and
+ * weeks, their team, an alert, an audited import (event and operation) and a rules draft. The draft
+ * is created when none exists, so the book shows the editor with content.
+ */
 async function idsDeEjemplo(request) {
-  const r = await request.get("/api/personas");
-  if (!r.ok()) throw new Error(`/api/personas answered ${r.status()}`);
-  const { items } = await r.json();
+  const leer = async (ruta) => {
+    const r = await request.get(ruta);
+    if (!r.ok()) throw new Error(`${ruta} answered ${r.status()}`);
+    return r.json();
+  };
+  const { items } = await leer("/api/personas");
   const conInforme = items
     .map((p) => ({ p, w: p.semanas[0] })) // most recent first
     .filter(({ w }) => w?.evaluationId)
     .sort((a, b) => (b.w.indice ?? 0) - (a.w.indice ?? 0));
   const { p, w } = conInforme[0];
-  return { employeeId: p.employeeId, evaluationId: w.evaluationId, teamId: p.teamId };
+  const alertas = await leer("/api/alertas");
+  const evento = (await leer("/api/auditoria?accion=IMPORTACION_CONFIRMADA&pageSize=1")).items[0];
+  let borrador = (await leer("/api/reglas/borradores")).items[0];
+  if (!borrador) {
+    const r = await request.post("/api/reglas/borradores", { data: {}, headers: { Origin: baseURL } });
+    if (!r.ok()) throw new Error(`creating a rules draft answered ${r.status()}`);
+    borrador = await r.json();
+  }
+  return {
+    employeeId: p.employeeId,
+    evaluationId: w.evaluationId,
+    periodStart: w.periodStart,
+    teamId: p.teamId,
+    alertId: alertas.items[0]?.alertId,
+    eventoId: evento?.eventoId,
+    correlacionId: evento?.correlacionId,
+    borradorId: borrador.borradorId ?? borrador.id,
+  };
 }
 
 async function main() {
@@ -55,7 +79,11 @@ async function main() {
     const desborde = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,
     );
-    vistas.push({ rol: rol ? ROLES[rol] : "Sin sesión", ruta, url: new URL(page.url()).pathname, archivo, ancho, errores, desborde });
+    // The not-found view answers 404 on purpose; the browser logs that as a resource error.
+    const reales = nombre.includes("no-encontrada")
+      ? errores.filter((m) => !/status of 404/.test(m))
+      : errores;
+    vistas.push({ rol: rol ? ROLES[rol] : "Sin sesión", ruta, url: new URL(page.url()).pathname, archivo, ancho, errores: reales, desborde });
     await ctx.close();
   };
 
@@ -68,25 +96,44 @@ async function main() {
   await sesion.close();
 
   await capturar(null, "/", "00-ingreso");
+  const e = `/employees/${ids.employeeId}`;
+  const t = `/teams/${ids.teamId}`;
   const rrhh = [
     ["/home", "01-resumen"],
     ["/employees", "02-personas"],
-    [`/employees/${ids.employeeId}`, "03-ficha-persona"],
+    ["/employees/new", "02a-persona-nueva"],
+    ["/employees/import", "02b-personas-importar"],
+    [e, "03-ficha-persona"],
+    [`${e}/edit`, "03a-persona-editar"],
+    [`${e}/move`, "03b-persona-mover"],
+    [`${e}/deactivate`, "03c-persona-baja"],
+    [`${e}/weeks/${ids.periodStart}`, "03d-semana-tareas"],
     ["/teams", "04-equipos"],
-    [`/teams/${ids.teamId}`, "05-celula"],
+    ["/teams/new", "04a-equipo-nuevo"],
+    [t, "05-equipo"],
+    [`${t}/edit`, "05a-equipo-editar"],
+    [`${t}/lead`, "05b-equipo-lider"],
+    [`${t}/deactivate`, "05c-equipo-baja"],
     ["/alerts", "06-alertas"],
+    ...(ids.alertId ? [[`/alerts/${ids.alertId}`, "06a-alerta-seguimiento"]] : []),
     [`/reports/${ids.evaluationId}`, "07-informe"],
     ["/importaciones", "08-importacion"],
     ["/rules-config", "09-reglas"],
+    [`/rules-config/drafts/${ids.borradorId}`, "09a-reglas-borrador"],
     ["/audit", "10-auditoria"],
+    ...(ids.eventoId ? [[`/audit/${ids.eventoId}`, "10a-auditoria-evento"]] : []),
+    ...(ids.correlacionId
+      ? [[`/audit/operations/${ids.correlacionId}`, "10b-auditoria-operacion"]]
+      : []),
+    ["/ruta-inexistente", "12-pagina-no-encontrada"],
   ];
   for (const [ruta, nombre] of rrhh) await capturar("demo-rrhh", ruta, `${nombre}-rrhh`);
-  for (const [ruta, nombre] of [["/home", "01-resumen"], ["/audit", "10-auditoria"]])
+  for (const [ruta, nombre] of [["/home", "01-resumen"], ["/employees", "02-personas"], ["/alerts", "06-alertas"], ["/audit", "10-auditoria"]])
     await capturar("demo-gerencia", ruta, `${nombre}-gerencia`);
-  for (const [ruta, nombre] of [["/home", "01-resumen"], ["/employees", "02-personas"], ["/alerts", "06-alertas"], ["/rules-config", "09-reglas"], ["/my-data", "11-mis-datos"]])
+  for (const [ruta, nombre] of [["/home", "01-resumen"], ["/employees", "02-personas"], ["/teams/EQ-01", "05-equipo"], ["/alerts", "06-alertas"], ["/rules-config", "09-reglas"], ["/my-data", "11-mis-datos"]])
     await capturar("demo-tl-01", ruta, `${nombre}-team-lead`);
   await capturar("demo-empleado", "/my-data", "11-mis-datos-empleado");
-  for (const [ruta, nombre] of [["/home", "01-resumen"], [`/employees/${ids.employeeId}`, "03-ficha-persona"], ["/importaciones", "08-importacion"]])
+  for (const [ruta, nombre] of [["/home", "01-resumen"], ["/employees", "02-personas"], [e, "03-ficha-persona"], ...(ids.alertId ? [[`/alerts/${ids.alertId}`, "06a-alerta-seguimiento"]] : []), ["/importaciones", "08-importacion"], ["/audit", "10-auditoria"]])
     await capturar("demo-rrhh", ruta, `${nombre}-rrhh`, 390);
   await browser.close();
 
