@@ -431,7 +431,7 @@ test("Auditoría: del listado se abre el evento con sus cambios y se vuelve con 
     page.getByRole("heading", { level: 1, name: "Detalle del evento" }),
   ).toBeVisible();
   await expect(page.getByText("RRHH publicó una versión de reglas")).toBeVisible();
-  await expect(hecho(page, "Fecha y hora")).toHaveText("18 oct 2026, 20:30:00");
+  await expect(hecho(page, "Fecha y hora (Buenos Aires)")).toHaveText("18 oct 2026, 20:30:00");
   await expect(hecho(page, "Actor")).toHaveText("RRHH");
   await expect(hecho(page, "Rol")).toHaveText("RR. HH.");
   await expect(hecho(page, "Origen")).toHaveText("Aplicación web");

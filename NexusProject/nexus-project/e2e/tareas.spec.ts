@@ -446,7 +446,7 @@ test("Informe: el botón imprime y en papel quedan el encabezado, los hechos, lo
     page.getByRole("region", { name: "Factores, por aporte al índice" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { level: 2, name: "Recomendaciones" }),
+    page.getByRole("heading", { level: 2, name: "Sugerencias de revisión" }),
   ).toBeVisible();
   await expect(nota).toBeVisible();
 });

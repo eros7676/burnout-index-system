@@ -91,7 +91,7 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
             <KeyFacts
               items={[
                 {
-                  termino: "Fecha y hora",
+                  termino: "Fecha y hora (Buenos Aires)",
                   valor: (
                     <time dateTime={evento.createdAt}>
                       {fechaHora(evento.createdAt)}

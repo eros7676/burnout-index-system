@@ -50,23 +50,6 @@ export function semana(inicio: string, fin: string) {
   return `${a.dia}–${b.dia} ${b.mes} ${b.anio}`;
 }
 
-const RELOJ = new Intl.DateTimeFormat("es-AR", {
-  day: "numeric",
-  month: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  hourCycle: "h23",
-  timeZone: "America/Argentina/Buenos_Aires",
-});
-
-/** "5 oct, 14:05": an ISO UTC instant in the product's fixed zone, with the week labels' month names. */
-export function momento(iso: string) {
-  const p = Object.fromEntries(
-    RELOJ.formatToParts(new Date(iso)).map((x) => [x.type, x.value]),
-  );
-  return `${Number(p.day)} ${MESES[Number(p.month) - 1]}, ${p.hour}:${p.minute}`;
-}
-
 const RELOJ_CON_ANIO = new Intl.DateTimeFormat("es-AR", {
   day: "numeric",
   month: "numeric",

@@ -2,7 +2,7 @@ import type {
   ConciliacionTareasDTO,
   TareasSemanaDTO,
 } from "@/shared/contratos/tareas";
-import { entero, momento } from "@/shared/formato";
+import { entero, momentoConAnio } from "@/shared/formato";
 import { Figure, Notice } from "@/shared/ui";
 import { TaskBar, TaskLegend } from "@/shared/ui/task-bar";
 import { GRUPO_ESTADO, diasAtrasoTexto } from "./textos";
@@ -43,7 +43,7 @@ function Linaje({ semana }: { semana: TareasSemanaDTO }) {
     <p className={s.note}>
       {resumen.total === 0
         ? "La semana no registra tareas."
-        : `Los conteos de la semana coinciden con el detalle importado${importacion?.confirmadaEl ? ` el ${momento(importacion.confirmadaEl)}` : ""}.`}
+        : `Los conteos de la semana coinciden con el detalle importado${importacion?.confirmadaEl ? ` el ${momentoConAnio(importacion.confirmadaEl)}` : ""}.`}
     </p>
   );
 }

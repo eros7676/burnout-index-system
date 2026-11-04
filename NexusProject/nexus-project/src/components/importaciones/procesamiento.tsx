@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from "react";
 import type { EstadoJob, JobDTO } from "@/shared/contracts";
-import { entero, momento, semana as textoSemana } from "@/shared/formato";
+import { entero, momentoConAnio, semana as textoSemana } from "@/shared/formato";
 import { useRowsEnter } from "@/shared/motion";
 import { Button, DataTable, Figure, Notice, Section } from "@/shared/ui";
 import { esResultadoTareas, type ResultadoConfirmacion } from "./conjuntos";
@@ -151,7 +151,7 @@ export function Procesamiento({
             {completo
               ? "El cálculo terminó para todas las semanas."
               : "Los datos confirmados quedan guardados aunque el cálculo no termine."}{" "}
-            Actualizado el {momento(job.updatedAt)}.
+            Actualizado el {momentoConAnio(job.updatedAt)}.
           </p>
         </div>
 
