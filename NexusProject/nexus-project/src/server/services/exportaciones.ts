@@ -231,7 +231,7 @@ async function tablaPersonas(
         empleado.employeeId,
         empleado.nombre,
         empleado.equipo?.nombre ?? empleado.teamId,
-        empleado.tipo === "TEAM_LEAD" ? TIPO.TEAM_LEAD : TIPO.TECNICO,
+        TIPO[empleado.tipo],
         empleado.responsable?.nombre,
         semana,
         fin,
