@@ -13,12 +13,14 @@ import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import { tienePermiso } from "@/shared/permisos";
 import {
   Button,
+  Columns,
   DataTable,
   Empty,
   ErrorBox,
   LevelTag,
   PageHeader,
   Section,
+  Stack,
   SelectField,
   SkeletonRows,
   Toolbar,
@@ -112,8 +114,8 @@ export function Reglas() {
       />
       {falloCrear && <ErrorBox mensaje={falloCrear} />}
 
-      <div className={s.grid}>
-        <div className={s.main}>
+      <Columns division="8-4">
+        <Stack>
           <Section
             titulo="Cuatro factores, un índice de 0 a 100"
             aside={v ? <span>Una semana, de lunes a domingo</span> : undefined}
@@ -181,9 +183,9 @@ export function Reglas() {
               {!v ? <SkeletonRows filas={4} /> : <Niveles reglas={v} />}
             </Section>
           )}
-        </div>
+        </Stack>
 
-        <div className={s.side}>
+        <Stack>
           <Section titulo="Qué no es">
             <ul className={s.noEs}>
               <li>
@@ -240,8 +242,8 @@ export function Reglas() {
               )}
             </Section>
           )}
-        </div>
-      </div>
+        </Stack>
+      </Columns>
 
       {gestiona && <Borradores edita={edita} />}
     </div>

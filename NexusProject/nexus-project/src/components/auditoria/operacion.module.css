@@ -24,7 +24,7 @@
 }
 .cuando {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   /* Sits on the first line of the step's text. */
   padding-top: 1px;
   white-space: nowrap;

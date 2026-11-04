@@ -19,6 +19,7 @@ import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import { semanaDe, serieHasta } from "@/shared/semanas";
 import {
   Button,
+  Columns,
   DataTable,
   ErrorBox,
   FactorBullet,
@@ -27,6 +28,7 @@ import {
   Notice,
   PageHeader,
   Section,
+  Stack,
   SkeletonRows,
   WeekStrip,
   tabla,
@@ -206,7 +208,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
 
       {!fallo && (
         <>
-          <div className={s.grid}>
+          <Columns division="8-4">
             <Section
               className={s.factors}
               titulo="Factores del nivel"
@@ -291,7 +293,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
               )}
             </Section>
 
-            <div className={s.side}>
+            <Stack>
               <Section titulo="Semana anterior">
                 {!persistencia ? (
                   <SkeletonRows filas={3} />
@@ -340,8 +342,8 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                   </ul>
                 )}
               </Section>
-            </div>
-          </div>
+            </Stack>
+          </Columns>
 
           <Section titulo="Alerta">
             {!informe ? (
@@ -349,10 +351,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
             ) : !alerta ? (
               <p className={s.muted}>Esta semana no generó una alerta.</p>
             ) : (
-              <div
-                className={s.alert}
-                data-con-correo={usuario?.rol === "RRHH" || undefined}
-              >
+              <Columns division="8-4">
                 <dl className={s.facts}>
                   <div>
                     <dt>Destinatario</dt>
@@ -410,7 +409,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                     />
                   </div>
                 )}
-              </div>
+              </Columns>
             )}
           </Section>
           <p className={s.soloImpresion}>

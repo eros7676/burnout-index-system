@@ -12,7 +12,7 @@
 .message {
   max-width: 40ch;
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .error {
   color: var(--danger);

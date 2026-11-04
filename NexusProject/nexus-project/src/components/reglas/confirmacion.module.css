@@ -30,7 +30,7 @@
   border-radius: var(--radius-sm);
   background: var(--danger-soft);
   color: var(--danger);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .acciones {
   display: flex;

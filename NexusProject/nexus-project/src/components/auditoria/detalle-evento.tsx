@@ -6,12 +6,14 @@ import { useConsulta } from "@/client/use-consulta";
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import {
   ButtonLink,
+  Columns,
   DataTable,
   Empty,
   ErrorBox,
   KeyFacts,
   PageHeader,
   Section,
+  Stack,
   SkeletonRows,
   tabla,
 } from "@/shared/ui";
@@ -123,8 +125,8 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
       </Section>
 
       {evento && recurso && (
-        <div className={s.grid}>
-          <div className={s.main}>
+        <Columns division="8-4">
+          <Stack>
             <Section titulo="Cambios">
               {cambios.length > 0 ? (
                 <>
@@ -165,9 +167,9 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
                 <p className={s.texto}>{evento.justificacion}</p>
               </Section>
             )}
-          </div>
+          </Stack>
 
-          <div className={s.side}>
+          <Stack>
             <Section titulo="Sobre qué">
               <KeyFacts
                 items={[
@@ -240,8 +242,8 @@ export function DetalleEvento({ eventoId }: { eventoId: string }) {
                 ]}
               />
             </Section>
-          </div>
-        </div>
+          </Stack>
+        </Columns>
       )}
     </div>
   );

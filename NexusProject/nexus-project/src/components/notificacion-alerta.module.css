@@ -45,18 +45,18 @@
 }
 .status {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .error {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--danger-soft);
   color: var(--danger);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .note {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .history {
   display: grid;
@@ -69,7 +69,7 @@
   gap: var(--space-1) var(--space-3);
   padding: var(--space-2) 0;
   border-bottom: 1px solid var(--line);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .attempt:last-child {
   border-bottom: 0;

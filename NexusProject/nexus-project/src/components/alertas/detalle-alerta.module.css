@@ -44,5 +44,5 @@
 }
 .nota {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
