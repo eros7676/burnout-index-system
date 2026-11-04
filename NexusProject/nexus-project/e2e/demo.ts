@@ -234,7 +234,12 @@ export const resumen = (cambios: Partial<ResumenDTO> = {}): ResumenDTO => ({
  * Signs in as a demo user (switchable from the strip) and answers every data
  * read with the dataset above. Routes added after this one take precedence.
  */
-export async function demo(page: Page, inicial: UsuarioDemo | null) {
+/** `correo: "REAL"` answers the session as a server with SMTP configured. */
+export async function demo(
+  page: Page,
+  inicial: UsuarioDemo | null,
+  { correo = "SIMULADO" }: { correo?: "REAL" | "SIMULADO" } = {},
+) {
   let actual: string | null = inicial;
   await page.route(datos, (route) => {
     const url = new URL(route.request().url());
@@ -288,6 +293,7 @@ export async function demo(page: Page, inicial: UsuarioDemo | null) {
       json: {
         usuario: USUARIOS_DEMO.find((u) => u.userId === actual) ?? null,
         usuarios: USUARIOS_DEMO,
+        correo,
       },
     });
   });

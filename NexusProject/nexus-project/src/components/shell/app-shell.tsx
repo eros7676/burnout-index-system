@@ -38,9 +38,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [sesion.estado, usuario, ruta, router]);
 
   const usuarios = sesion.estado === "listo" ? sesion.datos.usuarios : [];
+  const correo = sesion.estado === "listo" ? sesion.datos.correo : "SIMULADO";
   const visible = usuario && !fuera ? usuario : null;
   return (
-    <SesionProvider value={{ usuario: visible, usuarios }}>
+    <SesionProvider value={{ usuario: visible, usuarios, correo }}>
       <div className={s.app}>
         <div className={s.demo} role="region" aria-label="Modo demostración">
           <p>

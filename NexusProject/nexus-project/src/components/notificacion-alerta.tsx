@@ -10,37 +10,60 @@ import type {
 import { momentoConAnio } from "@/shared/formato";
 import { Button } from "@/shared/ui";
 import { StatusTag } from "@/shared/ui/status-tag";
+import { useSesion } from "./shell/sesion";
 import s from "./notificacion-alerta.module.css";
 
+/** The notice section's title: what the channel actually does. */
+export const tituloCorreo = (correo: "REAL" | "SIMULADO") =>
+  correo === "REAL" ? "Aviso por correo" : "Correo simulado";
+
 type Estado = IntentoNotificacion["estado"];
-const INTENTO: Record<
-  Estado,
-  { texto: string; tono: "aviso" | "exito" | "incidencia" }
-> = {
-  PENDIENTE: { texto: "Pendiente de procesar", tono: "aviso" },
-  ENVIADO: { texto: "Enviado (simulado)", tono: "exito" },
-  FALLIDO: { texto: "Fallido (simulado)", tono: "aviso" },
-  SIN_DESTINATARIO: { texto: "Sin destinatario", tono: "incidencia" },
+type Canal = IntentoNotificacion["canal"];
+const TONO: Record<Estado, "aviso" | "exito" | "incidencia"> = {
+  PENDIENTE: "aviso",
+  ENVIADO: "exito",
+  FALLIDO: "aviso",
+  SIN_DESTINATARIO: "incidencia",
 };
-const RESULTADO: Record<Estado, string> = {
-  PENDIENTE: "Envío simulado pendiente de procesar.",
-  ENVIADO: "Envío registrado como enviado (simulado).",
-  FALLIDO:
-    "Envío registrado como fallido (simulado). Se puede volver a simularlo.",
-  SIN_DESTINATARIO: "No hay destinatario: falta el responsable en el catálogo.",
+/** An attempt's state in words; a simulated one says so, a real one says it went by mail. */
+const INTENTO: Record<Canal, Record<Estado, string>> = {
+  SIMULADO: {
+    PENDIENTE: "Pendiente de procesar",
+    ENVIADO: "Enviado (simulado)",
+    FALLIDO: "Fallido (simulado)",
+    SIN_DESTINATARIO: "Sin destinatario",
+  },
+  CORREO: {
+    PENDIENTE: "Pendiente de enviar",
+    ENVIADO: "Enviado por correo",
+    FALLIDO: "No se pudo enviar",
+    SIN_DESTINATARIO: "Sin destinatario",
+  },
+};
+const RESULTADO: Record<Canal, Record<Estado, string>> = {
+  SIMULADO: {
+    PENDIENTE: "Envío simulado pendiente de procesar.",
+    ENVIADO: "Envío registrado como enviado (simulado).",
+    FALLIDO: "Envío registrado como fallido (simulado). Se puede volver a simularlo.",
+    SIN_DESTINATARIO: "No hay destinatario: falta el responsable en el catálogo.",
+  },
+  CORREO: {
+    PENDIENTE: "El correo quedó pendiente de enviar.",
+    ENVIADO: "Aviso enviado por correo.",
+    FALLIDO: "No se pudo enviar el correo. Se puede volver a intentar.",
+    SIN_DESTINATARIO: "No hay destinatario: falta el responsable en el catálogo.",
+  },
 };
 const mensajeDe = (e: unknown) =>
-  e instanceof Error
-    ? e.message
-    : "No se pudo completar la simulación. Inténtelo nuevamente.";
+  e instanceof Error ? e.message : "No se pudo completar el envío. Inténtelo nuevamente.";
 
 /**
- * The simulated email of one alert (T12): no message ever leaves the app. It is plain
- * content for a titled Section ("Correo simulado") on both the alert and the report, so
- * nothing is boxed twice.
- * Each simulation prepares an attempt and processes it; a pending attempt left
- * behind (a reload, a lost answer) can be processed later, and every attempt
- * stays in the history.
+ * The email notice of one alert. With SMTP configured on the server (`correo: "REAL"` in the
+ * session) one action sends it by real mail to the demo inbox; otherwise the delivery is simulated
+ * (T12) and no message leaves the app. It is plain content for a titled Section on both the alert
+ * and the report (see `tituloCorreo`), so nothing is boxed twice.
+ * Each action prepares an attempt and processes it; a pending attempt left behind (a reload, a lost
+ * answer) can be processed later, and every attempt stays in the history.
  */
 export function NotificacionAlerta({
   alerta,
@@ -52,6 +75,8 @@ export function NotificacionAlerta({
   /** The recipient's name for an attempt's employeeId snapshot. */
   destinatario: (destinatarioId: string) => string;
 }) {
+  const { correo } = useSesion();
+  const canal: Canal = correo === "REAL" ? "CORREO" : "SIMULADO";
   const [intentos, setIntentos] = useState<IntentoNotificacion[]>();
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState("");
@@ -103,10 +128,10 @@ export function NotificacionAlerta({
     ejecutar("Procesando el envío pendiente…", async () => {
       const intento = await api.procesar(alerta.alertId, intentoId);
       guardar(intento);
-      setMensaje(RESULTADO[intento.estado]);
+      setMensaje(RESULTADO[intento.canal][intento.estado]);
     });
   const simular = (resultado: ResultadoSimulado) =>
-    ejecutar("Simulando el envío…", async () => {
+    ejecutar(canal === "CORREO" ? "Enviando el correo…" : "Simulando el envío…", async () => {
       // The same request id survives a lost answer, so a retry never duplicates the attempt.
       if (!solicitud.current || solicitud.current.resultado !== resultado)
         solicitud.current = { requestId: crypto.randomUUID(), resultado };
@@ -117,7 +142,7 @@ export function NotificacionAlerta({
         intento = await api.procesar(alerta.alertId, intento.intentoId);
         guardar(intento);
       }
-      setMensaje(RESULTADO[intento.estado]);
+      setMensaje(RESULTADO[intento.canal][intento.estado]);
       // The full history, also when the server answered with an earlier request.
       setIntentos(await api.listar(alerta.alertId));
     });
@@ -150,6 +175,12 @@ export function NotificacionAlerta({
             Procesar envío pendiente
           </Button>
         </div>
+      ) : activa && !enviado && canal === "CORREO" ? (
+        <div className={s.actions}>
+          <Button disabled={ocupado !== null} onClick={() => simular("EXITO")}>
+            Enviar aviso por correo
+          </Button>
+        </div>
       ) : activa && !enviado ? (
         <div className={s.actions}>
           <Button disabled={ocupado !== null} onClick={() => simular("EXITO")}>
@@ -177,9 +208,12 @@ export function NotificacionAlerta({
       {intentos === undefined ? (
         !error && <p className={s.note}>Cargando intentos…</p>
       ) : intentos.length ? (
-        <ol className={s.history} aria-label="Historial de envíos simulados">
+        <ol
+          className={s.history}
+          aria-label={canal === "CORREO" ? "Historial de envíos" : "Historial de envíos simulados"}
+        >
           {intentos.map((i) => {
-            const estado = INTENTO[i.estado];
+            const estado = { texto: INTENTO[i.canal][i.estado], tono: TONO[i.estado] };
             const cuando = i.completedAt ?? i.createdAt;
             return (
               <li key={i.intentoId} className={s.attempt}>

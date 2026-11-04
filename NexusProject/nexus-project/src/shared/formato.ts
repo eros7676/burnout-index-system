@@ -132,6 +132,11 @@ export const ESTADO_ENVIO: Record<Alerta["estadoEnvio"], string> = {
   FALLIDO: "Envío fallido",
   SIN_DESTINATARIO: "Sin destinatario",
 };
+/** The delivery state in words, naming the channel of a delivered notice. */
+export function textoEnvio(alerta: Pick<Alerta, "estadoEnvio" | "canal">) {
+  if (alerta.estadoEnvio === "ENVIADO" && alerta.canal === "CORREO") return "Enviado por correo";
+  return ESTADO_ENVIO[alerta.estadoEnvio];
+}
 export const VIGENCIA: Record<Alerta["vigencia"], string> = {
   ACTIVA: "Activa",
   SUPERADA: "Superada",
