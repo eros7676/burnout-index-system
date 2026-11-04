@@ -13,14 +13,12 @@ import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import { tienePermiso } from "@/shared/permisos";
 import {
   Button,
-  Columns,
   DataTable,
   Empty,
   ErrorBox,
   LevelTag,
   PageHeader,
   Section,
-  Stack,
   SelectField,
   SkeletonRows,
   Toolbar,
@@ -71,7 +69,9 @@ export function Reglas() {
   const v = datos?.vigente;
   const fallo = consulta.estado === "error";
   // Versions come newest first: the last scheduled one is the next to start.
-  const programada = datos?.versiones.findLast((x) => x.estado === "PROGRAMADA");
+  const programada = datos?.versiones.findLast(
+    (x) => x.estado === "PROGRAMADA",
+  );
 
   const [creando, setCreando] = useState(false);
   const [falloCrear, setFalloCrear] = useState<string | null>(null);
@@ -80,7 +80,9 @@ export function Reglas() {
     setFalloCrear(null);
     try {
       const borrador = await reglasApi.crear();
-      router.push(`/rules-config/drafts/${encodeURIComponent(borrador.borradorId)}`);
+      router.push(
+        `/rules-config/drafts/${encodeURIComponent(borrador.borradorId)}`,
+      );
     } catch (error) {
       setFalloCrear(
         error instanceof ErrorReglas
@@ -114,136 +116,132 @@ export function Reglas() {
       />
       {falloCrear && <ErrorBox mensaje={falloCrear} />}
 
-      <Columns division="8-4">
-        <Stack>
-          <Section
-            titulo="Cuatro factores, un índice de 0 a 100"
-            aside={v ? <span>Una semana, de lunes a domingo</span> : undefined}
-          >
-            <div ref={caja}>
-              {consulta.estado === "error" ? (
-                <ErrorBox
-                  mensaje={consulta.mensaje}
-                  onRetry={consulta.reintentar}
-                />
-              ) : !v ? (
-                <SkeletonRows filas={4} />
-              ) : (
-                <>
-                  <DataTable etiqueta="Factores del índice">
-                    <thead>
-                      <tr>
-                        <th scope="col">Factor</th>
-                        <th scope="col" className={tabla.num}>
-                          Umbral
-                        </th>
-                        <th scope="col">Peso en el índice</th>
-                      </tr>
-                    </thead>
-                    <tbody ref={filas}>
-                      {FACTORES.map((f) => (
-                        <tr key={f}>
-                          <th scope="row">
-                            {FACTOR[f]}
-                            <span className={tabla.sub}>{MIDE[f]}</span>
-                          </th>
-                          <td className={tabla.num}>
-                            <strong className={s.umbral}>
-                              {valorFactor(f, v.thresholds[f])}
-                            </strong>
-                          </td>
-                          <td>
-                            <span className={s.peso}>
-                              <span className={s.pesoBarra} aria-hidden="true">
-                                <span
-                                  style={{ width: `${v.weights[f] * 100}%` }}
-                                />
-                              </span>
-                              <span className="num">
-                                {porcentaje(v.weights[f])}
-                              </span>
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </DataTable>
-                  <p className={s.formula}>
-                    Cada factor suma 50 puntos al alcanzar su umbral y 100 al
-                    duplicarlo; desde el umbral se considera superado. El índice
-                    es la suma de los cuatro factores según su peso.
-                  </p>
-                </>
-              )}
-            </div>
-          </Section>
-
-          {!fallo && (
-            <Section titulo="Niveles">
-              {!v ? <SkeletonRows filas={4} /> : <Niveles reglas={v} />}
-            </Section>
-          )}
-        </Stack>
-
-        <Stack>
-          <Section titulo="Qué no es">
-            <ul className={s.noEs}>
-              <li>
-                Un diagnóstico médico. El <em>burnout</em> es un fenómeno
-                ocupacional, no una enfermedad (OMS, CIE-11, QD85).
-              </li>
-              <li>
-                Una calificación de las personas: describe condiciones de
-                trabajo.
-              </li>
-              <li>
-                Una decisión: ordena qué revisar primero y la decisión la toma
-                una persona.
-              </li>
-              <li>
-                Algo que vea la persona evaluada: en Mis datos se muestran los
-                datos cargados, nunca el índice.
-              </li>
-            </ul>
-          </Section>
-
-          {!fallo && (
-            <Section titulo="Historial de versiones">
-              {!datos ? (
-                <SkeletonRows filas={2} />
-              ) : (
-                <DataTable etiqueta="Versiones de las reglas">
+      <div className={s.rejilla}>
+        <Section
+          className={s.factores}
+          titulo="Cuatro factores, un índice de 0 a 100"
+          aside={v ? <span>Una semana, de lunes a domingo</span> : undefined}
+        >
+          <div ref={caja}>
+            {consulta.estado === "error" ? (
+              <ErrorBox
+                mensaje={consulta.mensaje}
+                onRetry={consulta.reintentar}
+              />
+            ) : !v ? (
+              <SkeletonRows filas={4} />
+            ) : (
+              <>
+                <DataTable etiqueta="Factores del índice">
                   <thead>
                     <tr>
-                      <th scope="col">Versión</th>
-                      <th scope="col">Inicio</th>
-                      <th scope="col">Estado</th>
+                      <th scope="col">Factor</th>
+                      <th scope="col" className={tabla.num}>
+                        Umbral
+                      </th>
+                      <th scope="col">Peso en el índice</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {datos.versiones.map((version) => (
-                      <tr key={version.version}>
+                  <tbody ref={filas}>
+                    {FACTORES.map((f) => (
+                      <tr key={f}>
                         <th scope="row">
-                          {version.version}
-                          <span className={`${tabla.sub} ${s.detalleVersion}`}>
-                            {detalleVersion(version)}
-                          </span>
+                          {FACTOR[f]}
+                          <span className={tabla.sub}>{MIDE[f]}</span>
                         </th>
-                        <td>{fecha(version.effectiveFrom)}</td>
+                        <td className={tabla.num}>
+                          <strong className={s.umbral}>
+                            {valorFactor(f, v.thresholds[f])}
+                          </strong>
+                        </td>
                         <td>
-                          <StatusTag tono={TONO_VERSION[version.estado]}>
-                            {ESTADO_VERSION[version.estado]}
-                          </StatusTag>
+                          <span className={s.peso}>
+                            <span className={s.pesoBarra} aria-hidden="true">
+                              <span
+                                style={{ width: `${v.weights[f] * 100}%` }}
+                              />
+                            </span>
+                            <span className="num">
+                              {porcentaje(v.weights[f])}
+                            </span>
+                          </span>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </DataTable>
-              )}
-            </Section>
-          )}
-        </Stack>
-      </Columns>
+                <p className={s.formula}>
+                  Cada factor suma 50 puntos al alcanzar su umbral y 100 al
+                  duplicarlo; desde el umbral se considera superado. El índice
+                  es la suma de los cuatro factores según su peso.
+                </p>
+              </>
+            )}
+          </div>
+        </Section>
+
+        {!fallo && (
+          <Section className={s.niveles} titulo="Niveles">
+            {!v ? <SkeletonRows filas={4} /> : <Niveles reglas={v} />}
+          </Section>
+        )}
+
+        <Section className={s.noEsSeccion} titulo="Qué no es">
+          <ul className={s.noEs}>
+            <li>
+              Un diagnóstico médico. El <em>burnout</em> es un fenómeno
+              ocupacional, no una enfermedad (OMS, CIE-11, QD85).
+            </li>
+            <li>
+              Una calificación de las personas: describe condiciones de trabajo.
+            </li>
+            <li>
+              Una decisión: ordena qué revisar primero y la decisión la toma una
+              persona.
+            </li>
+            <li>
+              Algo que vea la persona evaluada: en Mis datos se muestran los
+              datos cargados, nunca el índice.
+            </li>
+          </ul>
+        </Section>
+
+        {!fallo && (
+          <Section className={s.versiones} titulo="Historial de versiones">
+            {!datos ? (
+              <SkeletonRows filas={2} />
+            ) : (
+              <DataTable etiqueta="Versiones de las reglas">
+                <thead>
+                  <tr>
+                    <th scope="col">Versión</th>
+                    <th scope="col">Inicio</th>
+                    <th scope="col">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {datos.versiones.map((version) => (
+                    <tr key={version.version}>
+                      <th scope="row">
+                        {version.version}
+                        <span className={`${tabla.sub} ${s.detalleVersion}`}>
+                          {detalleVersion(version)}
+                        </span>
+                      </th>
+                      <td className={s.fecha}>{fecha(version.effectiveFrom)}</td>
+                      <td>
+                        <StatusTag tono={TONO_VERSION[version.estado]}>
+                          {ESTADO_VERSION[version.estado]}
+                        </StatusTag>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </DataTable>
+            )}
+          </Section>
+        )}
+      </div>
 
       {gestiona && <Borradores edita={edita} />}
     </div>
@@ -374,7 +372,7 @@ function Borradores({ edita }: { edita: boolean }) {
                     {b.motivo || "Sin motivo todavía"}
                   </td>
                   <td>{b.creadoPor.nombre}</td>
-                  <td>{momentoConAnio(b.updatedAt)}</td>
+                  <td className={s.fecha}>{momentoConAnio(b.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>

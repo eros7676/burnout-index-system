@@ -31,9 +31,9 @@
   align-content: start;
   min-width: 0;
 }
-/* The save row sits under the controls, not under the notes. */
+/* The save row starts on the form's left edge, like the actions of every other form. */
 .campos[data-solo] {
-  grid-column: 5 / span 8;
+  grid-column: 1 / -1;
 }
 /* Four related numbers read as a 2 x 2 block of short fields, never as three and one. */
 .cuadricula {

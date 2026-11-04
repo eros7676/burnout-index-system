@@ -2,6 +2,37 @@
   display: grid;
   gap: var(--space-5);
 }
+/* Two rows of two cards: the cards of a row share their top and bottom edges (R17). Stacked,
+   they keep the reading order factors, levels, what it is not, versions. */
+.rejilla {
+  display: grid;
+  gap: var(--gutter);
+}
+@media (min-width: 1101px) {
+  .rejilla {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .factores,
+  .niveles {
+    grid-column: span 8;
+  }
+  .noEsSeccion,
+  .versiones {
+    grid-column: span 4;
+  }
+  .factores {
+    grid-row: 1;
+  }
+  .niveles {
+    grid-row: 2;
+  }
+  .noEsSeccion {
+    grid-row: 1;
+  }
+  .versiones {
+    grid-row: 2;
+  }
+}
 .umbral {
   font-weight: var(--weight-strong);
 }
@@ -86,4 +117,8 @@
 }
 .pie {
   margin-top: var(--space-4);
+}
+/* Dates and times in a cell stay on one line. */
+.fecha {
+  white-space: nowrap;
 }

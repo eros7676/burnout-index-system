@@ -102,6 +102,7 @@ export function Dialogos({
         titulo="¿Descartar el borrador?"
         confirmar="Descartar borrador"
         enCurso="Descartando…"
+        peligrosa
         onConfirmar={() => onConfirmar("descartar")}
       >
         <p>

@@ -92,7 +92,7 @@ export function VistaBorrador({
     texto: string,
     enCurso: string,
     alPulsar: () => void,
-    variante: "secondary" | "quiet" = "secondary",
+    variante: "secondary" | "dangerSecondary" = "secondary",
   ) => {
     const d = acciones?.[accion];
     if (!d?.visible) return null;
@@ -154,7 +154,7 @@ export function VistaBorrador({
                 "Descartar borrador",
                 "Descartando…",
                 () => b.setDialogo("descartar"),
-                "quiet",
+                "dangerSecondary",
               )}
             </>
           ) : undefined

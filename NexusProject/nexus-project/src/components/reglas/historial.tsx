@@ -57,7 +57,9 @@ export function Historial({
             <strong>{e.etiqueta}</strong>
             <span className={s.meta}>
               {e.actor.nombre}
-              {e.actor.rol ? ` (${ROL[e.actor.rol]})` : ""}
+              {e.actor.rol && ROL[e.actor.rol] !== e.actor.nombre
+                ? ` (${ROL[e.actor.rol]})`
+                : ""}
               {" · "}
               <time dateTime={e.createdAt}>{momentoConAnio(e.createdAt)}</time>
             </span>
