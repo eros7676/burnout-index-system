@@ -3,7 +3,6 @@ import { test } from "node:test";
 import type {
   CierreTareaDTO,
   SemanaTareasDTO,
-  TareaDTO,
 } from "../src/shared/contratos/tareas";
 import {
   diasAtrasoTexto,
@@ -13,7 +12,6 @@ import {
   textoHistorial,
   hrefTareasSemana,
   detalleCoincideEnTodas,
-  tareasEnlazables,
   verificacionDetalle,
 } from "../src/components/tareas/textos";
 
@@ -134,27 +132,6 @@ test("el enlace a las tareas de una semana conserva solo lo que cambia la vista"
     }),
     "/employees/EMP-001/weeks/2026-10-12?page=3",
   );
-});
-
-const tarea = (origenRef: string | null): TareaDTO => ({
-  taskId: "OPS-1",
-  titulo: "t",
-  origen: "o",
-  origenRef,
-  asignadaEl: "2026-10-01",
-  venceEl: null,
-  completadaEl: null,
-  estado: "PENDIENTE",
-  diasAtraso: null,
-});
-
-test("el identificador es un enlace solo si todas las filas pueden enlazar", () => {
-  assert.equal(tareasEnlazables([]), false);
-  assert.equal(
-    tareasEnlazables([tarea("https://x/1"), tarea("https://x/2")]),
-    true,
-  );
-  assert.equal(tareasEnlazables([tarea("https://x/1"), tarea(null)]), false);
 });
 
 const semanaConTareas = (

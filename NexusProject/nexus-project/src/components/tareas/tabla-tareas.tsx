@@ -3,18 +3,16 @@ import type { Ref } from "react";
 import type { TareaDTO } from "@/shared/contratos/tareas";
 import { DataTable, tabla } from "@/shared/ui";
 import { EstadoTareaTag } from "./estado-tarea";
-import { diasAtrasoTexto, fechaTarea, tareasEnlazables } from "./textos";
+import { diasAtrasoTexto, fechaTarea } from "./textos";
 import s from "./tabla-tareas.module.css";
 
 /** Only a reference the server already checked as https is ever linked, and only when every row has one. */
-function Identificador({
-  tarea,
-  enlazar,
-}: {
-  tarea: TareaDTO;
-  enlazar: boolean;
-}) {
-  if (!enlazar || !tarea.origenRef) return <>{tarea.taskId}</>;
+/**
+ * The task id, a link to the source system when the row carries a reference. A row without one keeps
+ * the same weight and never wraps, so the column reads as one list of ids.
+ */
+function Identificador({ tarea }: { tarea: TareaDTO }) {
+  if (!tarea.origenRef) return <span className={s.id}>{tarea.taskId}</span>;
   return (
     <a
       className={s.link}
@@ -45,7 +43,6 @@ export function TablaTareas({
   historial?: (taskId: string) => string;
   cuerpoRef?: Ref<HTMLTableSectionElement>;
 }) {
-  const enlazar = tareasEnlazables(tareas);
   return (
     <DataTable etiqueta={etiqueta}>
       <thead>
@@ -71,7 +68,7 @@ export function TablaTareas({
         {tareas.map((t) => (
           <tr key={t.taskId}>
             <th scope="row">
-              <Identificador tarea={t} enlazar={enlazar} />
+              <Identificador tarea={t} />
             </th>
             <td className={s.title}>{t.titulo}</td>
             <td>{t.origen}</td>

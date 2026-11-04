@@ -9,6 +9,10 @@
   font-weight: var(--weight-strong);
   white-space: nowrap;
 }
+.id {
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+}
 .link:hover {
   text-decoration: underline;
   text-underline-offset: 3px;

@@ -6,7 +6,6 @@ import type {
   CierreTareaDTO,
   EstadoTarea,
   SemanaTareasDTO,
-  TareaDTO,
 } from "../../shared/contratos/tareas";
 
 /** One task's status in a table row. */
@@ -37,11 +36,6 @@ export function fechaTarea(fecha: string | null, referencia: string) {
   return fecha.slice(0, 4) === referencia.slice(0, 4)
     ? diaCorto(fecha)
     : `${diaCorto(fecha)} ${fecha.slice(0, 4)}`;
-}
-
-/** A task id is a link only when every row of the table can link; otherwise all rows read as plain text. */
-export function tareasEnlazables(tareas: TareaDTO[]) {
-  return tareas.length > 0 && tareas.every((t) => t.origenRef !== null);
 }
 
 export type Verificacion =

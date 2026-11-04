@@ -113,9 +113,16 @@ test("Tareas de la semana: la persona, la semana, los cuatro indicadores y el de
       `${id}, ${columna}`,
     ).toContainText(texto);
 
-  // One style for every identifier: the rows do not all carry a source reference, so none is a link.
+  // The identifier opens the source system only when it has a reference, in a new tab.
+  const origen = tabla(page).getByRole("link", { name: /^OPS-1432/ });
+  await expect(origen).toHaveAttribute(
+    "href",
+    "https://jira.example/browse/OPS-1432",
+  );
+  await expect(origen).toHaveAttribute("target", "_blank");
+  await expect(origen).toHaveAttribute("rel", /noopener/);
   await expect(
-    tabla(page).getByRole("link", { name: /^OPS-143/ }),
+    tabla(page).getByRole("link", { name: /^OPS-1433/ }),
   ).toHaveCount(0);
 
   // One read for the week, for that person and that Monday.
