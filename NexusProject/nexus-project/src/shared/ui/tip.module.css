@@ -1,0 +1,65 @@
+/* The trigger keeps its own layout; it only gains a focus ring and a help cursor. */
+.ancla {
+  display: inline-flex;
+  max-width: 100%;
+  cursor: help;
+  border-radius: var(--radius-2xs);
+}
+
+/* One bubble for every tooltip: dark ink, white text (≥ 4.5:1), above its anchor. */
+.burbuja {
+  position: fixed;
+  z-index: 50;
+  display: grid;
+  gap: var(--space-1);
+  max-width: 18rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--surface);
+  box-shadow: var(--shadow-pop);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+  pointer-events: auto;
+}
+.burbuja[data-visible] {
+  opacity: 1;
+}
+.texto {
+  display: block;
+}
+.titulo {
+  color: var(--tip-ink-2);
+}
+.filas {
+  display: grid;
+  gap: 2px;
+}
+/* Value first and strong, its label after it in secondary ink. */
+.fila {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.valor {
+  font-weight: var(--weight-strong);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.etiqueta {
+  color: var(--tip-ink-2);
+}
+/* A series is keyed with a short stroke of its colour, not a box. */
+.clave {
+  flex: none;
+  align-self: center;
+  width: 10px;
+  height: 3px;
+  border-radius: 2px;
+}
+.nota {
+  max-width: 16rem;
+  color: var(--tip-ink-2);
+}

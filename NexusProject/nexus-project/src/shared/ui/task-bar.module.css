@@ -9,7 +9,7 @@
 }
 .part[data-parte="completadas"],
 .key[data-parte="completadas"] {
-  --fill: var(--line-strong);
+  --fill: var(--chart-quiet);
 }
 
 .tasks {
@@ -25,15 +25,32 @@
 }
 .bar {
   display: flex;
-  gap: var(--space-1);
+  gap: 2px;
   height: 10px;
   border-radius: var(--radius-xs);
-  overflow: hidden;
 }
+.bar:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+/* 2 px surface gaps; the whole bar rounds its two ends. */
 .part {
   flex-basis: 0;
-  min-width: 3px;
+  min-width: 4px;
   background: var(--fill);
+}
+.part:first-child {
+  border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+}
+.part:last-of-type {
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+}
+.part:only-of-type {
+  border-radius: var(--radius-xs);
+}
+.part[data-activo] {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
 }
 .label {
   color: var(--ink-2);

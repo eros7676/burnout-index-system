@@ -33,6 +33,7 @@ import {
 } from "@/shared/ui";
 import { Pagination } from "@/shared/ui/pagination";
 import { textoTareas } from "@/shared/ui/task-bar";
+import { DEFINICION, DEFINICION_FACTOR } from "../definiciones";
 import { useSesion } from "../shell/sesion";
 import { HistorialTarea } from "./historial-tarea";
 import { ResumenTareas } from "./resumen-tareas";
@@ -172,12 +173,14 @@ export function SemanaTareas({
                         termino: resultado.actualizado
                           ? "Índice"
                           : "Índice calculado",
+                        ayuda: DEFINICION.indice,
                         valor: decimal(resultado.indice),
                       },
                     ]
                   : []),
                 {
                   termino: "Nivel",
+                  ayuda: DEFINICION.nivel,
                   valor: (
                     <LevelTag
                       nivel={resultado?.nivel ?? null}
@@ -187,10 +190,12 @@ export function SemanaTareas({
                 },
                 {
                   termino: FACTOR.HE,
+                  ayuda: DEFINICION_FACTOR.HE,
                   valor: valorFactor("HE", datos.indicadores.horasExtra),
                 },
                 {
                   termino: FACTOR.DS,
+                  ayuda: DEFINICION_FACTOR.DS,
                   valor: valorFactor(
                     "DS",
                     datos.indicadores.diasConsecutivosSinDescanso,
@@ -198,6 +203,7 @@ export function SemanaTareas({
                 },
                 {
                   termino: FACTOR.CT,
+                  ayuda: DEFINICION_FACTOR.CT,
                   valor: textoTareas({
                     activas: datos.indicadores.tareasActivas,
                     pendientes: datos.indicadores.tareasPendientes,
@@ -206,6 +212,7 @@ export function SemanaTareas({
                 },
                 {
                   termino: FACTOR.VP,
+                  ayuda: DEFINICION_FACTOR.VP,
                   valor: valorFactor(
                     "VP",
                     datos.indicadores.vacacionesPendientesDias,

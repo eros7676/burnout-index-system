@@ -11,11 +11,11 @@ import {
   SkeletonRows,
   tabla,
 } from "@/shared/ui";
+import { FechaTarea } from "../fecha-tarea";
 import { EstadoTareaTag } from "./estado-tarea";
 import { tareasApi } from "./tareas-api";
 import {
   diasAtrasoTexto,
-  fechaTarea,
   hrefTareasSemana,
   textoHistorial,
 } from "./textos";
@@ -102,8 +102,8 @@ export function HistorialTarea({
                   <td className={tabla.centro}>
                     <EstadoTareaTag estado={c.estado} />
                   </td>
-                  <td>{fechaTarea(c.venceEl, c.periodStart)}</td>
-                  <td>{fechaTarea(c.completadaEl, c.periodStart)}</td>
+                  <td><FechaTarea fecha={c.venceEl} referencia={c.periodStart} /></td>
+                  <td><FechaTarea fecha={c.completadaEl} referencia={c.periodStart} /></td>
                   <td className={tabla.num}>{diasAtrasoTexto(c.diasAtraso)}</td>
                 </tr>
               ))}

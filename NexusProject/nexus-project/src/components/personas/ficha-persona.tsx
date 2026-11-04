@@ -32,7 +32,9 @@ import {
   Skeleton,
   SkeletonRows,
   tabla,
+  Tip,
 } from "@/shared/ui";
+import { DEFINICION, DEFINICION_FACTOR } from "../definiciones";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { TaskBar, TaskLegend } from "@/shared/ui/task-bar";
 import { SeccionTareas } from "@/components/tareas";
@@ -244,7 +246,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                 </div>
                 <div className={s.figures}>
                   <Figure
-                    etiqueta="Índice"
+                    etiqueta={<Tip contenido={DEFINICION.indice}>Índice</Tip>}
                     valor={decimal(vista.indice ?? null)}
                     detalle={
                       vista.cambio
@@ -255,7 +257,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                     }
                   />
                   <Figure
-                    etiqueta="Semanas seguidas en Alto"
+                    etiqueta={<Tip contenido={DEFINICION.racha}>Semanas seguidas en Alto</Tip>}
                     valor={
                       vista.actual.actualizado ? entero(vista.enAlto ?? 0) : "—"
                     }
@@ -290,10 +292,11 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
           aside={
             reglas.estado === "listo" ? (
               <span>
-                Líneas en {entero(reglas.datos.vigente.mediumLimit)} y{" "}
+                Bandas en {entero(reglas.datos.vigente.mediumLimit)} y{" "}
                 {entero(reglas.datos.vigente.highLimit)}: límites de Medio y
-                Alto. Superar el límite de Alto una sola semana queda en Medio;
-                pasa a Alto si se repite en dos semanas seguidas.
+                Alto. Un punto hueco superó el límite de Alto sin repetirlo la
+                semana anterior, por eso queda en Medio. Pase el cursor, toque
+                o use las flechas para ver cada semana.
               </span>
             ) : undefined
           }
@@ -329,20 +332,20 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                 <tr>
                   <th scope="col">Semana</th>
                   <th scope="col" className={tabla.centro}>
-                    Nivel
+                    <Tip contenido={DEFINICION.nivel}>Nivel</Tip>
                   </th>
                   <th scope="col" className={tabla.num}>
-                    Índice
+                    <Tip contenido={DEFINICION.indice}>Índice</Tip>
                   </th>
                   <th scope="col" className={tabla.num}>
-                    Horas extra
+                    <Tip contenido={DEFINICION_FACTOR.HE}>Horas extra</Tip>
                   </th>
                   <th scope="col" className={`${tabla.num} ${s.wrap}`}>
-                    Días consecutivos sin descanso
+                    <Tip contenido={DEFINICION_FACTOR.DS}>Días consecutivos sin descanso</Tip>
                   </th>
-                  <th scope="col">Tareas</th>
+                  <th scope="col"><Tip contenido={DEFINICION_FACTOR.CT}>Tareas</Tip></th>
                   <th scope="col" className={`${tabla.num} ${s.wrap}`}>
-                    Vacaciones pendientes
+                    <Tip contenido={DEFINICION_FACTOR.VP}>Vacaciones pendientes</Tip>
                   </th>
                   <th scope="col" className={tabla.centro}>
                     <span className="sr-only">Informe</span>

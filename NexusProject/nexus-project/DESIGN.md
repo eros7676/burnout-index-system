@@ -42,15 +42,15 @@ Code, comments and this file are English.
 | `--paper` / `--surface` / `--surface-2` | #f2f3f1 / #fff / #f7f8f6 | app background, sections, table head and hover |
 | `--line` / `--line-strong` | #e1e4df / #c6ccc5 | dividers, control borders |
 | `--accent` (+ `-hover`, `-soft`) | #1f5673 | interactive only: links, primary button, selected nav, focus |
-| `--level-bajo` | #3f7559 | Bajo (calm, recedes) |
-| `--level-medio` | #9a5b0b | Medio |
-| `--level-alto` | #b42318 | Alto (the only urgent color) |
+| `--level-bajo` (+ `-ink`) | #1a8c63 (#146b4b) | Bajo (calm) |
+| `--level-medio` (+ `-ink`) | #bf7f0c (#8a5a00) | Medio |
+| `--level-alto` (+ `-ink`) | #a3192b | Alto (the only urgent color) |
 | `--level-incompleto` | #5c6875, hatched | Incompleto: a gap in history, not a severity |
-| `--level-bajo-mute`, `--level-medio-mute` | Bajo and Medio mixed toward the surface | the calm weeks on the strip recede; the same hue, one token each, no opacity |
+| `--chart-quiet` | #aab3bc | the part of a chart that is not the point (completed tasks, regular hours, past weeks of a trend); its value is always in words or in the readout |
 | `--danger` / `--success` / `--notice` (+ `-soft`) | #a3174f / #0b6a62 / #5b3d9e | states: request errors (berry), completed actions (teal), simulated or pending (violet). Hues of their own, apart from the level scale and the accent, and always with an icon |
 | `--strip` family | #18212b | the dark demo strip of the shell |
 
-The level scale is sequential (calm → urgent). Each level also differs in
+The level fills pass the palette validator against the surface (lightness band, chroma, CVD ΔE ≥ 7.9 with the shape marks as secondary encoding, 3:1); the `-ink` steps are for text on the `-soft` fills (≥ 4.5:1). The level scale is sequential (calm → urgent). Each level also differs in
 shape: Bajo/Medio a square mark, Alto a diamond, Incompleto/Desactualizado an
 outline; Incompleto fills are hatched (WCAG 1.4.1). The mark is the same in a
 LevelTag, a legend key (`LevelMark`) and the distribution key.
@@ -148,7 +148,9 @@ key lines (the table bleeds one cell padding past them). Column rules are
 | `Figure` | a number with its label above and meaning below; peers share width, top and gap |
 | `LevelTag`, `LevelMark` | level as word + color + shape; `actualizado=false` reads "Desactualizado"; the mark alone for legends |
 | `WeekStrip` | eight weeks, oldest → newest; consecutive Alto weeks join into one bar |
-| `DistributionBar`, `WeekColumns`, `IndexChart`, `FactorBullet` | SVG-free, dependency-free charts, each with a hidden data table or aria-label; weekly charts share plot height and bar width |
+| `Plot` | the frame of every weekly chart: y axis with round ticks (`escalaLinda`), hairline grid, optional quiet level bands, one slot per week as the hit target, week labels below |
+| `DistributionBar`, `WeekColumns`, `IndexChart`, `FactorBullet` | dependency-free charts (the index line is the only inline SVG), each with a hidden data table or accessible name and a readout on every mark; bars ≤ 24 px with 2 px surface gaps; one direct label at most; a missing week is a gap, never zero |
+| `Tip`, `useLectura` | one tooltip bubble for the app. `Tip` on one trigger, only for what the screen does not say (a rule, a definition, a full date); `useLectura` gives a chart one tab stop, arrow keys between marks and a readout that leads with the value. Hover after 200 ms, focus at once, tap on touch, Escape dismisses, hoverable, persistent (WCAG 1.4.13) |
 | `DataTable` | scrollable region with a label; numbers right-aligned with their header; first and last columns on the Section's key lines; `tabla.rowLink` names a row (ink), `tabla.cellLink` is the one action or value that opens a detail (accent) |
 | `Button`, `ButtonLink` | one height (`--control-h`); primary filled, secondary outlined, quiet text-only; `alinearTexto` offsets a quiet button's padding so its text continues the column |
 | `SkeletonRows`, `Empty`, `ErrorBox`, `Notice` | loading inside the datum's box; empty says what would appear and the next step, left-aligned; errors say what failed and offer retry; each state carries an icon |
@@ -258,6 +260,9 @@ formula guard.
 - 2026-11-02 — Component styles are CSS Modules; Tailwind runs on globals.css only, for its reset. (held by next.config.ts)
 - 2026-11-02 — Every control in the main area is `--control-h` (32 px); no screen sets its own control height. (held by work/enterprise/audit/rules.mjs, R10)
 - 2026-11-02 — Type is Carbon's productive pairs, and the line height is resolved from the size by `--leading`. (held by globals.css)
+- 2026-11-04 — Level fills re-stepped to pass the palette validator (Medio and Alto were ΔE 2.6 for deuteranopia); tags take the `-ink` text steps (D12). (held by globals.css and the dataviz validator run in work/graficos/inventario.md)
+- 2026-11-04 — Better charts, not more charts: every existing chart has axes where it plots a quantity, a readout on every mark (hover, arrow keys, tap) and keeps its text alternative; no chart library (D12). (held by src/shared/ui/plot.tsx, tip.tsx and the e2e chart checks)
+- 2026-11-04 — A tooltip only adds what the screen does not say (a rule, a definition, a full date) and never holds essential information (NN/g); it follows WCAG 2.2 SC 1.4.13 (D12). (held by src/shared/ui/tip.tsx)
 - 2026-11-02 — Danger, success and notice have hues of their own and an icon; the four level hues appear only on level encodings. (held by globals.css)
 - 2026-11-02 — The accent appears only on interactive or selected elements. (held by owner)
 

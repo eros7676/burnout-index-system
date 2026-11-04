@@ -25,17 +25,17 @@
 }
 .tag[data-nivel="BAJO"] {
   background: var(--level-bajo-soft);
-  color: var(--level-bajo);
+  color: var(--level-bajo-ink);
   border-color: transparent;
 }
 .tag[data-nivel="MEDIO"] {
   background: var(--level-medio-soft);
-  color: var(--level-medio);
+  color: var(--level-medio-ink);
   border-color: transparent;
 }
 .tag[data-nivel="ALTO"] {
   background: var(--level-alto-soft);
-  color: var(--level-alto);
+  color: var(--level-alto-ink);
   border-color: transparent;
 }
 .tag[data-nivel="ALTO"]::before {
@@ -78,13 +78,26 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  padding: 2px;
+  margin: -2px;
+  border-radius: var(--radius-xs);
   vertical-align: middle;
+}
+.strip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* The week under the pointer or the arrow keys lifts with an ink ring. */
+.cell[data-activo] {
+  box-shadow:
+    0 0 0 1px var(--surface),
+    0 0 0 3px var(--ink);
 }
 .cell {
   width: 12px;
   height: 20px;
   border-radius: var(--radius-xs);
-  background: var(--level-bajo-mute);
+  background: var(--level-bajo);
 }
 .cell[data-vacia] {
   background: transparent;
@@ -94,7 +107,7 @@
   background: var(--line);
 }
 .cell[data-nivel="MEDIO"] {
-  background: var(--level-medio-mute);
+  background: var(--level-medio);
 }
 .cell[data-nivel="ALTO"] {
   background: var(--level-alto);

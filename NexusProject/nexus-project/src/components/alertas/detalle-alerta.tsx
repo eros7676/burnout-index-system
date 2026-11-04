@@ -22,6 +22,7 @@ import {
   tabla,
 } from "@/shared/ui";
 import { StatusTag } from "@/shared/ui/status-tag";
+import { DEFINICION } from "../definiciones";
 import { NotificacionAlerta } from "../notificacion-alerta";
 import { SeguimientoAlerta } from "../seguimiento/seguimiento-alerta";
 import { useSesion } from "../shell/sesion";
@@ -117,6 +118,7 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
                     // One result, one fact: the index with its level beside it, so the
                     // strip holds six facts on one row.
                     termino: "Índice y nivel",
+                    ayuda: DEFINICION.nivel,
                     valor: (
                       <span className={s.resultado}>
                         {decimal(semana?.actualizado ? semana.indice : null)}
@@ -159,6 +161,7 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
                   },
                   {
                     termino: "Vigencia",
+                    ayuda: DEFINICION.vigenciaAlerta,
                     valor: superada ? (
                       <StatusTag tono="aviso">{VIGENCIA.SUPERADA}</StatusTag>
                     ) : (

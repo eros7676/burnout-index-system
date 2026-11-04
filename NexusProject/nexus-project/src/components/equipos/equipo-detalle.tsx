@@ -22,7 +22,9 @@ import {
   SkeletonRows,
   Toolbar,
   tabla,
+  Tip,
 } from "@/shared/ui";
+import { DEFINICION } from "../definiciones";
 import { Pagination } from "@/shared/ui/pagination";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { organizacionApi } from "../organizacion/api";
@@ -174,9 +176,9 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                   <DistributionBar conteo={equipo.conteo} leyenda />
                 </div>
                 <div className={s.cifras}>
-                  <Figure etiqueta="Índice promedio" valor={decimal(equipo.promedioIndice)} />
+                  <Figure etiqueta={<Tip contenido={DEFINICION.promedio}>Índice promedio</Tip>} valor={decimal(equipo.promedioIndice)} />
                   <Figure
-                    etiqueta="Personas en Alto"
+                    etiqueta={<Tip contenido={DEFINICION.enAltoEquipo}>Personas en Alto</Tip>}
                     valor={entero(equipo.conteo.ALTO)}
                     tono={equipo.conteo.ALTO > 0 ? "alto" : "neutro"}
                     detalle={
@@ -190,7 +192,7 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                     }
                   />
                   <Figure
-                    etiqueta="Con resultado vigente"
+                    etiqueta={<Tip contenido={DEFINICION.vigentes}>Con resultado vigente</Tip>}
                     valor={`${entero(equipo.evaluadas ?? 0)} de ${entero(equipo.personasEvaluables)}`}
                     detalle={NIVELES.filter((n) => equipo.conteo![n])
                       .map((n) => `${entero(equipo.conteo![n])} ${NIVEL[n]}`)
@@ -219,10 +221,10 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                   <th scope="col">Puesto</th>
                   <th scope="col">Responsable</th>
                   <th scope="col" className={tabla.centro}>
-                    Nivel
+                    <Tip contenido={DEFINICION.nivel}>Nivel</Tip>
                   </th>
                   <th scope="col" className={tabla.num}>
-                    Índice
+                    <Tip contenido={DEFINICION.indice}>Índice</Tip>
                   </th>
                 </tr>
               </thead>
