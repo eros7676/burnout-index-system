@@ -13,7 +13,7 @@
 }
 .count {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 /* The last page stays visible, dimmed, while the next one loads. */
 .results[data-cargando] {
@@ -28,9 +28,6 @@
   text-underline-offset: 3px;
 }
 /* Long factor names wrap onto two lines instead of widening the table. */
-.results thead th {
-  vertical-align: bottom;
-}
 .results thead th.wrap {
   white-space: normal;
   text-wrap: balance;

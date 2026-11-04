@@ -6,9 +6,6 @@
 .teams > [role="region"] {
   position: relative;
 }
-.teams thead th {
-  vertical-align: bottom;
-}
 .teams thead th.wrap {
   white-space: normal;
   text-wrap: balance;
@@ -23,7 +20,7 @@
   display: block;
   margin-top: var(--space-1);
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 /* This week's count, then how it got there. */
 .alto {
@@ -45,7 +42,7 @@
 .link {
   display: block;
   color: var(--accent);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-strong);
 }
 .link:hover {
@@ -62,30 +59,7 @@
 .key {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-}
-.key::before {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  background: var(--fill);
-}
-.key[data-nivel="BAJO"] {
-  --fill: var(--level-bajo);
-}
-.key[data-nivel="MEDIO"] {
-  --fill: var(--level-medio);
-}
-.key[data-nivel="ALTO"] {
-  --fill: var(--level-alto);
-}
-.key[data-nivel="INCOMPLETO"] {
-  --fill: repeating-linear-gradient(
-    -45deg,
-    var(--level-incompleto) 0 2px,
-    var(--level-incompleto-soft) 2px 4px
-  );
+  gap: var(--space-2);
 }
 
 /* Alto per week: eight small columns on one baseline. */
@@ -93,7 +67,7 @@
   display: inline-flex;
   align-items: flex-end;
   gap: 3px;
-  height: 28px;
+  height: var(--control-h);
   border-bottom: 1px solid var(--line-strong);
   vertical-align: middle;
 }
@@ -106,9 +80,9 @@
 .trendBar {
   width: 100%;
   min-height: 3px;
-  border-radius: 2px 2px 0 0;
+  border-radius: var(--radius-2xs) var(--radius-2xs) 0 0;
   background: var(--level-alto);
-  opacity: 0.5;
+  opacity: var(--quiet);
 }
 .trendWeek[data-actual] .trendBar {
   opacity: 1;

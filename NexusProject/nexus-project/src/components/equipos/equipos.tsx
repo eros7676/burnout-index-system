@@ -23,6 +23,7 @@ import {
   DistributionBar,
   Empty,
   ErrorBox,
+  LevelMark,
   PageHeader,
   Section,
   SelectField,
@@ -132,7 +133,8 @@ export function Equipos() {
           activos && datos && datos.items.length > 0 ? (
             <ul className={s.legend} aria-label="Referencia de niveles">
               {NIVELES.map((n) => (
-                <li key={n} className={s.key} data-nivel={n}>
+                <li key={n} className={s.key}>
+                  <LevelMark nivel={n} />
                   {NIVEL[n]}
                 </li>
               ))}
