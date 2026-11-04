@@ -12,6 +12,7 @@ import { useRowsEnter } from "@/shared/motion";
 import {
   Button,
   Empty,
+  Figure,
   ErrorBox,
   Notice,
   Section,
@@ -26,7 +27,7 @@ import { HistorialTarea } from "./historial-tarea";
 import { Linaje, NotaRevision } from "./resumen-tareas";
 import { TablaTareas } from "./tabla-tareas";
 import { tareasApi } from "./tareas-api";
-import { GRUPO_ESTADO, hrefTareasSemana, type VistaTareas } from "./textos";
+import { GRUPO_ESTADO, diasAtrasoTexto, hrefTareasSemana, type VistaTareas } from "./textos";
 import s from "./tareas-de-semana.module.css";
 
 export const estadoDe = (texto: string | null) => ESTADOS_TAREA.find((e) => e === texto);
@@ -41,6 +42,22 @@ const contar = (n: number, una: string, varias: string) =>
 /** How many tasks each status filter option leads to. */
 export const cuantas = (estado: EstadoTarea, r: ResumenTareasDTO) =>
   estado === "COMPLETADA" ? r.completadas : estado === "PENDIENTE" ? r.pendientes : r.vencidas;
+
+/** The week at a glance: how many tasks, how many overdue and by how long, the rest by status. */
+function Cifras({ resumen }: { resumen: ResumenTareasDTO }) {
+  return (
+    <div className={s.cifras}>
+      <Figure etiqueta="Tareas de la semana" valor={entero(resumen.total)} />
+      <Figure
+        etiqueta={GRUPO_ESTADO.VENCIDA}
+        valor={entero(resumen.vencidas)}
+        detalle={resumen.vencidas ? `Atraso máximo, ${diasAtrasoTexto(resumen.diasAtrasoMax)}` : undefined}
+      />
+      <Figure etiqueta={GRUPO_ESTADO.PENDIENTE} valor={entero(resumen.pendientes)} />
+      <Figure etiqueta={GRUPO_ESTADO.COMPLETADA} valor={entero(resumen.completadas)} />
+    </div>
+  );
+}
 
 /** The section's anchor: links to a week's tasks scroll here. */
 export const ANCLA_TAREAS = "tareas";
@@ -130,6 +147,7 @@ function Semana({
 
   return (
     <div className={s.cuerpo}>
+      {hayFilas && <Cifras resumen={datos.resumen} />}
       <Toolbar>
         <SelectorSemana
           opciones={opciones}
@@ -144,19 +162,18 @@ function Semana({
             value={estado ?? ""}
             onChange={(e) => ir({ estado: estadoDe(e.target.value), page: 1, tarea: undefined })}
           >
-            <option value="">Todas ({entero(datos.resumen.total)})</option>
+            <option value="">Todas</option>
             {ESTADOS_TAREA.map((e) => (
               <option key={e} value={e}>
-                {GRUPO_ESTADO[e]} ({entero(cuantas(e, datos.resumen))})
+                {GRUPO_ESTADO[e]}
               </option>
             ))}
           </SelectField>
         )}
         {hayFilas && (
+          // The figures above say the total; the line speaks only when a filter narrows it.
           <p className={s.count} role="status">
-            {total === datos.resumen.total
-              ? contar(total, "tarea", "tareas")
-              : `${entero(total)} de ${contar(datos.resumen.total, "tarea", "tareas")}`}
+            {estado ? `${entero(total)} de ${contar(datos.resumen.total, "tarea", "tareas")}` : ""}
           </p>
         )}
       </Toolbar>

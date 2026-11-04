@@ -493,6 +493,13 @@ test("MySQL organización: altas, cambios, bajas, líder, importación y lectura
       assert.ok(equipoSemana.personasEvaluables >= 5);
       assert.deepEqual([equipoSemana.conteo!.ALTO, equipoSemana.evaluadas, equipoSemana.promedioIndice, equipoSemana.alertasActivas], [1, 1, 91.21, 1]);
       assert.equal(equipoSemana.tendenciaAlto!.at(-1)!.alto, 1);
+      // The week's task counts, summed from the current records (10 tasks, 2 overdue, in the CSV row).
+      assert.deepEqual((await consultarEquipo(db, equipoA, "2026-10-19")).tareas, {
+        activas: 10,
+        vencidas: 2,
+        personasConVencidas: 1,
+        personas: 1,
+      });
 
       const filasP = await db.periodoEmpleado.findMany({ where: { employeeId: id }, orderBy: { periodStart: "asc" } });
       const evaluacion = filasP[1].evaluacionVigenteId!;
@@ -527,6 +534,7 @@ test("MySQL organización: altas, cambios, bajas, líder, importación y lectura
       await crearPersona(db, { employeeId: legajo("C1"), nombre: "Persona ficticia C1", tipo: "TECNICO", teamId: equipoC, desde: "2026-11-02", enCobertura: true }, actor, reloj);
       const c = await consultarEquipo(db, equipoC);
       assert.deepEqual([c.suprimido, c.conteo, c.alertasActivas, c.promedioIndice, c.personasActivas], ["GRUPO_PEQUENO", null, null, null, 1]);
+      assert.equal(c.tareas, null);
       // With one team hidden, the smallest visible one is hidden too, so a total cannot reveal it.
       const lista = await (await get(protegido.equipos, "demo-rrhh", "/api/equipos")).json();
       assert.equal(lista.items.filter((e: { suprimido: string | null }) => e.suprimido === "COMPLEMENTARIA").length, 1);

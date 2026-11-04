@@ -17,6 +17,7 @@ import { conteoVacio } from "../../shared/semanas";
 import { fechaDesdeDb } from "../repositories/fechas";
 import {
   alertasActivasPorEquipo,
+  tareasPorEquipo,
   resumenPorEquipoYSemana,
   tamanosDeEquipos,
 } from "../repositories/equipos-resumen";
@@ -266,7 +267,7 @@ async function calcularEquipos(
   const ventana = periodStart
     ? semanas.filter((s) => s <= periodStart).slice(0, SEMANAS_TENDENCIA).reverse()
     : [];
-  const [resumen, alertas] = await Promise.all([
+  const [resumen, alertas, tareas] = await Promise.all([
     periodStart
       ? resumenPorEquipoYSemana(tx, {
           teamIds: visibles.map((e) => e.teamId),
@@ -277,6 +278,9 @@ async function calcularEquipos(
       tx,
       visibles.map((e) => e.teamId),
     ),
+    periodStart
+      ? tareasPorEquipo(tx, { teamIds: visibles.map((e) => e.teamId), periodStart })
+      : new Map(),
   ]);
   return equipos.map((e) => {
     const tamano = tamanos.get(e.teamId)!;
@@ -299,6 +303,7 @@ async function calcularEquipos(
         promedioIndice: null,
         evaluadas: null,
         tendenciaAlto: null,
+        tareas: null,
       };
     const porSemana = resumen.get(e.teamId);
     const actual = periodStart ? porSemana?.get(periodStart) : undefined;
@@ -311,6 +316,9 @@ async function calcularEquipos(
       evaluadas: periodStart ? (actual?.evaluadas ?? 0) : null,
       tendenciaAlto: periodStart
         ? ventana.map((s) => ({ periodStart: s, alto: porSemana?.get(s)?.conteo.ALTO ?? 0 }))
+        : null,
+      tareas: periodStart
+        ? (tareas.get(e.teamId) ?? { activas: 0, vencidas: 0, personasConVencidas: 0, personas: 0 })
         : null,
     };
   });

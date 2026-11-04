@@ -87,6 +87,16 @@ async function cargar(signal: AbortSignal): Promise<Datos> {
 }
 
 /** The first two causes in words; the rest as a count that wraps as one unit. */
+/** «en 9 personas; 3 más que la semana anterior»: who carries them and the change. */
+function detalleVencidas(v: { total: number; personas: number; anterior: number | null }) {
+  const quienes = v.total ? `en ${entero(v.personas)} ${v.personas === 1 ? "persona" : "personas"}` : "al cierre de la semana";
+  if (v.anterior === null) return quienes;
+  const d = v.total - v.anterior;
+  const cambio =
+    d === 0 ? "igual que la semana anterior" : `${entero(Math.abs(d))} ${d > 0 ? "más" : "menos"} que la semana anterior`;
+  return `${quienes}; ${cambio}`;
+}
+
 function causas(lista: Alerta["causas"] | undefined) {
   if (!lista?.length) return "—";
   const nombres = lista.map((f) => FACTOR[f]);
@@ -167,7 +177,20 @@ export function Resumen() {
         conteo: conteoSemana(datos.personas, periodStart),
       };
     });
-    return { enAlto, nuevas, cerca, equipos, evolucion };
+    // Counts only (no task rows): what is overdue at the week's close across the people in scope.
+    const vencidasEn = (periodStart: string | undefined) => {
+      let total = 0;
+      let personas = 0;
+      if (periodStart)
+        for (const p of datos.personas) {
+          const n = semanaDe(p, periodStart)?.tareasVencidas ?? 0;
+          total += n;
+          if (n) personas++;
+        }
+      return { total, personas };
+    };
+    const vencidas = { ...vencidasEn(semana), anterior: anterior ? vencidasEn(anterior).total : null };
+    return { enAlto, nuevas, cerca, equipos, evolucion, vencidas };
   }, [datos, semana]);
   useRowsEnter(filas, vista?.enAlto);
 
@@ -336,6 +359,11 @@ export function Resumen() {
                         etiqueta={<Tip contenido={DEFINICION.nuevasEnAlto}>Nuevas en Alto</Tip>}
                         valor={entero(vista.nuevas)}
                         detalle="respecto de la semana anterior"
+                      />
+                      <Figure
+                        etiqueta={<Tip contenido={DEFINICION.tareasVencidas}>Tareas vencidas</Tip>}
+                        valor={entero(vista.vencidas.total)}
+                        detalle={detalleVencidas(vista.vencidas)}
                       />
                     </div>
                     <DistributionBar conteo={periodo.conteo} />

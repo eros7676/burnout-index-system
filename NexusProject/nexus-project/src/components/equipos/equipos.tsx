@@ -207,6 +207,9 @@ export function Equipos() {
                         <th scope="col" className={`${tabla.num} ${s.wrap}`}>
                           <Tip contenido={DEFINICION.promedio}>Índice promedio</Tip>
                         </th>
+                        <th scope="col" className={`${tabla.num} ${s.wrap}`}>
+                          <Tip contenido={DEFINICION.tareasVencidas}>Tareas vencidas</Tip>
+                        </th>
                       </>
                     ) : (
                       <th scope="col" className={tabla.centro}>
@@ -238,7 +241,7 @@ export function Equipos() {
                           <StatusTag>De baja</StatusTag>
                         </td>
                       ) : e.suprimido || !e.conteo ? (
-                        <td colSpan={3} className={tabla.muted}>
+                        <td colSpan={4} className={tabla.muted}>
                           {e.suprimido ? MOTIVO_SUPRESION[e.suprimido] : "Sin semanas cargadas."}
                         </td>
                       ) : (
@@ -266,6 +269,14 @@ export function Equipos() {
                             {e.evaluadas !== null && e.evaluadas < e.personasEvaluables && (
                               <span className={tabla.sub}>
                                 {`en ${entero(e.evaluadas)} de ${entero(e.personasEvaluables)}`}
+                              </span>
+                            )}
+                          </td>
+                          <td className={tabla.num}>
+                            {e.tareas ? entero(e.tareas.vencidas) : "—"}
+                            {!!e.tareas?.vencidas && (
+                              <span className={tabla.sub}>
+                                {`en ${entero(e.tareas.personasConVencidas)} ${e.tareas.personasConVencidas === 1 ? "persona" : "personas"}`}
                               </span>
                             )}
                           </td>

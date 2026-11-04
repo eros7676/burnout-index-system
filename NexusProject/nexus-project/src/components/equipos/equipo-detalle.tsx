@@ -2,9 +2,8 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useConsulta } from "@/client/use-consulta";
-import type { Nivel } from "@/shared/contracts";
 import type { DirectorioPersonasDTO, EquipoDTO } from "@/shared/contratos/organizacion";
-import { NIVEL, decimal, entero, semana as textoSemana } from "@/shared/formato";
+import { decimal, entero, semana as textoSemana } from "@/shared/formato";
 import { useArrival, usePageEnter } from "@/shared/motion";
 import { tienePermiso } from "@/shared/permisos";
 import {
@@ -38,7 +37,6 @@ import { useSesion } from "../shell/sesion";
 import { MOTIVO_SUPRESION, TendenciaAlto } from "./equipos";
 import s from "./equipos.module.css";
 
-const NIVELES: Nivel[] = ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"];
 const TAMANO_PAGINA = 50;
 
 /** The team's own page: who leads it, how the week looks, and its members, one page at a time. */
@@ -191,7 +189,11 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                   <DistributionBar conteo={equipo.conteo} leyenda />
                 </div>
                 <div className={s.cifras}>
-                  <Figure etiqueta={<Tip contenido={DEFINICION.promedio}>Índice promedio</Tip>} valor={decimal(equipo.promedioIndice)} />
+                  <Figure
+                    etiqueta={<Tip contenido={DEFINICION.promedio}>Índice promedio</Tip>}
+                    valor={decimal(equipo.promedioIndice)}
+                    detalle={`con resultado vigente en ${entero(equipo.evaluadas ?? 0)} de ${entero(equipo.personasEvaluables)} personas`}
+                  />
                   <Figure
                     etiqueta={<Tip contenido={DEFINICION.enAltoEquipo}>Personas en Alto</Tip>}
                     valor={entero(equipo.conteo.ALTO)}
@@ -206,13 +208,17 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                       )
                     }
                   />
-                  <Figure
-                    etiqueta={<Tip contenido={DEFINICION.vigentes}>Con resultado vigente</Tip>}
-                    valor={`${entero(equipo.evaluadas ?? 0)} de ${entero(equipo.personasEvaluables)}`}
-                    detalle={NIVELES.filter((n) => equipo.conteo![n])
-                      .map((n) => `${entero(equipo.conteo![n])} ${NIVEL[n]}`)
-                      .join(", ")}
-                  />
+                  {equipo.tareas && (
+                    <Figure
+                      etiqueta={<Tip contenido={DEFINICION.tareasVencidas}>Tareas vencidas</Tip>}
+                      valor={entero(equipo.tareas.vencidas)}
+                      detalle={
+                        equipo.tareas.vencidas
+                          ? `de ${entero(equipo.tareas.activas)} tareas, en ${contar(equipo.tareas.personasConVencidas, "persona", "personas")}`
+                          : `de ${entero(equipo.tareas.activas)} tareas`
+                      }
+                    />
+                  )}
                 </div>
               </div>
             )}

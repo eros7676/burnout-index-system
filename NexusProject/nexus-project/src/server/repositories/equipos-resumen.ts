@@ -95,3 +95,46 @@ export async function tamanosDeEquipos(
     });
   return tamanos;
 }
+
+export type TareasEquipo = {
+  activas: number;
+  vencidas: number;
+  /** People with at least one task overdue at the week's close. */
+  personasConVencidas: number;
+  /** People with the week loaded. */
+  personas: number;
+};
+
+/**
+ * The week's task counts by team, summed in SQL from each covered person's current record of a
+ * confirmed import (the same records every other read uses). Counts only: no task row is read.
+ */
+export async function tareasPorEquipo(
+  tx: Prisma.TransactionClient,
+  { teamIds, periodStart }: { teamIds: readonly string[]; periodStart: FechaISO },
+): Promise<Map<string, TareasEquipo>> {
+  if (!teamIds.length) return new Map();
+  const filas = await tx.$queryRaw<
+    { teamId: string; activas: Prisma.Decimal; vencidas: Prisma.Decimal; conVencidas: Prisma.Decimal; personas: bigint }[]
+  >`
+    SELECT e.teamId AS teamId, SUM(r.tareasActivas) AS activas, SUM(r.tareasVencidas) AS vencidas,
+           SUM(r.tareasVencidas > 0) AS conVencidas, COUNT(*) AS personas
+    FROM Empleado e
+    JOIN PeriodoEmpleado p ON p.employeeId = e.employeeId AND p.periodStart = ${periodStart}
+    JOIN RegistroLaboral r ON r.recordId = p.registroVigenteId
+    JOIN Importacion i ON i.importId = r.sourceImportId AND i.status = 'CONFIRMADA'
+    WHERE e.teamId IN (${Prisma.join(teamIds)})
+      AND e.activo = true AND e.enCobertura = true AND e.tipo IN ('TECNICO', 'TEAM_LEAD')
+    GROUP BY e.teamId`;
+  return new Map(
+    filas.map((f) => [
+      f.teamId,
+      {
+        activas: Number(f.activas),
+        vencidas: Number(f.vencidas),
+        personasConVencidas: Number(f.conVencidas),
+        personas: Number(f.personas),
+      },
+    ]),
+  );
+}

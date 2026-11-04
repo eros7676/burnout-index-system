@@ -149,6 +149,11 @@ export type EquipoFilaDTO = {
   evaluadas: number | null;
   /** People in Alto per week, oldest first, ending at the chosen week. */
   tendenciaAlto: { periodStart: FechaISO; alto: number }[] | null;
+  /**
+   * The chosen week's task counts summed over the covered people with the week loaded; withheld
+   * with the other aggregates. `personasConVencidas`: people with a task overdue at the close.
+   */
+  tareas: { activas: number; vencidas: number; personasConVencidas: number; personas: number } | null;
 };
 export type EquiposDTO = {
   periodStart: FechaISO | null;
@@ -365,6 +370,7 @@ const equipoFilaMock: EquipoFilaDTO = {
     { periodStart: "2026-10-05", alto: 0 },
     { periodStart: "2026-10-12", alto: 1 },
   ],
+  tareas: { activas: 96, vencidas: 9, personasConVencidas: 3, personas: 12 },
 };
 const ficha: FichaPersonaDTO = {
   persona: {

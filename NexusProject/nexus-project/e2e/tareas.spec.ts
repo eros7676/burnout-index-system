@@ -42,10 +42,8 @@ test("Ficha: las tareas de una semana se abren en la misma ficha, sin leerlas ha
   await expect(seccion(page)).toContainText("Elija una semana para ver sus tareas");
   await expect(seccion(page).getByRole("button", { name: "Ver las tareas de 12–18 oct 2026" })).toBeVisible();
   // The newest week says how many tasks were overdue and leads straight to them.
-  await expect(page.getByRole("link", { name: "Ver las 5 tareas vencidas al cierre" })).toHaveAttribute(
-    "href",
-    `${SEMANA}&estado=VENCIDA`,
-  );
+  await expect(page.getByRole("region", { name: "Última semana" })).toContainText(/Tareas vencidas\s*5\s*de 10 tareas\./);
+  await expect(page.getByRole("link", { name: "Ver cuáles" })).toHaveAttribute("href", `${SEMANA}&estado=VENCIDA`);
   // The weekly table carries the counts and one way in per week.
   await expect(await celda(semanas(page), "12–18 oct 2026", "Tareas")).toHaveText("7 pendientes de 10, 5 vencidas");
   expect(lecturas(pedidos)).toHaveLength(0);
@@ -55,7 +53,11 @@ test("Ficha: las tareas de una semana se abren en la misma ficha, sin leerlas ha
   await expect(semanas(page).getByRole("row", { name: /12–18 oct 2026/ })).toHaveAttribute("aria-current", "true");
   await expect(page.getByRole("combobox", { name: "Semana" })).toHaveValue("2026-10-12");
 
-  // The rows reproduce the stored counts, and the section says so.
+  // The week at a glance, then the rows that reproduce the stored counts, and the section says so.
+  await expect(seccion(page)).toContainText(/Tareas de la semana\s*10/);
+  await expect(seccion(page)).toContainText(/Abiertas al cierre, vencidas\s*5\s*Atraso máximo, 17 días/);
+  await expect(seccion(page)).toContainText(/Abiertas al cierre, en plazo\s*2/);
+  await expect(seccion(page)).toContainText(/Completadas en la semana\s*3/);
   await expect(seccion(page)).toContainText("Los conteos de la semana coinciden con el detalle importado");
   await expect(seccion(page)).toContainText("No miden desempeño");
 
@@ -123,16 +125,14 @@ test("Ficha: el filtro por estado y la semana quedan en la dirección y se puede
   const pedidos = await abrir(page, "demo-rrhh");
   await page.goto(SEMANA);
   await expect(filas(page)).toHaveCount(11);
-  await expect(conteo(page)).toHaveText("10 tareas");
-
-  // Each option says how many tasks it leads to.
+  // The counts are the figures above; the options only name the groups.
   await expect(estado(page).locator("option")).toHaveText([
-    "Todas (10)",
-    "Completadas en la semana (3)",
-    "Abiertas al cierre, en plazo (2)",
-    "Abiertas al cierre, vencidas (5)",
+    "Todas",
+    "Completadas en la semana",
+    "Abiertas al cierre, en plazo",
+    "Abiertas al cierre, vencidas",
   ]);
-  await estado(page).selectOption({ label: "Abiertas al cierre, vencidas (5)" });
+  await estado(page).selectOption({ label: "Abiertas al cierre, vencidas" });
   await expect(page).toHaveURL(/\?semana=2026-10-12&estado=VENCIDA$/);
   await expect(filas(page)).toHaveCount(6);
   await expect(conteo(page)).toHaveText("5 de 10 tareas");
@@ -145,7 +145,7 @@ test("Ficha: el filtro por estado y la semana quedan en la dirección y se puede
   ]);
   expect(pedidos.at(-1)!.searchParams.get("estado")).toBe("VENCIDA");
 
-  await estado(page).selectOption({ label: "Completadas en la semana (3)" });
+  await estado(page).selectOption({ label: "Completadas en la semana" });
   await expect(page).toHaveURL(/&estado=COMPLETADA$/);
   await expect(filas(page)).toHaveCount(4);
 
@@ -234,7 +234,7 @@ test("Ficha: muchas tareas se paginan de a 50 y un filtro vuelve a la primera p�
   const pedidos = await abrir(page, "demo-rrhh", "muchas");
   await page.goto(SEMANA);
   await expect(filas(page)).toHaveCount(51);
-  await expect(conteo(page)).toHaveText("120 tareas");
+  await expect(seccion(page)).toContainText(/Tareas de la semana\s*120/);
   await expect(paginacion(page)).toContainText("Página 1 de 3");
   await expect(paginacion(page).getByRole("button", { name: "Anterior" })).toBeDisabled();
 
@@ -250,7 +250,7 @@ test("Ficha: muchas tareas se paginan de a 50 y un filtro vuelve a la primera p�
   await expect(paginacion(page).getByRole("button", { name: "Siguiente" })).toBeDisabled();
 
   // Narrowing the list starts again from its first page; 40 tasks fit in one.
-  await estado(page).selectOption({ label: "Abiertas al cierre, vencidas (40)" });
+  await estado(page).selectOption({ label: "Abiertas al cierre, vencidas" });
   await expect(page).toHaveURL(/\?semana=2026-10-12&estado=VENCIDA$/);
   await expect(filas(page)).toHaveCount(41);
   await expect(conteo(page)).toHaveText("40 de 120 tareas");
@@ -286,6 +286,9 @@ test("Ficha: con las tareas abiertas, en pantalla angosta no desborda la página
 test("Equipo: las tareas de todos los integrantes en una lista, primero las vencidas, a pedido", async ({ page }) => {
   const pedidos = await abrir(page, "demo-rrhh");
   await page.goto("/teams/EQ-01");
+  // A small team's total is withheld with its other aggregates (minimum group size).
+  await expect(page.getByRole("region", { name: "Estado de la semana" })).toContainText("Oculto para proteger");
+  await expect(page.getByRole("region", { name: "Estado de la semana" })).not.toContainText("Tareas vencidas");
   const tareas = page.getByRole("region", { name: "Tareas del equipo", exact: true });
   await expect(tareas.getByRole("button", { name: "Ver las tareas del equipo" })).toBeVisible();
   expect(pedidos.filter((u) => u.pathname === "/api/tareas/equipo")).toHaveLength(0);
@@ -314,6 +317,17 @@ test("Equipo: las tareas de todos los integrantes en una lista, primero las venc
   await tareas.getByRole("combobox", { name: "Estado" }).selectOption({ label: "Abiertas al cierre, vencidas (6)" });
   await expect(lista.getByRole("row")).toHaveCount(7);
   expect(pedidos.at(-1)!.searchParams.get("estado")).toBe("VENCIDA");
+});
+
+test("Resumen y Equipos: el total de tareas vencidas de la semana está a la vista", async ({ page }) => {
+  await abrir(page, "demo-rrhh");
+  await page.goto("/home");
+  await expect(page.getByRole("region", { name: "Indicadores de la semana" })).toContainText(
+    /Tareas vencidas\s*5\s*en 1 persona; 5 más que la semana anterior/,
+  );
+  await page.goto("/teams");
+  const lista = page.getByRole("region", { name: "Equipos por personas en Alto" }).first();
+  await expect(lista.getByRole("columnheader", { name: "Tareas vencidas" })).toBeVisible();
 });
 
 test("Informe: la carga de tareas enlaza con las tareas de esa semana, con el registro que se calculó", async ({

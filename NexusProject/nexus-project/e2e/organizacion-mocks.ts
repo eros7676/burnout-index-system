@@ -193,7 +193,7 @@ export function equipos(periodStart?: string, estado = "ACTIVOS", teamId?: strin
       };
       const suprimido = e.activo ? (suprimidos.get(e.teamId) ?? null) : null;
       if (!e.activo || suprimido)
-        return { ...fila, suprimido, alertasActivas: null, conteo: null, promedioIndice: null, evaluadas: null, tendenciaAlto: null };
+        return { ...fila, suprimido, alertasActivas: null, conteo: null, promedioIndice: null, evaluadas: null, tendenciaAlto: null, tareas: null };
       const conteo: Record<Nivel, number> = { BAJO: 0, MEDIO: 0, ALTO: 0, INCOMPLETO: 0 };
       let suma = 0;
       let evaluadas = 0;
@@ -222,6 +222,19 @@ export function equipos(periodStart?: string, estado = "ACTIVOS", teamId?: strin
               return w?.actualizado && w.nivel === "ALTO";
             }).length,
           })),
+        tareas: miembros.reduce(
+          (t, p) => {
+            const w = p.semanas.find((x) => x.periodStart === semana);
+            if (!w) return t;
+            return {
+              activas: t.activas + w.tareasActivas,
+              vencidas: t.vencidas + w.tareasVencidas,
+              personasConVencidas: t.personasConVencidas + (w.tareasVencidas > 0 ? 1 : 0),
+              personas: t.personas + 1,
+            };
+          },
+          { activas: 0, vencidas: 0, personasConVencidas: 0, personas: 0 },
+        ),
       };
     });
 }

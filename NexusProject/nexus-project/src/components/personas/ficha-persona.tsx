@@ -302,25 +302,35 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                           : "No está en Alto"
                     }
                   />
+                  <Figure
+                    etiqueta={<Tip contenido={DEFINICION.tareasVencidas}>Tareas vencidas</Tip>}
+                    valor={entero(vista.actual.tareasVencidas)}
+                    detalle={
+                      verTareas && vista.actual.tareasVencidas > 0 ? (
+                        <>
+                          de {entero(vista.actual.tareasActivas)} tareas.{" "}
+                          <Link
+                            className={s.link}
+                            scroll={false}
+                            href={hrefTareasSemana({
+                              employeeId,
+                              periodStart: vista.actual.periodStart,
+                              estado: "VENCIDA",
+                            })}
+                          >
+                            {vista.actual.tareasVencidas === 1 ? "Ver cuál" : "Ver cuáles"}
+                          </Link>
+                        </>
+                      ) : (
+                        `de ${entero(vista.actual.tareasActivas)} tareas`
+                      )
+                    }
+                  />
                 </div>
                 {vista.actual.alertId && vista.actual.actualizado && (
                   <Notice>Esta semana generó una alerta.</Notice>
                 )}
-                {verTareas && vista.actual.tareasVencidas > 0 && (
-                  <Link
-                    className={s.link}
-                    scroll={false}
-                    href={hrefTareasSemana({
-                      employeeId,
-                      periodStart: vista.actual.periodStart,
-                      estado: "VENCIDA",
-                    })}
-                  >
-                    {vista.actual.tareasVencidas === 1
-                      ? "Ver la tarea vencida al cierre"
-                      : `Ver las ${entero(vista.actual.tareasVencidas)} tareas vencidas al cierre`}
-                  </Link>
-                )}
+
                 {vista.actual.evaluationId && (
                   <ButtonLink
                     className={s.report}
