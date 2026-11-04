@@ -5,6 +5,7 @@ import type { CuerposExito, PeticionesApi } from "@/shared/api";
 
 type Operacion =
   | "listarTareasSemana"
+  | "listarTareasEquipo"
   | "listarSemanasConTareas"
   | "consultarHistorialTarea"
   | "consultarMisTareas";
@@ -51,8 +52,15 @@ export const tareasApi = {
     filtros: NonNullable<PeticionesApi["listarTareasSemana"]["query"]>,
     signal: AbortSignal,
   ) => consultar("listarTareasSemana", filtros, signal),
-  semanas: (employeeId: string, signal: AbortSignal) =>
-    consultar("listarSemanasConTareas", { employeeId }, signal),
+  equipo: (
+    filtros: NonNullable<PeticionesApi["listarTareasEquipo"]["query"]>,
+    signal: AbortSignal,
+  ) => consultar("listarTareasEquipo", filtros, signal),
+  /** Counts per week (no rows, so not an audited read). */
+  semanas: (
+    filtros: NonNullable<PeticionesApi["listarSemanasConTareas"]["query"]>,
+    signal: AbortSignal,
+  ) => consultar("listarSemanasConTareas", filtros, signal),
   historial: (employeeId: string, taskId: string, signal: AbortSignal) =>
     consultar("consultarHistorialTarea", { employeeId, taskId }, signal),
   propias: (

@@ -2,9 +2,8 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useConsulta } from "@/client/use-consulta";
-import type { Nivel } from "@/shared/contracts";
 import type { DirectorioPersonasDTO, EquipoDTO } from "@/shared/contratos/organizacion";
-import { NIVEL, decimal, entero, semana as textoSemana } from "@/shared/formato";
+import { decimal, entero, semana as textoSemana } from "@/shared/formato";
 import { useArrival, usePageEnter } from "@/shared/motion";
 import { tienePermiso } from "@/shared/permisos";
 import {
@@ -24,9 +23,12 @@ import {
   tabla,
   Tip,
 } from "@/shared/ui";
-import { DEFINICION } from "../definiciones";
+import { DEFINICION, DEFINICION_FACTOR } from "../definiciones";
 import { Pagination } from "@/shared/ui/pagination";
 import { StatusTag } from "@/shared/ui/status-tag";
+import { TextoTareas } from "@/shared/ui/tareas";
+import { ANCLA_TAREAS_EQUIPO, PARAM_TAREAS_EQUIPO, TareasEquipo } from "../tareas";
+import { hrefTareasSemana } from "../tareas/textos";
 import { organizacionApi } from "../organizacion/api";
 import { SelectorSemanas, finDeSemana } from "../organizacion/piezas";
 import { rutaHistorial, rutaMiEquipo } from "../organizacion/rutas";
@@ -35,7 +37,6 @@ import { useSesion } from "../shell/sesion";
 import { MOTIVO_SUPRESION, TendenciaAlto } from "./equipos";
 import s from "./equipos.module.css";
 
-const NIVELES: Nivel[] = ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"];
 const TAMANO_PAGINA = 50;
 
 /** The team's own page: who leads it, how the week looks, and its members, one page at a time. */
@@ -76,6 +77,10 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
   const miEquipo = usuario ? rutaMiEquipo(usuario.rol, usuario.teamId) : null;
   const volver = miEquipo ? undefined : { href: "/teams", texto: "Equipos" };
   const semana = equipo?.periodStart ?? undefined;
+  // Gerencia reads a technician's counts, not their task rows (the server decides; this hides the way in).
+  const verTareasDe = (tipo: string) => !(usuario?.rol === "GERENCIA" && tipo === "TECNICO");
+  // Gerencia's team list holds only the Team Leads' rows, so the team's overdue count is not its length.
+  const vencidasCompletas = usuario?.rol !== "GERENCIA";
 
   if (consulta.estado === "error" && !equipo)
     return (
@@ -131,8 +136,18 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
             { termino: "Gerencia responsable", valor: equipo.gerente?.nombre ?? "Sin asignar" },
             { termino: "Personas activas", valor: entero(equipo.personasActivas) },
             {
-              termino: "Alertas activas",
-              valor: equipo.alertasActivas === null ? "No disponible" : entero(equipo.alertasActivas),
+              termino: "Personas con alerta activa",
+              valor:
+                equipo.alertasActivas === null ? (
+                  "No disponible"
+                ) : equipo.alertasActivas > 0 ? (
+                  <Link className={s.link} href={`/alerts?equipo=${encodeURIComponent(teamId)}`}>
+                    {entero(equipo.alertasActivas)}
+                    <span className="sr-only"> (ver las alertas del equipo)</span>
+                  </Link>
+                ) : (
+                  entero(0)
+                ),
             },
             {
               termino: "Estado",
@@ -176,7 +191,11 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                   <DistributionBar conteo={equipo.conteo} leyenda />
                 </div>
                 <div className={s.cifras}>
-                  <Figure etiqueta={<Tip contenido={DEFINICION.promedio}>Índice promedio</Tip>} valor={decimal(equipo.promedioIndice)} />
+                  <Figure
+                    etiqueta={<Tip contenido={DEFINICION.promedio}>Índice promedio</Tip>}
+                    valor={decimal(equipo.promedioIndice)}
+                    detalle={`con resultado vigente en ${entero(equipo.evaluadas ?? 0)} de ${entero(equipo.personasEvaluables)} personas`}
+                  />
                   <Figure
                     etiqueta={<Tip contenido={DEFINICION.enAltoEquipo}>Personas en Alto</Tip>}
                     valor={entero(equipo.conteo.ALTO)}
@@ -191,13 +210,31 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                       )
                     }
                   />
-                  <Figure
-                    etiqueta={<Tip contenido={DEFINICION.vigentes}>Con resultado vigente</Tip>}
-                    valor={`${entero(equipo.evaluadas ?? 0)} de ${entero(equipo.personasEvaluables)}`}
-                    detalle={NIVELES.filter((n) => equipo.conteo![n])
-                      .map((n) => `${entero(equipo.conteo![n])} ${NIVEL[n]}`)
-                      .join(", ")}
-                  />
+                  {equipo.tareas && (
+                    <Figure
+                      etiqueta={<Tip contenido={DEFINICION.tareasVencidas}>Tareas vencidas</Tip>}
+                      valor={entero(equipo.tareas.vencidas)}
+                      detalle={
+                        equipo.tareas.vencidas ? (
+                          <>
+                            de {entero(equipo.tareas.activas)} tareas, en{" "}
+                            {contar(equipo.tareas.personasConVencidas, "persona", "personas")}.{" "}
+                            {vencidasCompletas && (
+                              <Link
+                                className={tabla.cellLink}
+                                href={`${base}?${PARAM_TAREAS_EQUIPO}=VENCIDA`}
+                                scroll={false}
+                              >
+                                Ver cuáles
+                              </Link>
+                            )}
+                          </>
+                        ) : (
+                          `de ${entero(equipo.tareas.activas)} tareas`
+                        )
+                      }
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -226,6 +263,9 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                   <th scope="col" className={tabla.num}>
                     <Tip contenido={DEFINICION.indice}>Índice</Tip>
                   </th>
+                  <th scope="col">
+                    <Tip contenido={DEFINICION_FACTOR.CT}>Tareas</Tip>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -249,6 +289,21 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                         )}
                       </td>
                       <td className={tabla.num}>{decimal(w?.actualizado ? w.indice : null)}</td>
+                      <td>
+                        {!w ? (
+                          <span className={tabla.muted}>Sin datos</span>
+                        ) : w.tareasActivas > 0 && verTareasDe(p.tipo) ? (
+                          <Link
+                            className={tabla.cellLink}
+                            href={hrefTareasSemana({ employeeId: p.employeeId, periodStart: w.periodStart })}
+                          >
+                            <TextoTareas activas={w.tareasActivas} pendientes={w.tareasPendientes} vencidas={w.tareasVencidas} />
+                            <span className="sr-only"> (ver las tareas de {p.nombre})</span>
+                          </Link>
+                        ) : (
+                          <TextoTareas activas={w.tareasActivas} pendientes={w.tareasPendientes} vencidas={w.tareasVencidas} />
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -264,6 +319,17 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
           </>
         )}
       </Section>
+
+      {equipo?.activo && semana && (
+        <Section id={ANCLA_TAREAS_EQUIPO} titulo="Tareas del equipo" tabIndex={-1}>
+          <TareasEquipo
+            key={semana}
+            teamId={teamId}
+            periodStart={semana}
+            vencidas={vencidasCompletas ? (equipo.tareas?.vencidas ?? undefined) : undefined}
+          />
+        </Section>
+      )}
     </div>
   );
 }

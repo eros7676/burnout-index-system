@@ -14,6 +14,7 @@ import { fechaDesdeDb } from "../repositories/fechas";
 import { resumirSeguimientos, type Cliente } from "../repositories/seguimiento";
 import {
   hoyEnBuenosAires,
+  puedeSeguir,
   puedeVer,
   type TipoPersona,
 } from "./seguimiento-reglas";
@@ -165,10 +166,32 @@ export async function alertasFiltradas(
         !filtros.periodStart ||
         semanaDeAlerta.get(a.alertId)?.periodStart === filtros.periodStart,
     );
-  return (
-    await armarListadas(tx, filas, semanasPorPersona, semanaDeAlerta, solicitante)
-  )
+  const listadas = await armarListadas(tx, filas, semanasPorPersona, semanaDeAlerta, solicitante);
+  // «Dirigidas a usted»: the alerts the viewer may open and manage, by the recipient's type.
+  const tipoDestinatario = new Map<string, string>();
+  if (filtros.dirigidas) {
+    const ids = [...new Set(listadas.flatMap((a) => (a.destinatarioId ? [a.destinatarioId] : [])))];
+    const destinatarios = await tx.empleado.findMany({
+      where: { employeeId: { in: ids } },
+      select: { employeeId: true, tipo: true },
+    });
+    for (const d of destinatarios) tipoDestinatario.set(d.employeeId, d.tipo);
+  }
+  const dirigida = (a: AlertaListada) =>
+    !!solicitante.usuario &&
+    puedeSeguir(solicitante.usuario, {
+      alertId: a.alertId,
+      employeeId: a.employeeId,
+      createdAt: new Date(a.createdAt),
+      vigencia: a.vigencia,
+      personaTeamId: a.persona?.teamId ?? null,
+      destinatarioTipo: (a.destinatarioId
+        ? (tipoDestinatario.get(a.destinatarioId) ?? null)
+        : null) as TipoPersona | null,
+    });
+  return listadas
     .filter((a) => {
+      if (filtros.dirigidas && !dirigida(a)) return false;
       const s = a.seguimiento;
       if (filtros.seguimiento === "SIN_SEGUIMIENTO" && s) return false;
       if (
@@ -218,6 +241,7 @@ export async function listarAlertas(
     return {
       items: listadas.slice(inicio, inicio + filtros.pageSize),
       total: listadas.length,
+      personas: new Set(listadas.map((a) => a.employeeId)).size,
       page: filtros.page,
       pageSize: filtros.pageSize,
       equipos,

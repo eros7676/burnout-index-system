@@ -11,13 +11,14 @@ import {
 } from "./filtros-consultas";
 import type { ConsultaAlertas } from "./seguimiento-alertas";
 
-const PROPIOS = ["seguimiento", "asignadoA", "vencido"] as const;
+const PROPIOS = ["seguimiento", "asignadoA", "vencido", "dirigidas"] as const;
 
 /** The follow-up filters of a request, validated; the board's own keys are left to `filtrosConsulta`. */
 export function filtrosSeguimiento(params: URLSearchParams): {
   seguimiento?: FiltroSeguimiento;
   asignadoA?: string;
   vencido?: "1";
+  dirigidas?: "1";
 } {
   for (const clave of PROPIOS)
     if (params.getAll(clave).length > 1)
@@ -35,6 +36,11 @@ export function filtrosSeguimiento(params: URLSearchParams): {
   if (vencido !== null) {
     if (vencido !== "1") throw new ErrorConsulta(400, "El filtro de vencidos admite solo 1.");
     resultado.vencido = "1";
+  }
+  const dirigidas = params.get("dirigidas");
+  if (dirigidas !== null) {
+    if (dirigidas !== "1") throw new ErrorConsulta(400, "El filtro de alertas dirigidas admite solo 1.");
+    resultado.dirigidas = "1";
   }
   return resultado;
 }

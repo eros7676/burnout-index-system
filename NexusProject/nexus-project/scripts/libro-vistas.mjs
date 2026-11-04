@@ -107,7 +107,7 @@ async function main() {
     [`${e}/edit`, "03a-persona-editar"],
     [`${e}/move`, "03b-persona-mover"],
     [`${e}/deactivate`, "03c-persona-baja"],
-    [`${e}/weeks/${ids.periodStart}`, "03d-semana-tareas"],
+    [`${e}?semana=${ids.periodStart}`, "03d-ficha-tareas-semana"],
     ["/teams", "04-equipos"],
     ["/teams/new", "04a-equipo-nuevo"],
     [t, "05-equipo"],

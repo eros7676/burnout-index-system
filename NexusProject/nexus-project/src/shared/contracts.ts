@@ -185,6 +185,8 @@ export type AlertaListada = Alerta & {
   seguimiento: ResumenSeguimiento | null;
 };
 export type PaginaAlertas = Pagina<AlertaListada> & {
+  /** Distinct people across every page of the filtered list (one person may have several alert-weeks). */
+  personas: number;
   /** Teams to filter by, within the viewer's scope. */
   equipos: { teamId: string; nombre: string }[];
 };
@@ -301,6 +303,8 @@ export type FiltrosAlertas = FiltrosComunes &
     asignadoA?: string;
     /** Only cases past their due date. */
     vencido?: "1";
+    /** Only alerts addressed to the viewer: those they may open and manage (Team Lead, Gerencia). */
+    dirigidas?: "1";
   };
 // FilaTablero usa indice/nivel null solo cuando no hay evaluación; Evaluacion siempre tiene índice numérico. processingState describe ese par, no todos los pares del job: uno ya completado sigue COMPLETADO aunque falle otro. actualizado compara datos, antecedente, reglas y engineVersion esperados con el snapshot vigente. Si es false, señalar pendiente/fallo y no presentar el nivel anterior como actualizado; el detalle histórico sí puede conservarlo identificado.
 

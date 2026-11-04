@@ -215,6 +215,12 @@ test("MySQL exportaciones y lista de alertas: alcance, filtros, seguimiento, aud
         assert.deepEqual(item.serie.map((s: { periodStart: string }) => s.periodStart), ["2026-10-05", "2026-10-12"]);
         assert.equal(item.seguimiento, null);
         assert.ok(sin.cuerpo.equipos.length >= 4);
+        assert.equal(sin.cuerpo.personas, 1);
+        // «Dirigidas a usted»: a technician's alert is addressed to their Team Lead, not to Gerencia.
+        assert.equal((await lista("&dirigidas=1", "demo-tl-01")).cuerpo.total, 1);
+        assert.equal((await lista("&dirigidas=1", "demo-gerencia")).cuerpo.total, 0);
+        assert.equal((await lista("", "demo-gerencia")).cuerpo.total, 1);
+        assert.equal((await lista("&dirigidas=1")).cuerpo.total, 1);
         // Filters.
         assert.equal((await lista("&seguimiento=SIN_SEGUIMIENTO")).cuerpo.total, 1);
         assert.equal((await lista("&seguimiento=EN_CURSO")).cuerpo.total, 0);
@@ -235,7 +241,7 @@ test("MySQL exportaciones y lista de alertas: alcance, filtros, seguimiento, aud
         assert.equal(pagina2.cuerpo.total, 1);
         assert.equal(pagina2.cuerpo.items.length, 0);
         // Bad filters, repeated keys and unknown keys are refused.
-        for (const mala of ["&seguimiento=XX", "&vencido=2", "&seguimiento=NUEVO&seguimiento=EN_CURSO", "&desconocido=1", "&asignadoA=a b"])
+        for (const mala of ["&seguimiento=XX", "&vencido=2", "&dirigidas=0", "&seguimiento=NUEVO&seguimiento=EN_CURSO", "&desconocido=1", "&asignadoA=a b"])
           assert.equal((await lista(mala)).status, 400, mala);
         // A Team Lead keeps to their team: the team filter of another is refused, and the options are theirs.
         assert.equal((await lista("&teamId=EQ-02", "demo-tl-01")).status, 403);

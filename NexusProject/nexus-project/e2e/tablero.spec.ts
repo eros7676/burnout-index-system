@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import type { FactorInforme } from "../src/shared/contracts";
-import { alertaListadaMock, informeMock, resumenVacioMock } from "../src/shared/mocks";
+import { alertaListadaMock, informeMock, paginaAlertasMock, resumenVacioMock } from "../src/shared/mocks";
 import {
   alerta,
   api,
@@ -564,4 +564,31 @@ test("T14: en pantalla angosta ninguna página desborda y las tablas se desplaza
     page.getByRole("region", { name: "Factores, por aporte al índice" }),
   ).toBeVisible();
   await page.screenshot({ path: "test-results/t14-movil.png", fullPage: true });
+});
+
+test("Resumen: lo que espera revisión, sin seguimiento y con el seguimiento vencido, enlaza con esa lista", async ({
+  page,
+}) => {
+  await demo(page, "demo-rrhh");
+  await organizacion(page);
+  const pedidos: URL[] = [];
+  await page.route(api("/api/alertas"), (route) => {
+    const url = new URL(route.request().url());
+    pedidos.push(url);
+    const total = url.searchParams.get("seguimiento") === "SIN_SEGUIMIENTO" ? 4 : url.searchParams.get("vencido") ? 0 : 9;
+    return route.fulfill({ json: { ...paginaAlertasMock, total } });
+  });
+  await page.goto("/home");
+  const revision = page.getByRole("region", { name: "Esperan revisión" });
+  await expect(revision).toContainText(/Alertas sin seguimiento\s*4/);
+  await expect(revision.getByRole("link", { name: "Ver cuáles (alertas sin seguimiento)" })).toHaveAttribute(
+    "href",
+    "/alerts?seguimiento=SIN_SEGUIMIENTO",
+  );
+  await expect(revision).toContainText(/Seguimientos vencidos\s*0\s*Ninguno pasó su fecha/);
+  // Counts only: one-row pages, not the lists.
+  const conteos = pedidos.filter((u) => u.searchParams.has("seguimiento") || u.searchParams.has("vencido"));
+  expect(conteos.map((u) => u.searchParams.get("pageSize"))).toEqual(["1", "1"]);
+  // «Nuevas en Alto» is part of the finding sentence, not a figure of its own.
+  await expect(page.getByRole("region", { name: "Indicadores de la semana" })).not.toContainText("Nuevas en Alto");
 });

@@ -1,6 +1,8 @@
-.page {
+/* One track that never grows past the section: the table scrolls inside its own region. */
+.cuerpo {
   display: grid;
-  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
 }
 /* Sits on the controls' line, not the labels'. */
 .count {
@@ -9,10 +11,11 @@
   color: var(--ink-2);
   font-size: var(--text-xs);
 }
+.note {
+  max-width: 72ch;
+  color: var(--ink-2);
+}
 /* The last answer stays while the next one loads. */
 .results[data-actualizando] {
   opacity: 0.6;
-}
-.pager {
-  margin-top: var(--space-4);
 }

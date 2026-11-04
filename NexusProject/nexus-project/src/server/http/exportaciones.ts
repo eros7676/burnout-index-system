@@ -20,7 +20,7 @@ import {
   usuariosDemo,
 } from "./permisos-demo";
 
-const PROPIOS_ALERTAS = ["seguimiento", "asignadoA", "vencido"];
+const PROPIOS_ALERTAS = ["seguimiento", "asignadoA", "vencido", "dirigidas"];
 
 /** The filters the screen of that list has; anything else is a mistake, not a wider file. */
 export function filtrosExportacion(

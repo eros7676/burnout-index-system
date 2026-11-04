@@ -46,6 +46,7 @@ function leerFiltros(params: URLSearchParams) {
         : ("" as const),
     responsable: params.get("responsable") ?? "",
     vencidos: params.get("vencidos") === "1",
+    dirigidas: params.get("dirigidas") === "1",
     pagina: Math.max(1, Math.trunc(Number(params.get("pagina"))) || 1),
   };
 }
@@ -57,6 +58,16 @@ const ETIQUETA_FILTRO: Record<FiltroSeguimiento, string> = {
 
 const plural = (n: number, uno: string, varios: string) =>
   `${entero(n)} ${n === 1 ? uno : varios}`;
+
+/** One part of the list's summary: its count, linked to the list filtered to it when there is any. */
+function ParteFiltro({ n, href, children }: { n: number; href: string; children: string }) {
+  if (n === 0) return <>{`0 ${children}`}</>;
+  return (
+    <Link className={s.parte} href={href} scroll={false}>
+      {entero(n)} {children}
+    </Link>
+  );
+}
 
 /** Answers which workload alerts wait for review, who has each one and how far its follow-up is. */
 export function Alertas() {
@@ -76,6 +87,7 @@ export function Alertas() {
     seguimiento: filtros.seguimiento || undefined,
     asignadoA: filtros.responsable || undefined,
     vencido: filtros.vencidos ? "1" : undefined,
+    dirigidas: filtros.dirigidas ? "1" : undefined,
   };
   const consulta = useConsulta(
     (signal) =>
@@ -98,8 +110,36 @@ export function Alertas() {
     !!filtros.equipo ||
     !!filtros.seguimiento ||
     !!filtros.responsable ||
-    filtros.vencidos;
+    filtros.vencidos ||
+    filtros.dirigidas;
   const esTeamLead = usuario?.rol === "TEAM_LEAD";
+  // RR. HH. may follow every alert; a Team Lead and Gerencia only those addressed to them.
+  const tieneDirigidas = usuario?.rol === "TEAM_LEAD" || usuario?.rol === "GERENCIA";
+  // With no follow-up filter on, the summary says how many wait and links to each part (one-row reads).
+  const sinFiltroDeSeguimiento =
+    !filtros.seguimiento && !filtros.responsable && !filtros.vencidos && !filtros.dirigidas;
+  const equipoFiltro = filtros.equipo || undefined;
+  const partes = useConsulta(
+    async (signal) => {
+      const contar = (f: FiltrosAlertas) =>
+        tableroApi.alertas({ ...f, teamId: equipoFiltro, pageSize: 1 }, signal).then((p) => p.total);
+      const [sinSeguimiento, vencidos, dirigidas] = await Promise.all([
+        contar({ seguimiento: "SIN_SEGUIMIENTO" }),
+        contar({ vencido: "1" }),
+        tieneDirigidas ? contar({ dirigidas: "1", seguimiento: "SIN_SEGUIMIENTO" }) : null,
+      ]);
+      return { sinSeguimiento, vencidos, dirigidas };
+    },
+    usuario && datos && sinFiltroDeSeguimiento
+      ? `alertas-partes|${usuario.userId}|${equipoFiltro ?? ""}`
+      : null,
+  );
+  const hrefCon = (cambios: Record<string, string>) => {
+    const nuevos = new URLSearchParams(params);
+    nuevos.delete("pagina");
+    for (const [clave, valor] of Object.entries(cambios)) nuevos.set(clave, valor);
+    return `${ruta}?${nuevos}`;
+  };
   const responsables = usuarios.filter((u) => u.rol !== "EMPLEADO");
 
   function cambiar(cambios: Partial<Record<string, string | null>>) {
@@ -130,6 +170,7 @@ export function Alertas() {
               seguimiento: filtros.seguimiento || undefined,
               asignadoA: filtros.responsable || undefined,
               vencido: filtros.vencidos ? "1" : undefined,
+              dirigidas: filtros.dirigidas ? "1" : undefined,
             }}
           />
         }
@@ -183,6 +224,16 @@ export function Alertas() {
             <option value="">Todos</option>
             <option value="1">Vencidos</option>
           </SelectField>
+          {tieneDirigidas && (
+            <SelectField
+              etiqueta="Destinatario"
+              value={filtros.dirigidas ? "1" : ""}
+              onChange={(e) => cambiar({ dirigidas: e.target.value })}
+            >
+              <option value="">Todos</option>
+              <option value="1">Dirigidas a usted</option>
+            </SelectField>
+          )}
           {filtrado && (
             <Button variante="quiet" onClick={quitar}>
               Quitar filtros
@@ -190,7 +241,33 @@ export function Alertas() {
           )}
           {datos && (
             <p className={s.count} role="status">
-              {plural(total, "alerta", "alertas")}
+              {plural(total, "alerta", "alertas")} de {plural(datos.personas, "persona", "personas")}
+              {partes.estado === "listo" && (
+                <>
+                  ;{" "}
+                  <ParteFiltro n={partes.datos.sinSeguimiento} href={hrefCon({ seguimiento: "SIN_SEGUIMIENTO" })}>
+                    sin seguimiento
+                  </ParteFiltro>
+                  ,{" "}
+                  <ParteFiltro n={partes.datos.vencidos} href={hrefCon({ vencidos: "1" })}>
+                    con el seguimiento vencido
+                  </ParteFiltro>
+                  {partes.datos.dirigidas !== null && (
+                    <>
+                      ;{" "}
+                      <ParteFiltro
+                        n={partes.datos.dirigidas}
+                        href={hrefCon({ dirigidas: "1", seguimiento: "SIN_SEGUIMIENTO" })}
+                      >
+                        {partes.datos.dirigidas === 1
+                          ? "dirigida a usted, sin seguimiento"
+                          : "dirigidas a usted, sin seguimiento"}
+                      </ParteFiltro>
+                    </>
+                  )}
+                </>
+              )}
+              .
             </p>
           )}
         </Toolbar>

@@ -23,7 +23,7 @@ const sinTildes = (t: string) =>
   t.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("es");
 
 /** Weeks of the dataset, newest first. */
-const SEMANAS = [
+export const SEMANAS = [
   ...new Set(PERSONAS.flatMap((p) => p.semanas.map((w) => w.periodStart))),
 ].sort((a, b) => (a < b ? 1 : -1));
 
@@ -56,6 +56,7 @@ export function directorio(filtro: Record<string, string>): DirectorioPersonasDT
   const filas = enAlcance
     .filter((p) => activas && ACTIVOS.includes(p.employeeId))
     .filter((p) => !q || sinTildes(`${p.nombre} ${p.employeeId}`).includes(q))
+    .filter((p) => !filtro.tipo || p.tipo === filtro.tipo)
     .map((p) => ({ p, w: periodStart ? p.semanas.find((x) => x.periodStart === periodStart) : undefined }))
     .filter(({ w }) =>
       !filtro.nivel
@@ -66,7 +67,17 @@ export function directorio(filtro: Record<string, string>): DirectorioPersonasDT
     )
     .sort((a, b) => {
       const nombre = a.p.nombre.localeCompare(b.p.nombre, "es", { numeric: true });
-      return filtro.orden === "nombre" ? nombre : (vigente(b.w) ?? -1) - (vigente(a.w) ?? -1) || nombre;
+      if (filtro.orden === "nombre") return nombre;
+      // Same as the SQL: the chosen week's value, highest first, no value last.
+      const valor = (w: (typeof a)["w"]) =>
+        filtro.orden === "vencidas"
+          ? w?.tareasVencidas
+          : filtro.orden === "horasExtra"
+            ? w?.horasExtra
+            : filtro.orden === "diasSinDescanso"
+              ? w?.diasConsecutivosSinDescanso
+              : vigente(w);
+      return (valor(b.w) ?? -1) - (valor(a.w) ?? -1) || nombre;
     });
   const page = Number(filtro.page ?? 1);
   const pageSize = Number(filtro.pageSize ?? 50);
@@ -193,7 +204,7 @@ export function equipos(periodStart?: string, estado = "ACTIVOS", teamId?: strin
       };
       const suprimido = e.activo ? (suprimidos.get(e.teamId) ?? null) : null;
       if (!e.activo || suprimido)
-        return { ...fila, suprimido, alertasActivas: null, conteo: null, promedioIndice: null, evaluadas: null, tendenciaAlto: null };
+        return { ...fila, suprimido, alertasActivas: null, conteo: null, promedioIndice: null, evaluadas: null, tendenciaAlto: null, tareas: null };
       const conteo: Record<Nivel, number> = { BAJO: 0, MEDIO: 0, ALTO: 0, INCOMPLETO: 0 };
       let suma = 0;
       let evaluadas = 0;
@@ -222,6 +233,19 @@ export function equipos(periodStart?: string, estado = "ACTIVOS", teamId?: strin
               return w?.actualizado && w.nivel === "ALTO";
             }).length,
           })),
+        tareas: miembros.reduce(
+          (t, p) => {
+            const w = p.semanas.find((x) => x.periodStart === semana);
+            if (!w) return t;
+            return {
+              activas: t.activas + w.tareasActivas,
+              vencidas: t.vencidas + w.tareasVencidas,
+              personasConVencidas: t.personasConVencidas + (w.tareasVencidas > 0 ? 1 : 0),
+              personas: t.personas + 1,
+            };
+          },
+          { activas: 0, vencidas: 0, personasConVencidas: 0, personas: 0 },
+        ),
       };
     });
 }

@@ -160,6 +160,36 @@ export type MisTareasDTO = {
   semana: TareasSemanaDTO | null;
 };
 
+/** A row of the team's list: the task and whose it is. */
+export type TareaEquipoDTO = TareaDTO & { employeeId: string; nombre: string };
+
+/**
+ * The tasks of a team's covered people for one week, overdue first. Each person's rows are the ones
+ * the role may read about them: RRHH and the team's lead see everyone, Gerencia only the Team Leads.
+ */
+export type TareasEquipoDTO = {
+  equipo: { teamId: string; nombre: string };
+  semana: { periodStart: FechaISO; periodEnd: FechaISO };
+  /** EQUIPO: every covered person; LIDERES: only the team's Team Leads (Gerencia). */
+  alcance: "EQUIPO" | "LIDERES";
+  /** People in scope with the week loaded. */
+  personas: number;
+  /** Of them, people whose week came as a summary alone: their counts have no rows behind them. */
+  sinDetalle: number;
+  /** Counts over every row in scope, before the status filter. */
+  resumen: ResumenTareasDTO;
+  /** `total` counts the rows matching the status filter. */
+  tareas: Pagina<TareaEquipoDTO>;
+};
+
+export type FiltrosTareasEquipo = {
+  teamId: string;
+  periodStart: FechaISO;
+  estado?: EstadoTarea;
+  page?: number;
+  pageSize?: number;
+};
+
 export type FiltrosTareasSemana = {
   employeeId: string;
   periodStart: FechaISO;
@@ -173,6 +203,7 @@ export type FiltrosTareasSemana = {
 export const RUTAS_TAREAS = {
   listarTareasSemana: { method: "GET", path: "/api/tareas" },
   listarSemanasConTareas: { method: "GET", path: "/api/tareas/semanas" },
+  listarTareasEquipo: { method: "GET", path: "/api/tareas/equipo" },
   consultarHistorialTarea: { method: "GET", path: "/api/tareas/historial" },
   consultarMisTareas: { method: "GET", path: "/api/mis-datos/tareas" },
 } as const;
@@ -183,6 +214,7 @@ export type PeticionesTareas = {
     query: { employeeId: string; semanas?: number };
     body?: undefined;
   };
+  listarTareasEquipo: { query: FiltrosTareasEquipo; body?: undefined };
   consultarHistorialTarea: {
     query: { employeeId: string; taskId: string };
     body?: undefined;
@@ -198,6 +230,7 @@ export type PeticionesTareas = {
 export type CuerposTareas = {
   listarTareasSemana: TareasSemanaDTO;
   listarSemanasConTareas: SemanasConTareasDTO;
+  listarTareasEquipo: TareasEquipoDTO;
   consultarHistorialTarea: HistorialTareaDTO;
   consultarMisTareas: MisTareasDTO;
 };
@@ -304,6 +337,24 @@ const tareasSemanaMock: TareasSemanaDTO = {
 export const MOCKS_TAREAS = {
   listarTareasSemana: tareasSemanaMock,
   listarSemanasConTareas: { persona: personaMock, semanas: [semanaMock] },
+  listarTareasEquipo: {
+    equipo: { teamId: personaMock.teamId, nombre: personaMock.equipo },
+    semana: { periodStart: "2026-10-12", periodEnd: "2026-10-18" },
+    alcance: "EQUIPO",
+    personas: 1,
+    sinDetalle: 0,
+    resumen: resumenMock,
+    tareas: {
+      items: tareasMock.map((t) => ({
+        ...t,
+        employeeId: personaMock.employeeId,
+        nombre: personaMock.nombre,
+      })),
+      total: 3,
+      page: 1,
+      pageSize: 50,
+    },
+  },
   consultarHistorialTarea: {
     persona: personaMock,
     taskId: "OPS-1432",

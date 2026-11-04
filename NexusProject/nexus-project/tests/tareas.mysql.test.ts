@@ -14,6 +14,7 @@ import type {
   HistorialTareaDTO,
   MisTareasDTO,
   SemanasConTareasDTO,
+  TareasEquipoDTO,
   TareasSemanaDTO,
 } from "../src/shared/contratos/tareas";
 
@@ -858,6 +859,77 @@ test("MySQL Tareas: detalle de la semana, conciliación, visibilidad, eventos e 
           "sin tareas activas no hay detalle que corroborar",
         );
         assert.equal(vigente.tareas.total, 0);
+      },
+    );
+    await t.test(
+      "las tareas de un equipo: el mismo orden que la semana, un evento por persona y el alcance de cada rol",
+      async () => {
+        const equipo = async (s: ReturnType<typeof sesion>, query: string) => {
+          const r = await http.equipo(get("tareas/equipo", query), s);
+          return { status: r.status, cuerpo: (await r.json()) as TareasEquipoDTO };
+        };
+        const individual = (
+          await semana(rrhh, `employeeId=${id}&periodStart=${W2.desde}&pageSize=100`)
+        ).cuerpo;
+        const antes = (await eventos(id)).length;
+        const r = await equipo(rrhh, `teamId=EQ-01&periodStart=${W2.desde}&pageSize=100`);
+        assert.equal(r.status, 200);
+        assert.equal(r.cuerpo.alcance, "EQUIPO");
+        assert.deepEqual(r.cuerpo.equipo, { teamId: "EQ-01", nombre: "Célula ficticia 1" });
+        assert.deepEqual(r.cuerpo.semana, { periodStart: W2.desde, periodEnd: W2.hasta });
+        const propias = r.cuerpo.tareas.items.filter((x) => x.employeeId === id);
+        assert.deepEqual(
+          propias,
+          individual.tareas.items.map((x) => ({
+            ...x,
+            employeeId: id,
+            nombre: "Persona ficticia Tareas",
+          })),
+          "a person's rows keep the week's order inside the team's list",
+        );
+        const orden = { VENCIDA: 0, PENDIENTE: 1, COMPLETADA: 2 };
+        const rangos = r.cuerpo.tareas.items.map((x) => orden[x.estado]);
+        assert.deepEqual(rangos, [...rangos].sort((a, b) => a - b), "overdue first");
+        assert.ok(r.cuerpo.resumen.total >= individual.resumen.total);
+        const nuevos = (await eventos(id)).slice(antes);
+        assert.equal(nuevos.length, 1);
+        assert.equal(nuevos[0].actorId, "demo-rrhh");
+        assert.equal(nuevos[0].recursoId, individual.semana.recordId);
+        assert.deepEqual(nuevos[0].detalles, {
+          alcance: "EQUIPO",
+          teamId: "EQ-01",
+          periodStart: W2.desde,
+          pagina: 1,
+          filas: propias.length,
+        });
+
+        const vencidas = await equipo(rrhh, `teamId=EQ-01&periodStart=${W2.desde}&estado=VENCIDA`);
+        assert.ok(vencidas.cuerpo.tareas.items.every((x) => x.estado === "VENCIDA"));
+        assert.equal(
+          vencidas.cuerpo.tareas.items.filter((x) => x.employeeId === id).length,
+          individual.resumen.vencidas,
+        );
+        assert.equal(vencidas.cuerpo.resumen.total, r.cuerpo.resumen.total, "the summary ignores the filter");
+
+        const lider = await equipo(tlEquipo, `teamId=EQ-01&periodStart=${W2.desde}`);
+        assert.equal(lider.status, 200);
+        assert.ok(lider.cuerpo.tareas.items.some((x) => x.employeeId === id));
+        // Called without the guard, another team's lead still finds no such team.
+        assert.equal((await equipo(tlAjeno, `teamId=EQ-01&periodStart=${W2.desde}`)).status, 404);
+        assert.equal((await equipo(propio, `teamId=EQ-01&periodStart=${W2.desde}`)).status, 403);
+        assert.equal((await equipo(rrhh, `teamId=EQ-99&periodStart=${W2.desde}`)).status, 404);
+
+        const antesGerencia = (await eventos(id)).length;
+        const tecnicos = await equipo(gerencia, `teamId=EQ-01&periodStart=${W2.desde}`);
+        assert.equal(tecnicos.status, 200);
+        assert.equal(tecnicos.cuerpo.alcance, "LIDERES");
+        assert.ok(!tecnicos.cuerpo.tareas.items.some((x) => x.employeeId === id));
+        assert.ok(!JSON.stringify(tecnicos.cuerpo).includes("OPS-14"));
+        assert.equal((await eventos(id)).length, antesGerencia);
+        const lideres = await equipo(gerencia, `teamId=EQ-03&periodStart=${W2.desde}`);
+        assert.equal(lideres.cuerpo.tareas.items.length, 50);
+        assert.ok(lideres.cuerpo.tareas.items.every((x) => x.employeeId === idLider));
+        assert.ok(lideres.cuerpo.tareas.total >= 120);
       },
     );
   } finally {

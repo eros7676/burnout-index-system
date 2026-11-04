@@ -15,7 +15,7 @@ const CAMPO: Record<ConciliacionTareasDTO["campos"][number]["campo"], string> =
   };
 
 /** Where the counts come from: the rows that reproduce them, or the lack of rows. */
-function Linaje({ semana }: { semana: TareasSemanaDTO }) {
+export function Linaje({ semana }: { semana: TareasSemanaDTO }) {
   const { detalle, conciliacion, resumen, importacion } = semana;
   if (detalle === "SIN_DETALLE")
     return (
@@ -43,6 +43,17 @@ function Linaje({ semana }: { semana: TareasSemanaDTO }) {
       {resumen.total === 0
         ? "La semana no registra tareas."
         : `Los conteos de la semana coinciden con el detalle importado${importacion?.confirmadaEl ? ` el ${momentoConAnio(importacion.confirmadaEl)}` : ""}.`}
+    </p>
+  );
+}
+
+/** Said wherever task rows are shown: they are load, not performance, and a person reviews them. */
+export function NotaRevision() {
+  return (
+    <p className={s.note}>
+      Estas tareas son la carga registrada que se usó en el cálculo. No miden
+      desempeño: una tarea vencida puede deberse a la asignación o al volumen,
+      no a la persona. La revisión es humana; el sistema no decide.
     </p>
   );
 }
@@ -85,11 +96,7 @@ export function ResumenTareas({ semana }: { semana: TareasSemanaDTO }) {
         />
       </div>
       <Linaje semana={semana} />
-      <p className={s.note}>
-        Estas tareas son la carga registrada que se usó en el cálculo. No miden
-        desempeño: una tarea vencida puede deberse a la asignación o al volumen,
-        no a la persona. La revisión es humana; el sistema no decide.
-      </p>
+      <NotaRevision />
     </div>
   );
 }

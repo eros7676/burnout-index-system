@@ -6,6 +6,17 @@ const nextConfig: NextConfig = {
     agentFeedback: true,
   },
   cacheComponents: true,
+  // A week's tasks moved into the person page (?semana=); the query (recordId, estado, page, tarea)
+  // passes through, so old links and bookmarks still open the same view.
+  async redirects() {
+    return [
+      {
+        source: "/employees/:employeeId/weeks/:periodStart",
+        destination: "/employees/:employeeId?semana=:periodStart",
+        permanent: false,
+      },
+    ];
+  },
   partialPrefetching: true,
   turbopack: {
     rules: {

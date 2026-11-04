@@ -233,7 +233,8 @@ test("la lista filtra en el servidor, guarda los filtros en la dirección y pagi
       },
     });
   });
-  const ultimo = () => Object.fromEntries(pedidos.at(-1) ?? []);
+  // The list's own read; the summary's counts are one-row reads beside it.
+  const ultimo = () => Object.fromEntries(pedidos.filter((q) => q.get("pageSize") !== "1").at(-1) ?? []);
 
   await page.goto("/alerts");
   const fila = await celda(lista(page), "Persona ficticia 001", "Seguimiento");
@@ -241,7 +242,14 @@ test("la lista filtra en el servidor, guarda los filtros en la dirección y pagi
   await expect(fila).toContainText("Vencido");
   await expect(fila).toContainText("Team Lead, Célula ficticia 1, vence el 1 oct 2026");
   expect(ultimo()).toEqual({ page: "1", pageSize: "25" });
-  await expect(page.getByText("60 alertas")).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "60 alertas" })).toContainText(
+    "60 alertas de 1 persona; 60 sin seguimiento, 60 con el seguimiento vencido.",
+  );
+  await expect(page.getByRole("link", { name: "60 sin seguimiento" })).toHaveAttribute(
+    "href",
+    "/alerts?seguimiento=SIN_SEGUIMIENTO",
+  );
+  await expect(page.getByLabel("Destinatario")).toHaveCount(0);
   await expect(page.getByText("Página 1 de 3")).toBeVisible();
   await expect(page.getByRole("button", { name: "Quitar filtros" })).toHaveCount(0);
 
@@ -296,6 +304,19 @@ test("un Team Lead no ve el filtro de equipo; RR. HH. sí", async ({ page }) => 
   await page.goto("/alerts");
   await expect(page.getByLabel("Seguimiento", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Equipo", { exact: true })).toHaveCount(0);
+  // A Team Lead can narrow to the alerts addressed to them, and the summary counts those waiting.
+  const pedidos: URL[] = [];
+  page.on("request", (r) => {
+    const url = new URL(r.url());
+    if (url.pathname === "/api/alertas") pedidos.push(url);
+  });
+  await page.getByLabel("Destinatario").selectOption({ label: "Dirigidas a usted" });
+  await expect(page).toHaveURL(/dirigidas=1/);
+  await expect.poll(() => pedidos.at(-1)?.searchParams.get("dirigidas")).toBe("1");
+  await page.goto("/alerts");
+  await expect(page.getByRole("status").filter({ hasText: "alerta" })).toContainText(
+    "dirigida a usted, sin seguimiento",
+  );
 
   const otra = await page.context().newPage();
   await demo(otra, "demo-rrhh");

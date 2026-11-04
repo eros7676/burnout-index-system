@@ -1,0 +1,28 @@
+/* Sits on the controls' line, not the labels'. */
+.count {
+  margin-left: auto;
+  padding-block: var(--space-2);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+/* The last answer stays while the next one loads. */
+.results[data-actualizando] {
+  opacity: 0.6;
+}
+.pager {
+  margin-top: var(--space-4);
+}
+.section:focus {
+  outline: none;
+}
+/* One track that never grows past the section: the table scrolls inside its own region. */
+.cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4) var(--space-6);
+}

@@ -26,7 +26,15 @@ export type MotivoCambio = Extract<
 export type EstadoPersona = "ACTIVAS" | "BAJAS";
 export type EstadoEquipo = "ACTIVOS" | "INACTIVOS";
 export type FiltroNivel = Nivel | "DESACTUALIZADO";
-export type OrdenDirectorio = "indice" | "nombre";
+/** «indice» and the load orders read the chosen week; people with no value there come last. */
+export type OrdenDirectorio = "indice" | "nombre" | "vencidas" | "horasExtra" | "diasSinDescanso";
+export const ORDENES_DIRECTORIO: OrdenDirectorio[] = [
+  "indice",
+  "nombre",
+  "vencidas",
+  "horasExtra",
+  "diasSinDescanso",
+];
 
 export type Referencia = { employeeId: string; nombre: string };
 
@@ -38,6 +46,8 @@ export type FiltrosDirectorio = {
   /** Name or legajo, case and accent insensitive. */
   q?: string;
   nivel?: FiltroNivel;
+  /** Puesto: Team Lead or Técnico. */
+  tipo?: "TECNICO" | "TEAM_LEAD";
   orden?: OrdenDirectorio;
   page?: number;
   pageSize?: number;
@@ -141,6 +151,7 @@ export type EquipoFilaDTO = {
   personasEvaluables: number;
   /** Why the aggregates below are withheld; null when they are shown. */
   suprimido: null | "GRUPO_PEQUENO" | "COMPLEMENTARIA";
+  /** People with at least one active alert (not alert-weeks). */
   alertasActivas: number | null;
   /** People per current level in the chosen week. */
   conteo: Record<Nivel, number> | null;
@@ -149,6 +160,11 @@ export type EquipoFilaDTO = {
   evaluadas: number | null;
   /** People in Alto per week, oldest first, ending at the chosen week. */
   tendenciaAlto: { periodStart: FechaISO; alto: number }[] | null;
+  /**
+   * The chosen week's task counts summed over the covered people with the week loaded; withheld
+   * with the other aggregates. `personasConVencidas`: people with a task overdue at the close.
+   */
+  tareas: { activas: number; vencidas: number; personasConVencidas: number; personas: number } | null;
 };
 export type EquiposDTO = {
   periodStart: FechaISO | null;
@@ -365,6 +381,7 @@ const equipoFilaMock: EquipoFilaDTO = {
     { periodStart: "2026-10-05", alto: 0 },
     { periodStart: "2026-10-12", alto: 1 },
   ],
+  tareas: { activas: 96, vencidas: 9, personasConVencidas: 3, personas: 12 },
 };
 const ficha: FichaPersonaDTO = {
   persona: {

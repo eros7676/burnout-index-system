@@ -209,3 +209,33 @@ test("Personas/T15a real: el servidor limita la lista del Team Lead a su equipo"
     new Set(todos.items.map((p: { teamId: string }) => p.teamId)).size,
   ).toBe(4);
 });
+
+test("Personas: ordenar por carga y filtrar por puesto, con la columna ordenada señalada", async ({ page }) => {
+  await demo(page, "demo-gerencia");
+  await organizacion(page);
+  const pedidos: URL[] = [];
+  page.on("request", (r) => {
+    const url = new URL(r.url());
+    if (url.pathname === "/api/personas/directorio") pedidos.push(url);
+  });
+  await page.goto("/employees");
+  await expect(lista(page).getByRole("row")).toHaveCount(PERSONAS.length + 1);
+
+  await page.getByRole("combobox", { name: "Ordenar" }).selectOption({ label: "Por tareas vencidas" });
+  await expect.poll(() => pedidos.at(-1)?.searchParams.get("orden")).toBe("vencidas");
+  await expect(lista(page).getByRole("columnheader", { name: "Tareas" })).toHaveAttribute("aria-sort", "descending");
+  await expect(lista(page).getByRole("columnheader", { name: "Índice" })).not.toHaveAttribute("aria-sort", /./);
+  const vencidas = await lista(page)
+    .getByRole("row")
+    .filter({ has: page.getByRole("rowheader") })
+    .evaluateAll((filas) =>
+      filas.map((f) => Number(/(\d+) vencidas?/.exec(f.textContent ?? "")?.[1] ?? 0)),
+    );
+  expect(vencidas).toEqual([...vencidas].sort((a, b) => b - a));
+
+  await page.getByRole("combobox", { name: "Puesto" }).selectOption({ label: "Team Lead" });
+  await expect.poll(() => pedidos.at(-1)?.searchParams.get("tipo")).toBe("TEAM_LEAD");
+  const lideres = PERSONAS.filter((p) => p.tipo === "TEAM_LEAD").length;
+  await expect(lista(page).getByRole("row")).toHaveCount(lideres + 1);
+  await expect(page.getByRole("button", { name: "Quitar filtros" }).or(page.getByText("con estos filtros")).first()).toBeVisible();
+});

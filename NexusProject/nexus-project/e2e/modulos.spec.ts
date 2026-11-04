@@ -81,6 +81,12 @@ test("Mis datos: el empleado ve sus semanas con horas y tareas, y ningún índic
     page.getByRole("table", { name: "Horas extra por semana" }),
   ).toContainText("16 h");
   await expect(page.getByText("12–18 oct 2026: 16 h extra sobre 56 h trabajadas.")).toBeVisible();
+  // The table's newest week in one sentence: facts only, no threshold word.
+  const semanaASemana = page.getByRole("region", { name: "Semana a semana" });
+  await expect(semanaASemana).toContainText(
+    "12–18 oct 2026: 16 días consecutivos sin descanso, 5 tareas vencidas al cierre y 14 días de vacaciones pendientes.",
+  );
+  await expect(semanaASemana).not.toContainText(/supera|umbral/i);
 
   // RF10: nothing on the page states an index or a level, not even the shell.
   await expect(menu(page).getByRole("link")).toHaveText(["Mis datos"]);

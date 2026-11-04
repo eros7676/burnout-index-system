@@ -51,6 +51,7 @@ const conNivel = (c: Record<Nivel, number>) => c.BAJO + c.MEDIO + c.ALTO;
 function hallazgoAlto(
   evolucion: { periodStart: string; periodEnd: string; conteo: Record<Nivel, number> }[],
   semana: string | undefined,
+  nuevas: number,
 ) {
   const i = evolucion.findIndex((e) => e.periodStart === semana);
   const actual = evolucion[i];
@@ -65,7 +66,9 @@ function hallazgoAlto(
     d === 0
       ? "igual que la semana anterior"
       : `${entero(Math.abs(d))} ${d > 0 ? "más" : "menos"} que la semana anterior`;
-  return `${fecha}: ${enAlto}, ${cambio}.`;
+  const recien =
+    n === 0 ? "" : nuevas === 0 ? "; ninguna es nueva" : nuevas === 1 ? "; 1 es nueva" : `; ${entero(nuevas)} son nuevas`;
+  return `${fecha}: ${enAlto}, ${cambio}${recien}.`;
 }
 
 type Datos = {
@@ -84,6 +87,16 @@ async function cargar(signal: AbortSignal): Promise<Datos> {
     semanas: personas.semanas,
     causas: new Map(alertas.items.map((a) => [a.employeeId, a.causas])),
   };
+}
+
+/** «en 9 personas; 3 más que la semana anterior»: who carries them and the change. */
+function detalleVencidas(v: { total: number; personas: number; anterior: number | null }) {
+  const quienes = v.total ? `en ${entero(v.personas)} ${v.personas === 1 ? "persona" : "personas"}` : "al cierre de la semana";
+  if (v.anterior === null) return quienes;
+  const d = v.total - v.anterior;
+  const cambio =
+    d === 0 ? "igual que la semana anterior" : `${entero(Math.abs(d))} ${d > 0 ? "más" : "menos"} que la semana anterior`;
+  return `${quienes}; ${cambio}`;
 }
 
 /** The first two causes in words; the rest as a count that wraps as one unit. */
@@ -113,6 +126,19 @@ export function Resumen() {
   const resumen = useConsulta(
     (signal) => tableroApi.resumen({ periodStart: semana }, signal),
     usuario && semana ? `resumen:${semana}` : null,
+  );
+
+  // What waits for a person, whatever the week: counts from the alerts list's own filters. Asked once
+  // the page's own read arrived, so a failure shows one error and its Reintentar recovers both.
+  const revision = useConsulta(
+    async (signal) => {
+      const [sin, vencidos] = await Promise.all([
+        tableroApi.alertas({ seguimiento: "SIN_SEGUIMIENTO", pageSize: 1 }, signal),
+        tableroApi.alertas({ vencido: "1", pageSize: 1 }, signal),
+      ]);
+      return { sinSeguimiento: sin.total, vencidos: vencidos.total };
+    },
+    usuario && datos ? "resumen:revision" : null,
   );
 
   const vista = useMemo(() => {
@@ -167,7 +193,20 @@ export function Resumen() {
         conteo: conteoSemana(datos.personas, periodStart),
       };
     });
-    return { enAlto, nuevas, cerca, equipos, evolucion };
+    // Counts only (no task rows): what is overdue at the week's close across the people in scope.
+    const vencidasEn = (periodStart: string | undefined) => {
+      let total = 0;
+      let personas = 0;
+      if (periodStart)
+        for (const p of datos.personas) {
+          const n = semanaDe(p, periodStart)?.tareasVencidas ?? 0;
+          total += n;
+          if (n) personas++;
+        }
+      return { total, personas };
+    };
+    const vencidas = { ...vencidasEn(semana), anterior: anterior ? vencidasEn(anterior).total : null };
+    return { enAlto, nuevas, cerca, equipos, evolucion, vencidas };
   }, [datos, semana]);
   useRowsEnter(filas, vista?.enAlto);
 
@@ -320,6 +359,44 @@ export function Resumen() {
             </Section>
 
             <Stack>
+              <Section titulo="Esperan revisión" aside={<span>Alertas activas de todas las semanas</span>}>
+                {revision.estado === "error" ? (
+                  <ErrorBox mensaje={revision.mensaje} onRetry={revision.reintentar} />
+                ) : revision.estado !== "listo" ? (
+                  <SkeletonRows filas={2} />
+                ) : (
+                  <div className={s.figureRow}>
+                    <Figure
+                      etiqueta="Alertas sin seguimiento"
+                      valor={entero(revision.datos.sinSeguimiento)}
+                      detalle={
+                        revision.datos.sinSeguimiento ? (
+                          <Link className={tabla.cellLink} href="/alerts?seguimiento=SIN_SEGUIMIENTO">
+                            Ver cuáles
+                            <span className="sr-only"> (alertas sin seguimiento)</span>
+                          </Link>
+                        ) : (
+                          "Todas tienen un caso abierto"
+                        )
+                      }
+                    />
+                    <Figure
+                      etiqueta="Seguimientos vencidos"
+                      valor={entero(revision.datos.vencidos)}
+                      detalle={
+                        revision.datos.vencidos ? (
+                          <Link className={tabla.cellLink} href="/alerts?vencidos=1">
+                            Ver cuáles
+                            <span className="sr-only"> (seguimientos vencidos)</span>
+                          </Link>
+                        ) : (
+                          "Ninguno pasó su fecha"
+                        )
+                      }
+                    />
+                  </div>
+                )}
+              </Section>
               <Section titulo="Indicadores de la semana">
                 {!vista || !periodo ? (
                   <SkeletonRows filas={3} />
@@ -333,9 +410,9 @@ export function Resumen() {
                         detalle={`de ${entero(datos!.personas.length)} personas`}
                       />
                       <Figure
-                        etiqueta={<Tip contenido={DEFINICION.nuevasEnAlto}>Nuevas en Alto</Tip>}
-                        valor={entero(vista.nuevas)}
-                        detalle="respecto de la semana anterior"
+                        etiqueta={<Tip contenido={DEFINICION.tareasVencidas}>Tareas vencidas</Tip>}
+                        valor={entero(vista.vencidas.total)}
+                        detalle={detalleVencidas(vista.vencidas)}
                       />
                     </div>
                     <DistributionBar conteo={periodo.conteo} />
@@ -402,7 +479,7 @@ export function Resumen() {
               <SkeletonRows filas={4} />
             ) : (
               <div className={s.trend}>
-                <p className={s.hallazgo}>{hallazgoAlto(vista.evolucion, semana)}</p>
+                <p className={s.hallazgo}>{hallazgoAlto(vista.evolucion, semana, vista.nuevas)}</p>
                 <TrendLine
                   nombre="Personas en Alto por semana"
                   etiqueta="personas en Alto"

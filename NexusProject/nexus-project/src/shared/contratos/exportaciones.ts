@@ -31,6 +31,8 @@ export type FiltrosExportacion = {
   seguimiento?: FiltroSeguimiento;
   asignadoA?: string;
   vencido?: "1";
+  /** Only the alerts addressed to the viewer (Team Lead, Gerencia). */
+  dirigidas?: "1";
 };
 
 export const RUTAS_EXPORTACIONES = {

@@ -17,6 +17,10 @@ export const httpTareas = {
   semanas: proteger(prisma, "LEER", (request) =>
     tareas.semanas(request, sesion(request)),
   ),
+  // The default narrowing also checks `teamId`: a Team Lead asking for another team gets a 403.
+  equipo: proteger(prisma, "LEER", (request) =>
+    tareas.equipo(request, sesion(request)),
+  ),
   historial: proteger(prisma, "LEER", (request) =>
     tareas.historial(request, sesion(request)),
   ),

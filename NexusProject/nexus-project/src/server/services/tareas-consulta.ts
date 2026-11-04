@@ -10,10 +10,11 @@ import type {
   PersonaTareasDTO,
   SemanaTareasDTO,
   SemanasConTareasDTO,
+  TareasEquipoDTO,
   TareasSemanaDTO,
 } from "../../shared/contratos/tareas";
 import { ErrorDominio } from "../../shared/errors";
-import { fechaDesdeDb } from "../repositories/fechas";
+import { fechaDesdeDb, fechaParaDb } from "../repositories/fechas";
 import { leerResultados } from "../repositories/consultas";
 import { registrarEvento, type ContextoAuditoria } from "../repositories/auditoria";
 import {
@@ -23,10 +24,13 @@ import {
   leerPersona,
   leerRegistroSemana,
   leerResultadoDeRegistro,
+  leerSemanaDeEquipo,
   leerSemanasConRegistro,
   paginaTareas,
+  paginaTareasDeRegistros,
 } from "../repositories/tareas-consulta";
 import type {
+  FiltroEquipo,
   FiltroHistorial,
   FiltroMisTareas,
   FiltroSemana,
@@ -203,6 +207,91 @@ export async function consultarTareasSemana(
         },
       });
     return semana;
+  }, LECTURA);
+}
+
+/**
+ * The tasks of a team's week, overdue first. The rows in scope follow the per-person rule: RRHH and the
+ * team's lead read everyone, Gerencia the Team Leads; the employee view has no team. Each person whose
+ * rows come back gets their own consultation event, so their history shows who read them.
+ */
+export async function consultarTareasEquipo(
+  db: PrismaClient,
+  filtro: FiltroEquipo,
+  sesion: SesionTareas,
+): Promise<TareasEquipoDTO> {
+  const { usuario } = sesion;
+  if (usuario.rol === "EMPLEADO")
+    throw new ErrorSinPermisoTareas("No tiene permiso para consultar las tareas de un equipo.");
+  const ajeno = usuario.rol === "TEAM_LEAD" && usuario.teamId !== filtro.teamId;
+  const equipo = ajeno
+    ? null
+    : await db.equipo.findUnique({
+        where: { teamId: filtro.teamId },
+        select: { teamId: true, nombre: true },
+      });
+  if (!equipo) throw new ErrorDominio("NO_ENCONTRADO", "No existe ese equipo.");
+  const soloLideres = usuario.rol === "GERENCIA";
+  return db.$transaction(async (tx) => {
+    const personas = await leerSemanaDeEquipo(tx, {
+      teamId: equipo.teamId,
+      periodStart: filtro.periodStart,
+      soloLideres,
+    });
+    const recordIds = personas.map((p) => p.registro.recordId);
+    const grupos = await gruposPorRegistro(tx, recordIds);
+    const resumen = resumirGrupos([...grupos.values()].flat());
+    const sinDetalle = personas.filter((p) => {
+      const propio = resumirGrupos(grupos.get(p.registro.recordId) ?? []);
+      return detalleDe(p.registro, propio, p.registro.huellaTareas !== null) === "SIN_DETALLE";
+    }).length;
+    const pagina = await paginaTareasDeRegistros(tx, {
+      recordIds,
+      estado: filtro.estado,
+      page: filtro.page,
+      pageSize: filtro.pageSize,
+    });
+    const porPersona = new Map(personas.map((p) => [p.employeeId, p]));
+    const filasPorPersona = new Map<string, number>();
+    for (const t of pagina.items)
+      filasPorPersona.set(t.employeeId, (filasPorPersona.get(t.employeeId) ?? 0) + 1);
+    for (const [employeeId, filas] of filasPorPersona)
+      await registrarEvento(tx, {
+        accion: "TAREAS_CONSULTADAS",
+        recursoId: porPersona.get(employeeId)!.registro.recordId,
+        actor: sesion.actor,
+        sujetoId: employeeId,
+        detalles: {
+          alcance: "EQUIPO",
+          teamId: equipo.teamId,
+          periodStart: filtro.periodStart,
+          ...(filtro.estado ? { estado: filtro.estado } : {}),
+          pagina: filtro.page,
+          filas,
+        },
+      });
+    const fin = fechaParaDb(filtro.periodStart);
+    fin.setUTCDate(fin.getUTCDate() + 6);
+    return {
+      equipo,
+      semana: {
+        periodStart: filtro.periodStart,
+        periodEnd: personas[0]?.periodEnd ?? fechaDesdeDb(fin),
+      },
+      alcance: soloLideres ? "LIDERES" : "EQUIPO",
+      personas: personas.length,
+      sinDetalle,
+      resumen,
+      tareas: {
+        items: pagina.items.map((t) => ({
+          ...t,
+          nombre: porPersona.get(t.employeeId)?.nombre ?? t.employeeId,
+        })),
+        total: pagina.total,
+        page: filtro.page,
+        pageSize: filtro.pageSize,
+      },
+    };
   }, LECTURA);
 }
 
