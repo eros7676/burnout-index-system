@@ -3,6 +3,14 @@
   grid-template-columns: var(--sidebar) minmax(0, 1fr);
   grid-template-rows: auto 1fr;
   min-height: 100dvh;
+  /* The sidebar column keeps its surface and rule down the whole page, also below the sticky
+     panel when the page is taller than the viewport (a full-page capture, a print preview). */
+  background: linear-gradient(
+    to right,
+    var(--surface) calc(var(--sidebar) - 1px),
+    var(--line) calc(var(--sidebar) - 1px) var(--sidebar),
+    transparent var(--sidebar)
+  );
 }
 .center {
   max-width: 560px;
@@ -136,6 +144,7 @@
 @media (max-width: 900px) {
   .app {
     grid-template-columns: 1fr;
+    background: none;
   }
   .sidebar {
     position: static;
@@ -162,6 +171,7 @@
   .app {
     display: block;
     min-height: 0;
+    background: none;
   }
   .demo,
   .sidebar {
