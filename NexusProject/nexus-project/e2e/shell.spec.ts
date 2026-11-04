@@ -41,7 +41,7 @@ test("Shell: sin sesión, una pantalla interna vuelve al ingreso", async ({ page
   await demo(page, null);
   await page.goto("/employees");
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole("heading", { name: "Elegí con qué perfil entrar" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Seleccione un perfil para ingresar" })).toBeVisible();
 });
 
 test("Shell: cambiar de usuario desde la franja de demo", async ({ page }) => {
