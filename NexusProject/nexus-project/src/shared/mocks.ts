@@ -275,6 +275,7 @@ export const resumenMock: ResumenDTO = {
   noProcesados: 0,
   promedioIndice: 91.21,
   muestraPromedio: 1,
+  excedidas: { HE: 1, DS: 1, CT: 1, VP: 1 },
 };
 
 /** Cada endpoint tiene un cuerpo de éxito comprobado contra el contrato común. */
@@ -507,6 +508,7 @@ export const resumenVacioMock: ResumenDTO = {
   noProcesados: 0,
   promedioIndice: null,
   muestraPromedio: 0,
+  excedidas: { HE: 0, DS: 0, CT: 0, VP: 0 },
 };
 export const errorContratoMock = new ErrorDominio(
   "CONTRATO_INVALIDO",

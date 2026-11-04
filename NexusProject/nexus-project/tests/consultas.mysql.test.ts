@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { decodificarJsonExacto } from "../src/server/repositories/json-exacto";
 import { PrismaClient } from "@prisma/client";
 import { sembrarBase } from "../prisma/seed-base";
 import { reglasSemilla } from "../prisma/seed-data";
@@ -51,6 +52,7 @@ test("MySQL T13: consultas persistidas, vigencia, historial y estados por par", 
           noProcesados: 0,
           promedioIndice: null,
           muestraPromedio: 0,
+          excedidas: { HE: 0, DS: 0, CT: 0, VP: 0 },
         });
       },
     );
@@ -109,6 +111,19 @@ test("MySQL T13: consultas persistidas, vigencia, historial y estados por par", 
         });
         assert.equal(resumen.porcentajes.ALTO, 25);
         assert.equal(resumen.promedioIndice, 55.96);
+        // Each factor counts the current results that exceed it, as each evaluation stored them.
+        const vigentes = await db.periodoEmpleado.findMany({
+          where: { employeeId: id },
+          include: { evaluacionVigente: true },
+        });
+        const esperado = { HE: 0, DS: 0, CT: 0, VP: 0 };
+        for (const p of vigentes)
+          for (const f of (p.evaluacionVigente
+            ? decodificarJsonExacto(p.evaluacionVigente.excedidas)
+            : []) as (keyof typeof esperado)[])
+            esperado[f]++;
+        assert.deepEqual(resumen.excedidas, esperado);
+        assert.ok(Object.values(esperado).some((n) => n > 0));
       },
     );
     const rows = await db.periodoEmpleado.findMany({

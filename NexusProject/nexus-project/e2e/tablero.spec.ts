@@ -592,3 +592,26 @@ test("Resumen: lo que espera revisión, sin seguimiento y con el seguimiento ven
   // «Nuevas en Alto» is part of the finding sentence, not a figure of its own.
   await expect(page.getByRole("region", { name: "Indicadores de la semana" })).not.toContainText("Nuevas en Alto");
 });
+
+test("Resumen: las condiciones que superan el umbral, la más frecuente primero y dicha en palabras", async ({
+  page,
+}) => {
+  await demo(page, "demo-rrhh");
+  await organizacion(page);
+  await page.route(api("/api/resumen"), (route) =>
+    route.fulfill({
+      json: resumen({ totalEvaluaciones: 49, excedidas: { HE: 31, DS: 35, CT: 12, VP: 20 } }),
+    }),
+  );
+  await page.goto("/home");
+  const condiciones = page.getByRole("region", { name: "Condiciones que superan el umbral" });
+  await expect(condiciones).toContainText(
+    "La condición más frecuente es días consecutivos sin descanso: 35 de 49 personas.",
+  );
+  await expect(condiciones.getByRole("listitem")).toHaveText([
+    /Días consecutivos sin descanso\s*35 de 49/,
+    /Horas extra\s*31 de 49/,
+    /Vacaciones pendientes\s*20 de 49/,
+    /Carga de tareas\s*12 de 49/,
+  ]);
+});

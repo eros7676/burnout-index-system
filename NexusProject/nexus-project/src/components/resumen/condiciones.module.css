@@ -1,0 +1,55 @@
+.cuerpo {
+  display: grid;
+  gap: var(--space-4);
+}
+/* The finding reads before the bars. */
+.hallazgo {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--ink);
+}
+.lista {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 720px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Name and count on one line, the bar under them: the label is never inside a short bar. */
+.fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-1) var(--space-3);
+  align-items: baseline;
+}
+.nombre {
+  color: var(--ink);
+}
+.valor {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-strong);
+  color: var(--ink);
+}
+.de {
+  font-weight: var(--weight-regular);
+  color: var(--ink-2);
+}
+/* Neutral ink: the level hues are reserved for levels and the accent for what can be clicked. */
+.pista {
+  grid-column: 1 / -1;
+  height: 8px;
+  border-radius: var(--radius-2xs);
+  background: var(--surface-2);
+}
+.barra {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-2xs);
+  background: var(--ink-2);
+}
+@media (forced-colors: active) {
+  .barra {
+    background: CanvasText;
+  }
+}

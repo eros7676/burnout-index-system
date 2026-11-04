@@ -42,6 +42,7 @@ import {
 import { DEFINICION } from "../definiciones";
 import { BotonExportar } from "../exportaciones/boton-exportar";
 import { useSesion } from "../shell/sesion";
+import { Condiciones } from "./condiciones";
 import s from "./resumen.module.css";
 
 /** People with a level in a week (Incompleto has none yet). */
@@ -500,6 +501,16 @@ export function Resumen() {
                   }}
                 />
               </div>
+            )}
+          </Section>
+
+          <Section titulo="Condiciones que superan el umbral">
+            {resumen.estado === "error" ? (
+              <ErrorBox mensaje={resumen.mensaje} onRetry={resumen.reintentar} />
+            ) : resumen.estado !== "listo" ? (
+              <SkeletonRows filas={4} />
+            ) : (
+              <Condiciones resumen={resumen.datos} />
             )}
           </Section>
         </>

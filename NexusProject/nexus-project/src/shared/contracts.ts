@@ -277,6 +277,8 @@ export type ResumenDTO = {
   noProcesados: number;
   promedioIndice: number | null;
   muestraPromedio: number;
+  /** Per factor, how many current results exceed its threshold (of `totalEvaluaciones`). */
+  excedidas: Record<Factor, number>;
 };
 export type Pagina<T> = {
   items: T[];
