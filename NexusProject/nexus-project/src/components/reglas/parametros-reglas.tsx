@@ -1,5 +1,5 @@
 "use client";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import type { Factor } from "@/shared/contracts";
 import {
   MOTIVO_MAX,
@@ -40,11 +40,36 @@ const UNIDAD: Record<Factor, string> = {
   VP: "Días",
 };
 
-/** One row of the annotated layout (R47): the note takes 4 columns and the controls 8. */
-function Fila({ nota, children }: { nota: string; children: ReactNode }) {
+/** One row of the annotated layout (R47): the title and its note take 4 columns, the controls 8. */
+function Fila({
+  titulo,
+  nota,
+  grupo,
+  children,
+}: {
+  titulo: string;
+  nota: string;
+  /** Editable rows name their controls as a group; read-only rows head their facts. */
+  grupo?: boolean;
+  children: ReactNode;
+}) {
+  const id = useId();
   return (
-    <div className={s.fila}>
-      <p className={s.nota}>{nota}</p>
+    <div
+      className={s.fila}
+      role={grupo ? "group" : undefined}
+      aria-labelledby={grupo ? id : undefined}
+    >
+      <div className={s.cabeza}>
+        {grupo ? (
+          <p id={id} className={s.grupo}>
+            {titulo}
+          </p>
+        ) : (
+          <h3 className={s.grupo}>{titulo}</h3>
+        )}
+        <p className={s.nota}>{nota}</p>
+      </div>
       <div className={s.campos}>{children}</div>
     </div>
   );
@@ -101,8 +126,8 @@ export function ParametrosEditables({
         if (!guardando) onGuardar();
       }}
     >
-      <Fila nota={NOTAS.pesos}>
-        <FormGroup titulo="Pesos de los factores">
+      <Fila titulo="Pesos de los factores" nota={NOTAS.pesos} grupo>
+        <FormGroup>
           <div className={s.cuadricula}>
             {FACTORES.map((f) => (
               <TextField
@@ -124,8 +149,8 @@ export function ParametrosEditables({
         )}
       </Fila>
 
-      <Fila nota={NOTAS.umbrales}>
-        <FormGroup titulo="Umbrales de los factores">
+      <Fila titulo="Umbrales de los factores" nota={NOTAS.umbrales} grupo>
+        <FormGroup>
           <div className={s.cuadricula}>
             {FACTORES.map((f) => (
               <TextField
@@ -142,8 +167,8 @@ export function ParametrosEditables({
         </FormGroup>
       </Fila>
 
-      <Fila nota={NOTAS.niveles}>
-        <FormGroup titulo="Niveles" fila>
+      <Fila titulo="Niveles" nota={NOTAS.niveles} grupo>
+        <FormGroup fila>
           <TextField
             etiqueta="Límite de Medio"
             ayuda="Índice, de 0 a 100"
@@ -175,8 +200,8 @@ export function ParametrosEditables({
         </FormGroup>
       </Fila>
 
-      <Fila nota={NOTAS.vigencia}>
-        <FormGroup titulo="Vigencia">
+      <Fila titulo="Vigencia" nota={NOTAS.vigencia} grupo>
+        <FormGroup>
           <TextField
             type="date"
             etiqueta="Inicio de vigencia"
@@ -187,8 +212,8 @@ export function ParametrosEditables({
         </FormGroup>
       </Fila>
 
-      <Fila nota={NOTAS.motivo}>
-        <FormGroup titulo="Motivo del cambio">
+      <Fila titulo="Motivo del cambio" nota={NOTAS.motivo} grupo>
+        <FormGroup>
           <TextAreaField
             etiqueta="Motivo"
             ayuda={`${largo} de ${MOTIVO_MAX} caracteres (mínimo ${MOTIVO_MIN}).`}
@@ -227,8 +252,7 @@ export function ParametrosSoloLectura({
 }) {
   return (
     <div className={s.formulario}>
-      <Fila nota={NOTAS.pesos}>
-        <h3 className={s.grupo}>Pesos de los factores</h3>
+      <Fila titulo="Pesos de los factores" nota={NOTAS.pesos}>
         <KeyFacts
           items={FACTORES.map((f) => ({
             termino: FACTOR[f],
@@ -236,8 +260,7 @@ export function ParametrosSoloLectura({
           }))}
         />
       </Fila>
-      <Fila nota={NOTAS.umbrales}>
-        <h3 className={s.grupo}>Umbrales de los factores</h3>
+      <Fila titulo="Umbrales de los factores" nota={NOTAS.umbrales}>
         <KeyFacts
           items={FACTORES.map((f) => ({
             termino: FACTOR[f],
@@ -245,8 +268,7 @@ export function ParametrosSoloLectura({
           }))}
         />
       </Fila>
-      <Fila nota={NOTAS.niveles}>
-        <h3 className={s.grupo}>Niveles</h3>
+      <Fila titulo="Niveles" nota={NOTAS.niveles}>
         <KeyFacts
           items={[
             {
@@ -261,8 +283,7 @@ export function ParametrosSoloLectura({
           ]}
         />
       </Fila>
-      <Fila nota={NOTAS.vigencia}>
-        <h3 className={s.grupo}>Vigencia</h3>
+      <Fila titulo="Vigencia" nota={NOTAS.vigencia}>
         <KeyFacts
           items={[
             {
@@ -272,8 +293,7 @@ export function ParametrosSoloLectura({
           ]}
         />
       </Fila>
-      <Fila nota={NOTAS.motivo}>
-        <h3 className={s.grupo}>Motivo del cambio</h3>
+      <Fila titulo="Motivo del cambio" nota={NOTAS.motivo}>
         <p className={s.textoMotivo}>{motivo || "Sin motivo registrado."}</p>
       </Fila>
     </div>

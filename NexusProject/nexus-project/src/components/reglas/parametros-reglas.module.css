@@ -17,9 +17,16 @@
   padding-top: var(--space-2);
   border-top: 0;
 }
-.nota {
+/* The title and its note on the left, as every form's groups (field.module.css, R47). */
+.cabeza {
   grid-column: span 4;
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+}
+.nota {
   max-width: 44ch;
+  margin: 0;
   color: var(--ink-2);
   font-size: var(--text-xs);
   line-height: var(--leading-body);
@@ -31,9 +38,9 @@
   align-content: start;
   min-width: 0;
 }
-/* The save row starts on the form's left edge, like the actions of every other form. */
+/* The save row sits under the controls, like the actions of every other form (field.module.css). */
 .campos[data-solo] {
-  grid-column: 1 / -1;
+  grid-column: 5 / -1;
 }
 /* Four related numbers read as a 2 x 2 block of short fields, never as three and one. */
 .cuadricula {
@@ -42,6 +49,7 @@
   gap: var(--space-6);
 }
 .grupo {
+  margin: 0;
   font-size: var(--text-lg);
   font-weight: var(--weight-strong);
 }
@@ -77,7 +85,7 @@
   }
 }
 @media (max-width: 900px) {
-  .nota,
+  .cabeza,
   .campos,
   .campos[data-solo] {
     grid-column: 1 / -1;

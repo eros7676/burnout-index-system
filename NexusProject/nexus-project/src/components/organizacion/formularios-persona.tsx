@@ -38,8 +38,11 @@ function CamposPuesto({
   valor,
   onCambio,
   errorDe,
+  actual,
 }: {
   opciones: OpcionesPersonaDTO;
+  /** The team the person is in now, marked in the list when changing it. */
+  actual?: string | null;
   valor: { tipo: TipoPuesto; teamId: string; enCobertura: boolean };
   onCambio: (parcial: Partial<{ tipo: TipoPuesto; teamId: string; enCobertura: boolean }>) => void;
   errorDe: (campo: string) => string | undefined;
@@ -79,7 +82,7 @@ function CamposPuesto({
         <option value="">Seleccione un equipo</option>
         {opciones.equipos.map((e) => (
           <option key={e.teamId} value={e.teamId}>
-            {e.nombre}
+            {e.teamId === actual ? `${e.nombre} (actual)` : e.nombre}
           </option>
         ))}
       </SelectFormField>
@@ -159,7 +162,10 @@ export function FormularioNuevaPersona({ opciones }: { opciones: OpcionesPersona
           </FormActions>
         </div>
       )}
-      <FormGroup titulo="Identificación">
+      <FormGroup
+        titulo="Identificación"
+        descripcion="El legajo vincula a la persona con los archivos que se importan y no se modifica después del alta."
+      >
         <TextField
           etiqueta="Legajo"
           name="employeeId"
@@ -180,7 +186,10 @@ export function FormularioNuevaPersona({ opciones }: { opciones: OpcionesPersona
           onChange={(e) => setV({ ...v, nombre: e.target.value })}
         />
       </FormGroup>
-      <FormGroup titulo="Puesto y equipo">
+      <FormGroup
+        titulo="Puesto y equipo"
+        descripcion="Definen a quién responde la persona y si su semana entra en la evaluación."
+      >
         <CamposPuesto
           opciones={opciones}
           valor={v}
@@ -234,7 +243,10 @@ export function FormularioEdicionPersona({ ficha }: { ficha: FichaPersonaDTO }) 
   return (
     <Form onSubmit={guardar} aria-label="Datos de la persona">
       <ResumenErrores error={error} />
-      <FormGroup titulo="Datos de la persona">
+      <FormGroup
+        titulo="Datos de la persona"
+        descripcion="El equipo y el puesto se cambian desde la ficha, con «Cambiar equipo o puesto», y quedan en el historial de asignaciones."
+      >
         <TextField
           etiqueta="Nombre y apellido"
           name="nombre"
@@ -356,6 +368,7 @@ export function FormularioMovimiento({
           valor={v}
           onCambio={(parcial) => setV({ ...v, ...parcial })}
           errorDe={errorDe}
+          actual={persona.teamId}
         />
         <TextAreaField
           etiqueta={correccion ? "Motivo de la corrección" : "Comentario"}

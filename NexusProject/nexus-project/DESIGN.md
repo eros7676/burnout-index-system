@@ -155,7 +155,7 @@ key lines (the table bleeds one cell padding past them). Column rules are
 | `Button`, `ButtonLink` | one height (`--control-h`); primary filled, secondary outlined, quiet text-only; `alinearTexto` offsets a quiet button's padding so its text continues the column |
 | `SkeletonRows`, `Empty`, `ErrorBox`, `Notice` | loading inside the datum's box; empty says what would appear and the next step, left-aligned; errors say what failed and offer retry; each state carries an icon |
 | `SelectField`, `SearchField`, `DateField`, `Pagination` | visible labels; selects carry names, values carry ids — nobody types an ID |
-| `TextField`, `TextAreaField`, `SelectFormField`, `CheckboxField`, `Form`, `FormGroup`, `FormActions`, `KeyFacts` | create and edit pages: one column, labels above, short fields on one row, buttons at the bottom left |
+| `TextField`, `TextAreaField`, `SelectFormField`, `CheckboxField`, `Form`, `FormGroup`, `FormActions`, `KeyFacts` | create and edit pages: annotated layout from 760 px of form width (group title and note on the left third; fields, notices, error summary and actions on the right), one column below it; labels above in body size, short fields on one row, buttons under the fields |
 | `TaskBar`, `TaskLegend`, `textoTareas` | a week's tasks as one bar (vencidas, pendientes, completadas) with the same counts in words; the legend once per block |
 | `HoursColumns` | hours per week with extra hours stacked; neutral, never a level |
 | `WeekDataTable` | loaded weekly data as loaded (7,5 h stays 7,5 h), no index or level |
@@ -263,6 +263,7 @@ formula guard.
 - 2026-11-04 — Level fills re-stepped to pass the palette validator (Medio and Alto were ΔE 2.6 for deuteranopia); tags take the `-ink` text steps (D12). (held by globals.css and the dataviz validator run in work/graficos/inventario.md)
 - 2026-11-04 — Better charts, not more charts: every existing chart has axes where it plots a quantity, a readout on every mark (hover, arrow keys, tap) and keeps its text alternative; no chart library (D12). (held by src/shared/ui/plot.tsx, tip.tsx and the e2e chart checks)
 - 2026-11-04 — A tooltip only adds what the screen does not say (a rule, a definition, a full date) and never holds essential information (NN/g); it follows WCAG 2.2 SC 1.4.13 (D12). (held by src/shared/ui/tip.tsx)
+- 2026-11-04 — Every create and edit form, the rules draft included, takes one annotated layout (R47): group title and note on the left, controls and actions on the right; a form label is body size in ink so it reads before its help. (held by shared/ui field.module.css and form.tsx)
 - 2026-11-02 — Danger, success and notice have hues of their own and an icon; the four level hues appear only on level encodings. (held by globals.css)
 - 2026-11-02 — The accent appears only on interactive or selected elements. (held by owner)
 

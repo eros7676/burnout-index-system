@@ -80,7 +80,10 @@ export function FormularioNuevoEquipo({ opciones }: { opciones: OpcionesEquipoDT
   return (
     <Form onSubmit={guardar} aria-label="Nuevo equipo">
       <ResumenErrores error={error} />
-      <FormGroup titulo="Equipo">
+      <FormGroup
+        titulo="Equipo"
+        descripcion="El código vincula al equipo con los archivos que se importan."
+      >
         <TextField
           etiqueta="Código"
           name="teamId"
