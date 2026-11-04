@@ -13,3 +13,7 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* A date never breaks across lines. */
+.date {
+  white-space: nowrap;
+}

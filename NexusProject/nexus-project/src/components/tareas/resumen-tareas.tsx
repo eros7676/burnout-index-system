@@ -5,7 +5,7 @@ import type {
 import { entero, momento } from "@/shared/formato";
 import { Figure, Notice } from "@/shared/ui";
 import { TaskBar, TaskLegend } from "@/shared/ui/task-bar";
-import { GRUPO_ESTADO, diasAtrasoTexto, textoRecuento } from "./textos";
+import { GRUPO_ESTADO, diasAtrasoTexto } from "./textos";
 import s from "./resumen-tareas.module.css";
 
 const CAMPO: Record<ConciliacionTareasDTO["campos"][number]["campo"], string> =
@@ -43,7 +43,7 @@ function Linaje({ semana }: { semana: TareasSemanaDTO }) {
     <p className={s.note}>
       {resumen.total === 0
         ? "La semana no registra tareas."
-        : `${textoRecuento(resumen)} Los conteos de la semana coinciden con el detalle importado${importacion?.confirmadaEl ? ` el ${momento(importacion.confirmadaEl)}` : ""}.`}
+        : `Los conteos de la semana coinciden con el detalle importado${importacion?.confirmadaEl ? ` el ${momento(importacion.confirmadaEl)}` : ""}.`}
     </p>
   );
 }

@@ -5,7 +5,8 @@ import { diaCorto, entero } from "../../shared/formato";
 import type {
   CierreTareaDTO,
   EstadoTarea,
-  ResumenTareasDTO,
+  SemanaTareasDTO,
+  TareaDTO,
 } from "../../shared/contratos/tareas";
 
 /** One task's status in a table row. */
@@ -38,10 +39,28 @@ export function fechaTarea(fecha: string | null, referencia: string) {
     : `${diaCorto(fecha)} ${fecha.slice(0, 4)}`;
 }
 
-/** "10 tareas: 3 completadas, 2 abiertas en plazo, 5 vencidas." */
-export function textoRecuento(r: ResumenTareasDTO) {
-  if (r.total === 0) return "Sin tareas registradas.";
-  return `${plural(r.total, "tarea", "tareas")}: ${plural(r.completadas, "completada", "completadas")}, ${plural(r.pendientes, "abierta en plazo", "abiertas en plazo")}, ${plural(r.vencidas, "vencida", "vencidas")}.`;
+/** A task id is a link only when every row of the table can link; otherwise all rows read as plain text. */
+export function tareasEnlazables(tareas: TareaDTO[]) {
+  return tareas.length > 0 && tareas.every((t) => t.origenRef !== null);
+}
+
+export type Verificacion =
+  "SIN_DETALLE" | "SIN_TAREAS" | "COINCIDE" | "NO_COINCIDE";
+
+/** Whether the task rows corroborate one week's counts. */
+export function verificacionDetalle(semana: SemanaTareasDTO): Verificacion {
+  if (semana.detalle === "SIN_DETALLE") return "SIN_DETALLE";
+  if (semana.indicadores.tareasActivas === 0) return "SIN_TAREAS";
+  return semana.coincide ? "COINCIDE" : "NO_COINCIDE";
+}
+
+/** True when every week agrees with its detail (or has no tasks): the table says it once instead of per row. */
+export function detalleCoincideEnTodas(semanas: SemanaTareasDTO[]) {
+  const estados = semanas.map(verificacionDetalle);
+  return (
+    estados.includes("COINCIDE") &&
+    estados.every((e) => e === "COINCIDE" || e === "SIN_TAREAS")
+  );
 }
 
 const DIA = 86400000;

@@ -58,9 +58,7 @@ test("Tareas de la semana: la persona, la semana, los cuatro indicadores y el de
   await expect(hecho(page, "Vacaciones pendientes")).toHaveText("14 días");
 
   // The summary by status reproduces the stored counts, and says so.
-  await expect(resumen(page)).toContainText(
-    "10 tareas: 3 completadas, 2 abiertas en plazo, 5 vencidas.",
-  );
+  await expect(resumen(page)).toContainText("Completadas en la semana");
   await expect(resumen(page)).toContainText(
     "Los conteos de la semana coinciden con el detalle importado",
   );
@@ -115,16 +113,9 @@ test("Tareas de la semana: la persona, la semana, los cuatro indicadores y el de
       `${id}, ${columna}`,
     ).toContainText(texto);
 
-  // The identifier opens the source system only when it has a reference, in a new tab.
-  const origen = tabla(page).getByRole("link", { name: /^OPS-1432/ });
-  await expect(origen).toHaveAttribute(
-    "href",
-    "https://jira.example/browse/OPS-1432",
-  );
-  await expect(origen).toHaveAttribute("target", "_blank");
-  await expect(origen).toHaveAttribute("rel", /noopener/);
+  // One style for every identifier: the rows do not all carry a source reference, so none is a link.
   await expect(
-    tabla(page).getByRole("link", { name: /^OPS-1433/ }),
+    tabla(page).getByRole("link", { name: /^OPS-143/ }),
   ).toHaveCount(0);
 
   // One read for the week, for that person and that Monday.
@@ -166,9 +157,7 @@ test("Tareas de la semana: el filtro por estado queda en la dirección y se pued
   ]);
   expect(pedidos.at(-1)!.searchParams.get("estado")).toBe("VENCIDA");
   // The summary does not follow the filter: it always describes the whole week.
-  await expect(resumen(page)).toContainText(
-    "10 tareas: 3 completadas, 2 abiertas en plazo, 5 vencidas.",
-  );
+  await expect(resumen(page)).toContainText("Completadas en la semana");
 
   await estado(page).selectOption({ label: "Completadas en la semana (3)" });
   await expect(page).toHaveURL(/\?estado=COMPLETADA$/);
@@ -296,9 +285,7 @@ test("Tareas de la semana: Gerencia ve los conteos de un técnico, no sus tareas
       name: "Persona ficticia 001, semana 12–18 oct 2026",
     }),
   ).toBeVisible();
-  await expect(resumen(page)).toContainText(
-    "10 tareas: 3 completadas, 2 abiertas en plazo, 5 vencidas.",
-  );
+  await expect(resumen(page)).toContainText("Completadas en la semana");
   await expect(
     page.getByText("El detalle de tareas no está disponible para su perfil"),
   ).toBeVisible();
@@ -471,9 +458,7 @@ test("Mis datos: la persona ve sus tareas por semana, sin índice ni nivel ni hi
     name: "Sus tareas, semana 12–18 oct 2026",
   });
   await expect(tablaPropia.getByRole("row")).toHaveCount(11);
-  await expect(propias).toContainText(
-    "10 tareas: 3 completadas, 2 abiertas en plazo, 5 vencidas.",
-  );
+  await expect(propias).toContainText("Completadas en la semana");
   await expect(await celda(tablaPropia, "OPS-1436", "Estado")).toContainText(
     "Vencida",
   );
@@ -500,9 +485,7 @@ test("Mis datos: la persona ve sus tareas por semana, sin índice ni nivel ni hi
     .selectOption({ label: "Abiertas al cierre, vencidas (5)" });
   await expect(tablaPropia.getByRole("row")).toHaveCount(6);
   expect(pedidos.at(-1)!.searchParams.get("estado")).toBe("VENCIDA");
-  await expect(propias).toContainText(
-    "10 tareas: 3 completadas, 2 abiertas en plazo, 5 vencidas.",
-  );
+  await expect(propias).toContainText("Completadas en la semana");
 
   // Another week, whose counts came without detail.
   await propias
