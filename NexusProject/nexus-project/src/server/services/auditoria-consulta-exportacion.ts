@@ -1,7 +1,8 @@
-// The audit export as a file. CSV follows RFC 4180 (comma, CRLF, doubled quotes) with a UTF-8 BOM
-// so Excel reads accents; every cell is quoted and neutralized against formula injection
+// The audit export as a file. CSV follows FORMATO_CSV (semicolon, UTF-8 BOM, CRLF) and RFC 4180
+// quoting (doubled quotes), like every other export; every cell is quoted and neutralized against formula injection
 // (OWASP "CSV Injection": no cell may begin with = + - @ tab CR LF or their full-width forms).
 // The file carries identifiers only: names are resolved on screen, never copied out (CNIL §6).
+import { FORMATO_CSV } from "../../shared/contratos/exportaciones";
 import type {
   EventoExportado,
   ExportacionAuditoria,
@@ -63,10 +64,13 @@ const fila = (e: EventoExportado) =>
     json(e.detalles),
   ]
     .map(celda)
-    .join(",");
+    .join(FORMATO_CSV.separador);
 
 export const aCsv = (eventos: EventoExportado[]) =>
-  `﻿${[COLUMNAS_CSV.map(celda).join(","), ...eventos.map(fila)].join("\r\n")}\r\n`;
+  `${FORMATO_CSV.bom}${[
+    COLUMNAS_CSV.map(celda).join(FORMATO_CSV.separador),
+    ...eventos.map(fila),
+  ].join(FORMATO_CSV.finDeLinea)}${FORMATO_CSV.finDeLinea}`;
 
 export function aJson(datos: {
   eventos: EventoExportado[];
