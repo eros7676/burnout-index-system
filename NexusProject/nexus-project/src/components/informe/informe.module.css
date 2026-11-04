@@ -2,18 +2,6 @@
   display: grid;
   gap: var(--space-5);
 }
-/* The factors are the answer and the widest block; persistence and suggestions beside them. */
-.grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
-  gap: var(--space-5);
-  align-items: start;
-}
-.side {
-  display: grid;
-  gap: var(--space-5);
-  align-content: start;
-}
 .factors {
   min-width: 0;
 }
@@ -35,7 +23,7 @@
 }
 .label {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .explanation {
   max-width: 72ch;
@@ -55,7 +43,7 @@
   align-items: center;
   gap: 6px;
   color: var(--level-alto);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-strong);
 }
 /* The same diamond as Alto: shape repeats what the color says. */
@@ -91,7 +79,7 @@
 }
 .facts dt {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .facts dd {
   margin-top: var(--space-1);
@@ -109,21 +97,6 @@
   color: var(--ink-2);
 }
 
-.alert {
-  display: grid;
-  gap: var(--space-6);
-  align-items: start;
-}
-.alert[data-con-correo] {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
-}
-
-@media (max-width: 1100px) {
-  .grid,
-  .alert[data-con-correo] {
-    grid-template-columns: 1fr;
-  }
-}
 
 /* Print (T10 report on paper). The shell goes in impresion.tsx; here, what the report itself hides or keeps whole.
    MDN: @page sets the page margins; break-inside: avoid keeps a block on one page;
@@ -143,7 +116,7 @@
     display: block;
     max-width: 72ch;
     color: var(--ink-2);
-    font-size: var(--text-sm);
+    font-size: var(--text-xs);
   }
   .page,
   .page * {
@@ -156,10 +129,6 @@
   /* The back link is a control of the screen. */
   .page > header > a {
     display: none;
-  }
-  .grid,
-  .alert[data-con-correo] {
-    grid-template-columns: 1fr;
   }
   .page section,
   .page tr {

@@ -2,20 +2,6 @@
   display: grid;
   gap: var(--space-5);
 }
-/* The changes are the answer and the widest block; the context beside them. */
-.grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
-  gap: var(--space-5);
-  align-items: start;
-}
-.main,
-.side {
-  display: grid;
-  gap: var(--space-5);
-  align-content: start;
-  min-width: 0;
-}
 
 /* What was replaced is struck through and what replaced it is emphasized. */
 .antes {
@@ -29,7 +15,7 @@
   max-width: 72ch;
   margin: var(--space-4) 0 0;
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .texto {
   max-width: 72ch;
@@ -42,7 +28,7 @@
   display: grid;
   gap: var(--space-2);
   margin: 0;
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .pares > div {
   display: grid;
@@ -55,10 +41,4 @@
 .pares dd {
   margin: 0;
   overflow-wrap: anywhere;
-}
-
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
