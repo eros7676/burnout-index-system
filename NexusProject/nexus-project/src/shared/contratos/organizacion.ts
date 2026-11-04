@@ -113,6 +113,9 @@ export type FichaPersonaDTO = {
   /** Newest first, at most `semanas` calendar weeks back from the latest loaded week. */
   semanas: SemanaPersona[];
   ultimaSemanaCargada: FechaISO | null;
+  /** Suggestions for the newest week's current evaluation, one per exceeded factor (as its report
+   * says them). Empty when that week has no current result or no factor is past its threshold. */
+  recomendaciones: string[];
 };
 
 export type EquipoOpcion = {
@@ -418,6 +421,7 @@ const ficha: FichaPersonaDTO = {
   ],
   semanas: [semanaMock],
   ultimaSemanaCargada: "2026-10-12",
+  recomendaciones: [],
 };
 
 export const MOCKS_ORGANIZACION = {

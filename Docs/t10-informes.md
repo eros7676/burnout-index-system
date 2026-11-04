@@ -23,7 +23,7 @@ const informe = await construirInforme(db, evaluationId);
 - Valores y umbrales salen del snapshot guardado. Una regla posterior no cambia el informe histórico.
 - `factores` sigue el ranking guardado. `excedido` usa la lista guardada.
 - `explicacion` nombra el nivel guardado. Un índice de 70 o más con persistencia que no sostiene ALTO se explica como MEDIO. INCOMPLETO conserva el índice numérico. El texto dice que no es un diagnóstico.
-- `recomendaciones` está en `recomendaciones.ts`, puro y sin lectura de base, para que T11 pueda reutilizarlo. Son sugerencias de revisión humana, una por factor excedido y en el orden del ranking. Si no hay factores excedidos, hay una sola frase que no pide una acción automática.
+- `recomendaciones` está en `recomendaciones.ts`, puro y sin lectura de base, para que T11 y la ficha de la persona lo reutilicen. Son sugerencias de revisión humana, una por factor excedido y en el orden del ranking, escritas con los datos del snapshot de la evaluación: el valor de la semana, cuánto supera el umbral de esa versión, la semana anterior y, para vacaciones, los días desde las últimas. Cada una propone una acción del PDF §5.4 (revisar asignación y vencimientos, redistribuir carga, evaluar descanso, evitar asignaciones adicionales) para que la decida una persona. Si no hay factores excedidos, hay una sola frase que no pide una acción automática.
 - `alerta` es la fila persistida de esa evaluación, con vigencia ACTIVA o SUPERADA, o `null` si no hay alerta. T11 la crea durante el procesamiento; esta lectura no la genera.
 - El empleado sale del catálogo: nombre, equipo y tipo. No se agrega un snapshot de empleado al contrato.
 

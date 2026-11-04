@@ -13,6 +13,7 @@ import {
 } from "../src/server/services/alertas";
 import { evaluarPeriodo } from "../src/server/services/evaluaciones";
 import { construirInforme } from "../src/server/services/informes";
+import { consultarFicha } from "../src/server/services/organizacion-consultas";
 import { recomendacionesDe } from "../src/server/services/recomendaciones";
 
 const hash = (valor: string) =>
@@ -199,8 +200,13 @@ test("MySQL T11: alerta interna única para ALTO vigente", async (t) => {
         assert.deepEqual(informe.alerta?.causas, ["HE", "DS", "CT", "VP"]);
         assert.deepEqual(
           informe.alerta?.sugerencias,
-          recomendacionesDe(alta.ranking, alta.excedidas),
+          recomendacionesDe(alta),
         );
+        assert.match(informe.recomendaciones[0], /^Horas extra: 16 h extra en la semana/);
+        // The person page says what the report says for its newest week.
+        const ficha = await consultarFicha(db, s.employeeId, 12);
+        assert.equal(ficha.semanas[0].evaluationId, alta.evaluationId);
+        assert.deepEqual(ficha.recomendaciones, informe.recomendaciones);
 
         const repetida = await crearAlertaSiCorresponde(db, alta.evaluationId);
         await evaluarPeriodo(db, s.par(1), conAlerta);

@@ -15,6 +15,7 @@ import type {
   OpcionesPersonaDTO,
   PersonaFilaDTO,
 } from "../src/shared/contratos/organizacion";
+import { informeMock } from "../src/shared/mocks";
 import { PERSONAS } from "./demo";
 
 export const LUNES_ACTUAL = "2026-11-02";
@@ -150,6 +151,8 @@ export function ficha(employeeId: string): FichaPersonaDTO | null {
     ],
     semanas,
     ultimaSemanaCargada: semanas[0]?.periodStart ?? null,
+    // A newest week in Alto carries the report's suggestions; any other, none.
+    recomendaciones: semanas[0]?.actualizado && semanas[0].nivel === "ALTO" ? informeMock.recomendaciones : [],
   };
 }
 

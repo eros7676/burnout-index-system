@@ -26,7 +26,8 @@ import { DEFINICION } from "../definiciones";
 import { NotificacionAlerta } from "../notificacion-alerta";
 import { SeguimientoAlerta } from "../seguimiento/seguimiento-alerta";
 import { useSesion } from "../shell/sesion";
-import { envio, sinDestinatario, sugerencia, trasIntento } from "./aviso";
+import { Sugerencias } from "../informe/sugerencias";
+import { envio, sinDestinatario, trasIntento } from "./aviso";
 import s from "./detalle-alerta.module.css";
 
 /**
@@ -188,11 +189,7 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
                 </p>
               </Section>
               <Section titulo="Sugerencias de revisión" className={s.apoyo}>
-                <ul className={s.lista}>
-                  {alerta.sugerencias.map((texto) => (
-                    <li key={texto}>{sugerencia(texto)}</li>
-                  ))}
-                </ul>
+                <Sugerencias lineas={alerta.sugerencias} />
               </Section>
             </div>
 

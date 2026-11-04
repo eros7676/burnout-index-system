@@ -119,7 +119,7 @@ test("causas y sugerencias siguen el ranking de los factores excedidos", () => {
   assert.deepEqual(contenido.causas, ["HE", "DS", "CT", "VP"]);
   assert.deepEqual(
     contenido.sugerencias,
-    recomendacionesDe(evaluacionAltaMock.ranking, evaluacionAltaMock.excedidas),
+    recomendacionesDe(evaluacionAltaMock),
   );
-  assert.match(contenido.sugerencias[0], /horas extra/);
+  assert.match(contenido.sugerencias[0], /^Horas extra: 16 h extra en la semana/);
 });

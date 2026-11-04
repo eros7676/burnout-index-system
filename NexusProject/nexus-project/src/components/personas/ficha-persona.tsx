@@ -46,6 +46,7 @@ import {
 } from "@/components/tareas";
 import { tareasApi } from "../tareas/tareas-api";
 import { diasAtrasoTexto, hrefTareasSemana, type VistaTareas } from "../tareas/textos";
+import { Sugerencias } from "../informe/sugerencias";
 import { organizacionApi } from "../organizacion/api";
 import { rutaHistorial } from "../organizacion/rutas";
 import { MOTIVO, PUESTO, fechaCorta } from "../organizacion/textos";
@@ -392,6 +393,22 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
           )}
         </Section>
       </Columns>
+
+      {vista?.actual && respuesta && respuesta.recomendaciones.length > 0 && (
+        // The newest week's suggestions, as its report states them: the decision stays with a person.
+        <Section
+          titulo="Sugerencias de revisión"
+          aside={<span>{textoSemana(vista.actual.periodStart, vista.actual.periodEnd)}</span>}
+        >
+          <div className={s.sugerencias}>
+            <Sugerencias lineas={respuesta.recomendaciones} />
+            <p className={s.nota}>
+              Salen de los datos de la semana. Son para revisar con la persona; el sistema no
+              cambia asignaciones ni descansos.
+            </p>
+          </div>
+        </Section>
+      )}
 
       <Section
         titulo="Semana a semana"
