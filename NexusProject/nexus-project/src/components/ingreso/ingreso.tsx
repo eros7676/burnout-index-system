@@ -38,8 +38,8 @@ export function Ingreso() {
         </p>
         <h1>Seguimiento semanal de la carga de trabajo</h1>
         <p className={s.lead}>
-          Detecta quién sostiene horas extra, días sin descanso o tareas vencidas
-          semana tras semana, para que una persona lo revise a tiempo.
+          Seguimiento de las horas extra, los días sin descanso y las tareas vencidas
+          que se sostienen semana tras semana, para revisarlos a tiempo.
         </p>
       </header>
       <section className={s.panel} data-enter aria-labelledby="perfil">

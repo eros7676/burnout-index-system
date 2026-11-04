@@ -8,6 +8,14 @@
   overflow-x: auto;
   /* Rows enter with a transform; keep it from creating a vertical scrollbar. */
   overflow-y: hidden;
+  /* Scroll cue: a shade appears on an edge only while there is more table past it. The covers move
+     with the content (local) and hide the fixed shades (scroll) when an edge is reached. */
+  background:
+    linear-gradient(to right, var(--surface) 40%, transparent) left / var(--space-6) 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 40%, transparent) right / var(--space-6) 100% no-repeat local,
+    linear-gradient(to right, var(--scroll-shade), transparent) left / var(--space-3) 100% no-repeat scroll,
+    linear-gradient(to left, var(--scroll-shade), transparent) right / var(--space-3) 100% no-repeat scroll;
+  background-color: var(--surface);
 }
 .table {
   width: 100%;

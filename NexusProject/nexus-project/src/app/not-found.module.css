@@ -10,3 +10,7 @@
   font-size: var(--text-2xl);
   letter-spacing: -0.015em;
 }
+.texto {
+  max-width: 60ch;
+  color: var(--ink-2);
+}
