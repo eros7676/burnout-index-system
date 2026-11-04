@@ -239,3 +239,31 @@ test("Personas: ordenar por carga y filtrar por puesto, con la columna ordenada 
   await expect(lista(page).getByRole("row")).toHaveCount(lideres + 1);
   await expect(page.getByRole("button", { name: "Quitar filtros" }).or(page.getByText("con estos filtros")).first()).toBeVisible();
 });
+
+test("Ficha: las sugerencias de la última semana salen de sus datos, y sin umbral superado no hay sección", async ({
+  page,
+}) => {
+  await demo(page, "demo-rrhh");
+  await organizacion(page);
+  await page.goto("/employees/EMP-001");
+  const sugerencias = page.getByRole("region", { name: "Sugerencias de revisión" });
+  await expect(sugerencias).toContainText("12–18 oct 2026");
+  // One per exceeded factor, in ranking order, each with the week's figure and what to weigh.
+  await expect(sugerencias.getByRole("listitem")).toHaveText([
+    /^Horas extra: 16 h extra en la semana, el doble del umbral \(8 h\); también lo superó la semana anterior \(16 h\)\. Evitar asignaciones adicionales/,
+    /^Días consecutivos sin descanso: 16 días seguidos sin descanso, más del doble del umbral \(6 días\)/,
+    /^Carga de tareas: 7 tareas pendientes de 10 al cierre, 5 vencidas; .*acordar nuevas fechas\.$/,
+    /^Vacaciones pendientes: 14 días de vacaciones pendientes, 4 días por encima del umbral \(10 días\); las últimas vacaciones fueron hace 127 días\./,
+  ]);
+  await expect(sugerencias.locator("strong")).toHaveText([
+    "Horas extra:",
+    "Días consecutivos sin descanso:",
+    "Carga de tareas:",
+    "Vacaciones pendientes:",
+  ]);
+  await expect(sugerencias).toContainText("el sistema no cambia asignaciones ni descansos");
+
+  await page.goto("/employees/EMP-002");
+  await expect(page.getByRole("region", { name: "Semana a semana" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Sugerencias de revisión" })).toHaveCount(0);
+});

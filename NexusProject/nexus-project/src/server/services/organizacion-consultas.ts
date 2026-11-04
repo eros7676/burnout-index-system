@@ -24,6 +24,8 @@ import {
 import { paginaDirectorio } from "../repositories/personas-directorio";
 import { leerSemanasPersonas, semanasCargadas } from "../repositories/personas-semanas";
 import { promedioDesdeCentesimos, suprimirGrupos } from "./equipos-agregados";
+import { obtenerEvaluacion } from "./evaluaciones";
+import { recomendacionesDe } from "./recomendaciones";
 import type {
   filtrosDirectorio,
   filtrosEquipos,
@@ -186,6 +188,13 @@ export async function consultarFicha(
           })
         ).get(employeeId) ?? [])
       : [];
+    // The newest week's suggestions, as its report says them (same evaluation, same function).
+    const reciente = semanas[0];
+    const evaluacion =
+      reciente?.actualizado && reciente.evaluationId
+        ? await obtenerEvaluacion(tx, reciente.evaluationId)
+        : null;
+    const recomendaciones = evaluacion?.excedidas.length ? recomendacionesDe(evaluacion) : [];
     return {
       persona: {
         employeeId: e.employeeId,
@@ -207,6 +216,7 @@ export async function consultarFicha(
       asignaciones,
       semanas,
       ultimaSemanaCargada,
+      recomendaciones,
     };
   }, LECTURA);
 }
