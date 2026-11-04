@@ -167,7 +167,9 @@
    a column is at least as wide as its value, so a value does not wrap while the strip has room. */
 .facts {
   display: grid;
-  grid-template-columns: repeat(var(--columnas, 4), minmax(max-content, 1fr));
+  /* min-content: a column never breaks a word, yet a long code (which may wrap anywhere) cannot
+     push the strip past its container. */
+  grid-template-columns: repeat(var(--columnas, 4), minmax(min-content, 1fr));
   gap: var(--space-4) var(--space-6);
   margin: 0;
 }
