@@ -3,12 +3,14 @@
 // Labels above, one column, required by default and «(opcional)» marked; help and errors below the control.
 import {
   useId,
+  type CSSProperties,
   type FormHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
+import { columnasBalanceadas } from "../columnas";
 import { Icon } from "./icons";
 import s from "./field.module.css";
 
@@ -203,7 +205,10 @@ export function KeyFacts({
   items: { termino: string; valor: ReactNode }[];
 }) {
   return (
-    <dl className={s.facts}>
+    <dl
+      className={s.facts}
+      style={{ "--columnas": columnasBalanceadas(items.length) } as CSSProperties}
+    >
       {items.map((item) => (
         <div key={item.termino} className={s.fact}>
           <dt>{item.termino}</dt>

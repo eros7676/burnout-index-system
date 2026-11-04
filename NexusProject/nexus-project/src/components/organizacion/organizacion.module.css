@@ -4,6 +4,8 @@
 }
 /* One column of form, as wide as its fields need (R41). */
 .formulario {
+  display: grid;
+  gap: var(--space-8);
   max-width: 560px;
 }
 .resumen {

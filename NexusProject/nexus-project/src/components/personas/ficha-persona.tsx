@@ -135,7 +135,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
         }
         acciones={
           persona && (puedeAdministrar || historial) ? (
-            <>
+            <div className={s.acciones}>
               {historial && <ButtonLink href={historial}>Ver historial</ButtonLink>}
               {puedeAdministrar && (
                 <>
@@ -150,7 +150,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                   )}
                 </>
               )}
-            </>
+            </div>
           ) : undefined
         }
       />

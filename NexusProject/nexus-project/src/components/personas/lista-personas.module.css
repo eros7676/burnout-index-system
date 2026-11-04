@@ -43,3 +43,7 @@
 .tasks {
   white-space: nowrap;
 }
+/* A person without a week reads like the dashes next to it: same size, quiet ink (not the small note). */
+.sinDatos {
+  color: var(--ink-2);
+}

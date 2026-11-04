@@ -88,6 +88,12 @@
   opacity: 1;
 }
 
+/* The level key keeps its counts next to the labels instead of at the far edge of a wide card; the
+   bar above still spans the card. */
+.mezcla ul {
+  max-width: 20rem;
+}
+
 /* The week of one team: the mix, then the figures that read from it. */
 .resumen {
   display: grid;
@@ -97,4 +103,21 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--space-4);
+}
+
+/* Header actions: part of the header's own flex row on a wide screen; on a phone an even grid of
+   two columns, an odd last button spanning both. */
+.acciones {
+  display: contents;
+}
+@media (max-width: 600px) {
+  .acciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    width: 100%;
+  }
+  .acciones > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }
