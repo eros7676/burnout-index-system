@@ -65,6 +65,11 @@
   text-align: center !important;
   white-space: nowrap;
 }
+/* Fixed-format visual columns (week strip, level/status tag, row action link) center like .num. */
+.centro {
+  text-align: center !important;
+  white-space: nowrap;
+}
 .muted {
   color: var(--ink-2);
   font-size: var(--text-xs);

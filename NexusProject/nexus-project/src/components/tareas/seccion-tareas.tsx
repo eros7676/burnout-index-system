@@ -88,7 +88,7 @@ export function SeccionTareas({ employeeId }: { employeeId: string }) {
                 Vencidas
               </th>
               {!coinciden && <th scope="col">Detalle</th>}
-              <th scope="col">
+              <th scope="col" className={tabla.centro}>
                 <span className="sr-only">Tareas de la semana</span>
               </th>
             </tr>
@@ -113,7 +113,7 @@ export function SeccionTareas({ employeeId }: { employeeId: string }) {
                       <Verificacion semana={w} />
                     </td>
                   )}
-                  <td>
+                  <td className={tabla.centro}>
                     <Link
                       className={s.link}
                       href={hrefTareasSemana({

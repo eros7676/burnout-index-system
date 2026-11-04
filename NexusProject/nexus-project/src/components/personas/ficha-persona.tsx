@@ -328,7 +328,9 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
               <thead>
                 <tr>
                   <th scope="col">Semana</th>
-                  <th scope="col">Nivel</th>
+                  <th scope="col" className={tabla.centro}>
+                    Nivel
+                  </th>
                   <th scope="col" className={tabla.num}>
                     Índice
                   </th>
@@ -342,7 +344,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                   <th scope="col" className={`${tabla.num} ${s.wrap}`}>
                     Vacaciones pendientes
                   </th>
-                  <th scope="col">
+                  <th scope="col" className={tabla.centro}>
                     <span className="sr-only">Informe</span>
                   </th>
                 </tr>
@@ -353,7 +355,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                   return (
                     <tr key={w.periodStart}>
                       <th scope="row">{periodo}</th>
-                      <td>
+                      <td className={tabla.centro}>
                         <LevelTag nivel={w.nivel} actualizado={w.actualizado} />
                         {!w.actualizado && (
                           <span className={tabla.sub}>{pendiente(w)}</span>
@@ -379,7 +381,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                       <td className={tabla.num}>
                         {valorFactor("VP", w.vacacionesPendientesDias)}
                       </td>
-                      <td className={tabla.num}>
+                      <td className={tabla.centro}>
                         {w.evaluationId ? (
                           <Link
                             className={tabla.cellLink}

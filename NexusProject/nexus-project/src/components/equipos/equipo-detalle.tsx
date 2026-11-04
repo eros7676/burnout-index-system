@@ -218,7 +218,9 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                   <th scope="col">Persona</th>
                   <th scope="col">Puesto</th>
                   <th scope="col">Responsable</th>
-                  <th scope="col">Nivel</th>
+                  <th scope="col" className={tabla.centro}>
+                    Nivel
+                  </th>
                   <th scope="col" className={tabla.num}>
                     Índice
                   </th>
@@ -237,7 +239,7 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                       </th>
                       <td>{PUESTO[p.tipo]}</td>
                       <td>{p.responsable ?? "—"}</td>
-                      <td>
+                      <td className={tabla.centro}>
                         {w ? (
                           <LevelTag nivel={w.nivel} actualizado={w.actualizado} />
                         ) : (

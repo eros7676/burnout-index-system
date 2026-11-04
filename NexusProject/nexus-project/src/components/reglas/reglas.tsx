@@ -216,7 +216,9 @@ export function Reglas() {
                   <tr>
                     <th scope="col">Versión</th>
                     <th scope="col">Inicio</th>
-                    <th scope="col">Estado</th>
+                    <th scope="col" className={tabla.centro}>
+                      Estado
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -229,7 +231,7 @@ export function Reglas() {
                         </span>
                       </th>
                       <td className={s.fecha}>{fecha(version.effectiveFrom)}</td>
-                      <td>
+                      <td className={tabla.centro}>
                         <StatusTag tono={TONO_VERSION[version.estado]}>
                           {ESTADO_VERSION[version.estado]}
                         </StatusTag>
@@ -333,7 +335,9 @@ function Borradores({ edita }: { edita: boolean }) {
             <thead>
               <tr>
                 <th scope="col">Borrador</th>
-                <th scope="col">Estado</th>
+                <th scope="col" className={tabla.centro}>
+                Estado
+              </th>
                 <th scope="col">Alcance</th>
                 <th scope="col">Motivo</th>
                 <th scope="col">Creado por</th>
@@ -356,7 +360,7 @@ function Borradores({ edita }: { edita: boolean }) {
                         : `Basado en ${b.baseVersion}`}
                     </span>
                   </th>
-                  <td>
+                  <td className={tabla.centro}>
                     <StatusTag tono={TONO_BORRADOR[b.estado]}>
                       {ESTADO_BORRADOR[b.estado]}
                     </StatusTag>

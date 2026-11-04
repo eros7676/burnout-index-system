@@ -243,7 +243,9 @@ export function Resumen() {
                     <thead>
                       <tr>
                         <th scope="col">Persona</th>
-                        <th scope="col">Últimas 8 semanas</th>
+                        <th scope="col" className={tabla.centro}>
+                          Últimas 8 semanas
+                        </th>
                         <th scope="col">Causas</th>
                         <th scope="col" className={tabla.num}>
                           Índice
@@ -262,7 +264,7 @@ export function Resumen() {
                             </Link>
                             <span className={tabla.sub}>{persona.equipo}</span>
                           </th>
-                          <td>
+                          <td className={tabla.centro}>
                             <span className={s.strip}>
                               <WeekStrip
                                 semanas={serieHasta(persona, semana!)}

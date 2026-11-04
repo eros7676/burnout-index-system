@@ -420,7 +420,9 @@ export function Auditoria() {
                   <th scope="col">Acción</th>
                   <th scope="col">Recurso</th>
                   <th scope="col">Persona</th>
-                  <th scope="col">Resultado</th>
+                  <th scope="col" className={tabla.centro}>
+                    Resultado
+                  </th>
                 </tr>
               </thead>
               <tbody ref={filas}>
@@ -473,7 +475,7 @@ export function Auditoria() {
                           </>
                         )}
                       </td>
-                      <td>
+                      <td className={tabla.centro}>
                         <EtiquetaResultado resultado={evento.resultado} />
                         {evento.motivo && evento.resultado !== "EXITO" && (
                           <span className={tabla.sub}>

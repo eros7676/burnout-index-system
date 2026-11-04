@@ -70,9 +70,11 @@ export function Medidas({
                 <th scope="col">Medida</th>
                 <th scope="col">Responsable</th>
                 <th scope="col">Vencimiento</th>
-                <th scope="col">Estado</th>
+                <th scope="col" className={tabla.centro}>
+                  Estado
+                </th>
                 {gestiona && (
-                  <th scope="col">
+                  <th scope="col" className={tabla.centro}>
                     <span className="sr-only">Acción</span>
                   </th>
                 )}
@@ -89,13 +91,13 @@ export function Medidas({
                   </th>
                   <td>{m.responsable.nombre}</td>
                   <td>{m.vence ? fecha(m.vence) : "—"}</td>
-                  <td>
+                  <td className={tabla.centro}>
                     <StatusTag tono={m.hecha ? "exito" : "aviso"}>
                       {m.hecha ? "Hecha" : "Pendiente"}
                     </StatusTag>
                   </td>
                   {gestiona && (
-                    <td>
+                    <td className={tabla.centro}>
                       <Button
                         variante="quiet"
                         className={s.accionFila}

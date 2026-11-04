@@ -242,8 +242,12 @@ export function ListaPersonas() {
                 <thead>
                   <tr>
                     <th scope="col">Persona</th>
-                    <th scope="col">Últimas 8 semanas</th>
-                    <th scope="col">Nivel</th>
+                    <th scope="col" className={tabla.centro}>
+                      Últimas 8 semanas
+                    </th>
+                    <th scope="col" className={tabla.centro}>
+                      Nivel
+                    </th>
                     <th scope="col" className={tabla.num}>
                       Índice
                     </th>
@@ -287,10 +291,10 @@ export function ListaPersonas() {
                             )}
                           </span>
                         </th>
-                        <td>
+                        <td className={tabla.centro}>
                           <WeekStrip semanas={[...persona.semanas].reverse()} />
                         </td>
-                        <td>
+                        <td className={tabla.centro}>
                           {w ? (
                             <LevelTag nivel={w.nivel} actualizado={w.actualizado} />
                           ) : (

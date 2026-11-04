@@ -74,7 +74,9 @@ export function Simulacion({
             <DataTable etiqueta="Semanas por nivel, antes y después del borrador">
               <thead>
                 <tr>
-                  <th scope="col">Nivel</th>
+                  <th scope="col" className={tabla.centro}>
+                    Nivel
+                  </th>
                   <th scope="col" className={tabla.num}>
                     Con {sim.contexto.versionEnVigor}
                   </th>
@@ -89,7 +91,7 @@ export function Simulacion({
               <tbody>
                 {NIVELES.map((nivel) => (
                   <tr key={nivel}>
-                    <th scope="row">
+                    <th scope="row" className={tabla.centro}>
                       <LevelTag nivel={nivel} />
                     </th>
                     <td className={tabla.num}>{entero(sim.antes[nivel])}</td>
@@ -109,8 +111,12 @@ export function Simulacion({
               <DataTable etiqueta="Semanas que cambian de nivel">
                 <thead>
                   <tr>
-                    <th scope="col">Nivel anterior</th>
-                    <th scope="col">Nivel nuevo</th>
+                    <th scope="col" className={tabla.centro}>
+                      Nivel anterior
+                    </th>
+                    <th scope="col" className={tabla.centro}>
+                      Nivel nuevo
+                    </th>
                     <th scope="col" className={tabla.num}>
                       Semanas
                     </th>
@@ -119,10 +125,10 @@ export function Simulacion({
                 <tbody>
                   {sim.transiciones.map((t) => (
                     <tr key={`${t.de}-${t.a}`}>
-                      <th scope="row">
+                      <th scope="row" className={tabla.centro}>
                         <LevelTag nivel={t.de} />
                       </th>
-                      <td>
+                      <td className={tabla.centro}>
                         <LevelTag nivel={t.a} />
                       </td>
                       <td className={tabla.num}>{entero(t.semanas)}</td>

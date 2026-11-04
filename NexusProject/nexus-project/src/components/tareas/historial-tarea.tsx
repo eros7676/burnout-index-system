@@ -75,7 +75,9 @@ export function HistorialTarea({
             <thead>
               <tr>
                 <th scope="col">Semana</th>
-                <th scope="col">Estado</th>
+                <th scope="col" className={tabla.centro}>
+                  Estado
+                </th>
                 <th scope="col">Vence</th>
                 <th scope="col">Completada</th>
                 <th scope="col" className={tabla.num}>
@@ -97,7 +99,7 @@ export function HistorialTarea({
                       {textoSemana(c.periodStart, c.periodEnd)}
                     </Link>
                   </th>
-                  <td>
+                  <td className={tabla.centro}>
                     <EstadoTareaTag estado={c.estado} />
                   </td>
                   <td>{fechaTarea(c.venceEl, c.periodStart)}</td>

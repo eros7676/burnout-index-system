@@ -53,12 +53,14 @@ export function TablaTareas({
           <th scope="col">Asignada</th>
           <th scope="col">Vence</th>
           <th scope="col">Completada</th>
-          <th scope="col">Estado</th>
+          <th scope="col" className={tabla.centro}>
+            Estado
+          </th>
           <th scope="col" className={tabla.num}>
             Días de atraso
           </th>
           {historial && (
-            <th scope="col">
+            <th scope="col" className={tabla.centro}>
               <span className="sr-only">Historial</span>
             </th>
           )}
@@ -77,12 +79,12 @@ export function TablaTareas({
             <td className={s.date}>
               {fechaTarea(t.completadaEl, semanaInicio)}
             </td>
-            <td>
+            <td className={tabla.centro}>
               <EstadoTareaTag estado={t.estado} />
             </td>
             <td className={tabla.num}>{diasAtrasoTexto(t.diasAtraso)}</td>
             {historial && (
-              <td>
+              <td className={tabla.centro}>
                 <Link
                   className={s.link}
                   href={historial(t.taskId)}

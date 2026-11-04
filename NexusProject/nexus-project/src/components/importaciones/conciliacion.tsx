@@ -100,7 +100,9 @@ export function Conciliacion({ resumen }: { resumen: ResumenConciliacion }) {
                 <th scope="col" className={tabla.num}>
                   Vencidas
                 </th>
-                <th scope="col">Resultado</th>
+                <th scope="col" className={tabla.centro}>
+                  Resultado
+                </th>
               </tr>
             </thead>
             <tbody ref={cuerpo}>
@@ -126,7 +128,7 @@ export function Conciliacion({ resumen }: { resumen: ResumenConciliacion }) {
                       />
                     </td>
                   ))}
-                  <td>
+                  <td className={tabla.centro}>
                     <Resultado semana={f} />
                   </td>
                 </tr>
@@ -203,7 +205,9 @@ export function MuestraTareas({ tareas }: { tareas: MuestraTarea[] }) {
             <th scope="col">Asignada</th>
             <th scope="col">Vence</th>
             <th scope="col">Finalizada</th>
-            <th scope="col">Estado al cierre</th>
+            <th scope="col" className={tabla.centro}>
+              Estado al cierre
+            </th>
           </tr>
         </thead>
         <tbody ref={cuerpo}>
@@ -223,7 +227,7 @@ export function MuestraTareas({ tareas }: { tareas: MuestraTarea[] }) {
               <td className={s.semana}>{fecha(t.asignadaEl)}</td>
               <td className={s.semana}>{fecha(t.venceEl)}</td>
               <td className={s.semana}>{fecha(t.completadaEl)}</td>
-              <td>
+              <td className={tabla.centro}>
                 <StatusTag tono={ESTADO[t.estadoCierre].tono}>
                   {ESTADO[t.estadoCierre].texto}
                 </StatusTag>

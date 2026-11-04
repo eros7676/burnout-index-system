@@ -189,7 +189,9 @@ export function Equipos() {
                         </th>
                       </>
                     ) : (
-                      <th scope="col">Estado</th>
+                      <th scope="col" className={tabla.centro}>
+                        Estado
+                      </th>
                     )}
                   </tr>
                 </thead>
@@ -212,7 +214,7 @@ export function Equipos() {
                         </Link>
                       </td>
                       {!activos ? (
-                        <td>
+                        <td className={tabla.centro}>
                           <StatusTag>De baja</StatusTag>
                         </td>
                       ) : e.suprimido || !e.conteo ? (
