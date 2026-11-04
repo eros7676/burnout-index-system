@@ -1,0 +1,16 @@
+.simulacion {
+  display: grid;
+  gap: var(--space-6);
+}
+.resumen {
+  max-width: 72ch;
+  color: var(--ink-2);
+}
+.bloque {
+  display: grid;
+  gap: var(--space-3);
+}
+.subtitulo {
+  font-size: var(--text-md);
+  font-weight: var(--weight-strong);
+}

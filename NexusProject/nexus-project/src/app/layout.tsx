@@ -14,7 +14,7 @@ const plex = IBM_Plex_Sans({
 export const metadata: Metadata = {
   title: { default: "Nexo Laboral", template: "%s · Nexo Laboral" },
   description:
-    "Seguimiento semanal de indicadores de sobrecarga laboral para RRHH, gerencia y responsables de equipo.",
+    "Seguimiento semanal de la carga de trabajo para RR. HH., gerencia y líderes de equipo.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

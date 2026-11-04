@@ -1,0 +1,88 @@
+/* Annotated layout (R47): a 12-column grid, the note in 4 columns and the controls in 8. */
+.formulario {
+  display: grid;
+}
+.fila {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-5);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--line);
+}
+.fila:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.filaAcciones {
+  padding-top: var(--space-2);
+  border-top: 0;
+}
+.nota {
+  grid-column: span 4;
+  max-width: 44ch;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-body);
+}
+.campos {
+  grid-column: span 8;
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  min-width: 0;
+}
+/* The save row starts on the form's left edge, like the actions of every other form. */
+.campos[data-solo] {
+  grid-column: 1 / -1;
+}
+/* Four related numbers read as a 2 x 2 block of short fields, never as three and one. */
+.cuadricula {
+  display: grid;
+  grid-template-columns: repeat(2, 220px);
+  gap: var(--space-6);
+}
+.grupo {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-strong);
+}
+.suma {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+}
+.suma[data-tono="ok"] {
+  color: var(--success);
+}
+.suma[data-tono="aviso"] {
+  color: var(--notice);
+  font-weight: var(--weight-strong);
+}
+.errorGrupo {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--danger);
+}
+.pendiente {
+  align-self: center;
+  color: var(--notice);
+  font-size: var(--text-xs);
+}
+.textoMotivo {
+  max-width: 72ch;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 560px) {
+  .cuadricula {
+    grid-template-columns: minmax(0, 220px);
+  }
+}
+@media (max-width: 900px) {
+  .nota,
+  .campos,
+  .campos[data-solo] {
+    grid-column: 1 / -1;
+  }
+  .nota {
+    max-width: none;
+  }
+}

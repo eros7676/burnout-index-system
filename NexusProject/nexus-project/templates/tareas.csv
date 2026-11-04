@@ -1,0 +1,2 @@
+employee_id,period_start,period_end,task_id,titulo,origen,origen_ref,asignada_fecha,vencimiento_fecha,completada_fecha,motivo_exclusion
+EMP-001,2026-10-12,2026-10-18,OPS-1432,Conciliar la facturación de septiembre,Mesa de ayuda,https://tareas.example/ordenes/OPS-1432,2026-10-01,2026-10-09,,

@@ -1,0 +1,12 @@
+.link {
+  color: var(--accent);
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+}
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.quiet {
+  color: var(--ink-2);
+}

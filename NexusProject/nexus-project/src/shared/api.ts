@@ -1,9 +1,10 @@
 import type {
-  Alerta,
+  AlertaListada,
+  PaginaAlertas,
   UsuarioDemoDTO,
   SesionDemoDTO,
-  EventoAuditoria,
   FiltrosAuditoria,
+  PaginaAuditoria,
   ApiError,
   ErrorValidacionImportacion,
   FilaTablero,
@@ -23,6 +24,42 @@ import type {
   MisDatosDTO,
   ReglasDTO,
 } from "./contracts";
+import {
+  RUTAS_ORGANIZACION,
+  type CuerposOrganizacion,
+  type PeticionesOrganizacion,
+} from "./contratos/organizacion";
+import {
+  RUTAS_IMPORTACIONES,
+  type CuerposImportaciones,
+  type ErrorValidacionImportacionTareas,
+  type PeticionesImportaciones,
+} from "./contratos/importaciones";
+import {
+  RUTAS_TAREAS,
+  type CuerposTareas,
+  type PeticionesTareas,
+} from "./contratos/tareas";
+import {
+  RUTAS_REGLAS,
+  type CuerposReglas,
+  type PeticionesReglas,
+} from "./contratos/reglas";
+import {
+  RUTAS_AUDITORIA,
+  type CuerposAuditoria,
+  type PeticionesAuditoria,
+} from "./contratos/auditoria";
+import {
+  RUTAS_SEGUIMIENTO,
+  type CuerposSeguimiento,
+  type PeticionesSeguimiento,
+} from "./contratos/seguimiento";
+import {
+  RUTAS_EXPORTACIONES,
+  type CuerposExportaciones,
+  type PeticionesExportaciones,
+} from "./contratos/exportaciones";
 
 /** Agreed catalog; each entry is served by a Route Handler under src/app/api. */
 export const API_ROUTES = {
@@ -47,6 +84,7 @@ export const API_ROUTES = {
   obtenerInforme: { method: "GET", path: "/api/evaluaciones/{evaluationId}" },
   obtenerResumen: { method: "GET", path: "/api/resumen" },
   listarAlertas: { method: "GET", path: "/api/alertas" },
+  obtenerAlerta: { method: "GET", path: "/api/alertas/{alertId}" },
   listarNotificaciones: {
     method: "GET",
     path: "/api/alertas/{alertId}/notificaciones",
@@ -62,6 +100,13 @@ export const API_ROUTES = {
   listarPersonas: { method: "GET", path: "/api/personas" },
   consultarMisDatos: { method: "GET", path: "/api/mis-datos" },
   consultarReglas: { method: "GET", path: "/api/reglas" },
+  ...RUTAS_ORGANIZACION,
+  ...RUTAS_IMPORTACIONES,
+  ...RUTAS_TAREAS,
+  ...RUTAS_REGLAS,
+  ...RUTAS_AUDITORIA,
+  ...RUTAS_SEGUIMIENTO,
+  ...RUTAS_EXPORTACIONES,
 } as const;
 
 type CuerpoVacio = Record<string, never>;
@@ -79,6 +124,7 @@ export type PeticionesApi = {
   obtenerInforme: { params: { evaluationId: string }; body?: undefined };
   obtenerResumen: { query?: FiltrosComunes; body?: undefined };
   listarAlertas: { query?: FiltrosAlertas; body?: undefined };
+  obtenerAlerta: { params: { alertId: string }; body?: undefined };
   listarNotificaciones: { params: { alertId: string }; body?: undefined };
   prepararNotificacion: {
     params: { alertId: string };
@@ -94,11 +140,18 @@ export type PeticionesApi = {
   };
   consultarMisDatos: { body?: undefined };
   consultarReglas: { body?: undefined };
-};
+} &
+  PeticionesOrganizacion &
+  PeticionesImportaciones &
+  PeticionesTareas &
+  PeticionesReglas &
+  PeticionesAuditoria &
+  PeticionesSeguimiento &
+  PeticionesExportaciones;
 export type CuerposExito = {
   consultarSesionDemo: SesionDemoDTO;
   seleccionarUsuarioDemo: { usuario: UsuarioDemoDTO };
-  listarAuditoria: Pagina<EventoAuditoria>;
+  listarAuditoria: PaginaAuditoria;
   validarImportacion: VistaPrevia;
   confirmarImportacion: ResultadoImportacion;
   cancelarImportacion: ResultadoCancelacion;
@@ -107,14 +160,22 @@ export type CuerposExito = {
   listarEvaluaciones: Pagina<FilaTablero>;
   obtenerInforme: InformeDTO;
   obtenerResumen: ResumenDTO;
-  listarAlertas: Pagina<Alerta>;
+  listarAlertas: PaginaAlertas;
+  obtenerAlerta: AlertaListada;
   listarNotificaciones: IntentoNotificacion[];
   prepararNotificacion: IntentoNotificacion;
   procesarNotificacion: IntentoNotificacion;
   listarPersonas: PersonasDTO;
   consultarMisDatos: MisDatosDTO;
   consultarReglas: ReglasDTO;
-};
+} &
+  CuerposOrganizacion &
+  CuerposImportaciones &
+  CuerposTareas &
+  CuerposReglas &
+  CuerposAuditoria &
+  CuerposSeguimiento &
+  CuerposExportaciones;
 export type OperacionApi = keyof typeof API_ROUTES;
 export type EstadoErrorHttp =
   400 | 401 | 403 | 404 | 409 | 410 | 413 | 415 | 422 | 500;
@@ -125,7 +186,9 @@ export type RespuestaApi<K extends OperacionApi> =
       status: 422;
       body: K extends "validarImportacion"
         ? ErrorValidacionImportacion
-        : ApiError;
+        : K extends "validarImportacionTareas"
+          ? ErrorValidacionImportacionTareas
+          : ApiError;
     };
 
 export const API_DEFAULTS = {

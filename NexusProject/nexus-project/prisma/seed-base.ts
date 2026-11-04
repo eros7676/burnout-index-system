@@ -12,13 +12,36 @@ export async function sembrarBase(tx: Prisma.TransactionClient) {
       update: {},
     });
   }
+  const ingreso = fechaParaDb(reglasSemilla.effectiveFrom);
   for (const empleado of empleadosSemilla) {
     await tx.empleado.upsert({
       where: { employeeId: empleado.employeeId },
-      create: empleado,
+      create: { ...empleado, fechaIngreso: ingreso },
       update: {},
     });
   }
+  // Each team's lead and manager come from the catalog, as the migration backfills them.
+  for (const lider of empleadosSemilla.filter((e) => e.tipo === "TEAM_LEAD")) {
+    await tx.equipo.updateMany({
+      where: { teamId: lider.teamId!, liderId: null },
+      data: { liderId: lider.employeeId, gerenteId: lider.responsableId },
+    });
+  }
+  await tx.asignacionEmpleado.createMany({
+    data: empleadosSemilla.map((e) => ({
+      employeeId: e.employeeId,
+      desde: ingreso,
+      tipo: e.tipo,
+      teamId: e.teamId,
+      responsableId: e.responsableId,
+      enCobertura: e.enCobertura,
+      activo: true,
+      motivo: "ALTA" as const,
+      comentario: "Alta inicial registrada por la instalación",
+      registradoPor: "sistema",
+    })),
+    skipDuplicates: true,
+  });
 
   const { effectiveFrom, createdAt, ...campos } = reglasSemilla;
   const esperada = { ...campos, effectiveFrom: fechaParaDb(effectiveFrom) };

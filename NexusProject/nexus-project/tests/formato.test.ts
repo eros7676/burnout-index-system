@@ -6,6 +6,8 @@ import {
   NIVEL,
   decimal,
   diaCorto,
+  diaCompleto,
+  momentoConAnio,
   semana,
   valorFactor,
   variacion,
@@ -16,6 +18,8 @@ test("formato: semanas legibles sin pasar por la zona horaria del navegador", ()
   assert.equal(semana("2026-09-28", "2026-10-04"), "28 sep – 4 oct 2026");
   assert.equal(semana("2026-12-28", "2027-01-03"), "28 dic 2026 – 3 ene 2027");
   assert.equal(diaCorto("2026-10-05"), "5 oct");
+  assert.equal(diaCompleto("2026-11-20"), "20 nov 2026");
+  assert.equal(diaCompleto("2027-01-03"), "3 ene 2027");
 });
 
 test("formato: decimales con coma y dos cifras, como el informe", () => {
@@ -27,7 +31,7 @@ test("formato: decimales con coma y dos cifras, como el informe", () => {
 
 test("formato: niveles, factores y envíos en lenguaje de la persona", () => {
   assert.equal(NIVEL.INCOMPLETO, "Incompleto");
-  assert.equal(FACTOR.DS, "Días seguidos sin descanso");
+  assert.equal(FACTOR.DS, "Días consecutivos sin descanso");
   assert.equal(ESTADO_ENVIO.NO_APLICA, "Solo aviso interno");
   assert.equal(valorFactor("HE", 16), "16 h");
   assert.equal(valorFactor("DS", 1), "1 día");
@@ -40,4 +44,17 @@ test("formato: variación semanal con signo y sin ruido", () => {
   assert.equal(variacion(40, 45.5), "−5,50");
   assert.equal(variacion(40, 40), "=");
   assert.equal(variacion(40, null), null);
+});
+
+test("formato: un instante lleva el año y usa los meses del producto", () => {
+  assert.equal(momentoConAnio("2026-11-04T06:22:47.413Z"), "4 nov 2026, 03:22");
+  assert.equal(
+    momentoConAnio("2026-11-04T06:22:47.413Z", true),
+    "4 nov 2026, 03:22:47",
+  );
+  assert.equal(momentoConAnio("2026-09-02T12:05:00.000Z"), "2 sep 2026, 09:05");
+  assert.equal(
+    momentoConAnio("2027-01-01T01:00:00.000Z"),
+    "31 dic 2026, 22:00",
+  );
 });

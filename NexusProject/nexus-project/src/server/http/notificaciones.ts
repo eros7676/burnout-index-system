@@ -7,6 +7,7 @@ import {
   prepararNotificacion,
   procesarNotificacion,
 } from "../services/notificaciones";
+import { actorDemo } from "./permisos-demo";
 
 export function validarSolicitud(valor: unknown): SolicitudNotificacion {
   if (!valor || typeof valor !== "object" || Array.isArray(valor))
@@ -22,7 +23,7 @@ export function validarSolicitud(valor: unknown): SolicitudNotificacion {
   )
     throw new ErrorConsulta(
       400,
-      "Usá requestId UUID v4 y resultado EXITO o FALLO.",
+      "Use un requestId UUID v4 y un resultado EXITO o FALLO.",
     );
   return { requestId: data.requestId, resultado: data.resultado };
 }
@@ -77,7 +78,7 @@ export function crearHttpNotificaciones(db: PrismaClient) {
             request.headers.get("content-type") ?? "",
           )
         )
-          throw new ErrorConsulta(400, "Usá application/json.");
+          throw new ErrorConsulta(400, "Use application/json.");
         // El cuerpo es pequeño y no admite contenido de correo libre.
         const texto = await request.text();
         if (texto.length > 1024)
@@ -88,14 +89,19 @@ export function crearHttpNotificaciones(db: PrismaClient) {
         } catch {
           throw new ErrorConsulta(400, "JSON inválido.");
         }
-        return prepararNotificacion(db, alertId, validarSolicitud(body));
+        return prepararNotificacion(
+          db,
+          alertId,
+          validarSolicitud(body),
+          actorDemo(request),
+        );
       }),
     procesar: (request: Request, alertId: string, intentoId: string) =>
       responder(request, alertId, async () => {
         identificador(intentoId, 36);
         if ((await request.text()).trim())
           throw new ErrorConsulta(400, "Procesar no admite cuerpo.");
-        return procesarNotificacion(db, alertId, intentoId);
+        return procesarNotificacion(db, alertId, intentoId, actorDemo(request));
       }),
   };
 }

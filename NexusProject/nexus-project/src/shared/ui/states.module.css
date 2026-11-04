@@ -24,29 +24,47 @@
   color: var(--ink-2);
   max-width: 60ch;
 }
-.error {
+/* Errors and notices: a state hue of their own, an icon and a 1 px outline (R27). Neutral
+   by default, so the accent stays on what can be clicked (R28). */
+.error,
+.notice {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.error {
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
   background: var(--danger-soft);
   color: var(--danger);
 }
+.message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
 .notice {
   padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-  color: var(--accent-hover);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .notice[data-tono="exito"] {
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
   background: var(--success-soft);
   color: var(--success);
 }
 .notice[data-tono="aviso"] {
+  border-color: color-mix(in srgb, var(--notice) 35%, transparent);
   background: var(--notice-soft);
   color: var(--notice);
+}
+.notice svg,
+.message svg {
+  flex: none;
 }

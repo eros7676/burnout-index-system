@@ -1,123 +1,191 @@
-// Audit events in words. Codes come from src/server/repositories/auditoria.ts
-// (ACCIONES_AUDITORIA); detail keys from the services that write each event
-// (importaciones.ts, reglas.ts).
-import type { EventoAuditoria, Factor } from "@/shared/contracts";
-import { FACTOR, diaCorto, valorFactor } from "@/shared/formato";
-import { humanizar, problema } from "../importaciones/textos";
+// Audit events in words (DESIGN.md › Words, not codes). Action and entity labels come from the
+// catalog (src/shared/auditoria-catalogo.ts), never from a list per action; reasons from its
+// closed reason codes. Relative imports on purpose: tests/auditoria-ui.test.ts runs this outside Next.js.
+import {
+  CATALOGO_AUDITORIA,
+  ENTIDADES_AUDITORIA,
+  MOTIVOS_AUDITORIA,
+  type EntidadAuditoria,
+} from "../../shared/auditoria-catalogo";
+import type {
+  EventoAuditoria,
+  OrigenAuditoria,
+  ResultadoAuditoria,
+  UsuarioDemoDTO,
+} from "../../shared/contracts";
+import { ROL, entero, momentoConAnio } from "../../shared/formato";
+import { humanizar } from "../importaciones/textos";
+import { etiquetaCampo, posicionCampo, textoDato } from "./cambios";
+import type { FiltrosUi } from "./filtros-url";
 
-const ACCION: Record<string, string> = {
-  IMPORTACION_VALIDADA: "Validó un archivo",
-  IMPORTACION_RECHAZADA: "Validó un archivo con errores",
-  IMPORTACION_CONFIRMADA: "Confirmó una importación",
-  IMPORTACION_CANCELADA: "Canceló una vista previa",
-  REGLAS_PUBLICADAS: "Publicó una versión de las reglas",
-};
-const ENTIDAD: Record<string, string> = {
-  IMPORTACION: "Importación",
-  REGLAS: "Reglas del índice",
-};
-const ESTADO_IMPORTACION: Record<string, string> = {
-  VALIDADA: "Validada",
-  RECHAZADA: "Rechazada",
-  CONFIRMADA: "Confirmada",
-  CANCELADA: "Cancelada",
-};
-const ETAPA: Record<string, string> = { FORMATO: "Formato del archivo" };
-/** Detail keys, in reading order; anything else is humanized after them. */
-const CLAVE: Record<string, string> = {
-  totalFilas: "Filas",
-  nuevas: "Nuevas",
-  omitidas: "Omitidas",
-  insertados: "Guardadas",
-  omitidos: "Omitidas",
-  codigosError: "Errores",
-  estadoAnterior: "Estado anterior",
-  etapa: "Etapa",
-  codigo: "Motivo",
-  version: "Versión",
-  versionAnterior: "Versión anterior",
-  effectiveFrom: "Vigente desde",
-  weights: "Pesos",
-  thresholds: "Umbrales",
-  mediumLimit: "Límite de Medio",
-  highLimit: "Límite de Alto",
-  minExceededFactors: "Factores en común para Alto",
-  semanas: "Semanas a recalcular",
-  jobId: "Procesamiento",
-  sourceHash: "Huella del archivo",
-  schemaVersion: "Formato",
-};
-const ORDEN = Object.keys(CLAVE);
-const posicion = (clave: string) => {
-  const i = ORDEN.indexOf(clave);
-  return i === -1 ? ORDEN.length : i;
+export const RESULTADO: Record<ResultadoAuditoria, string> = {
+  EXITO: "Exitoso",
+  FALLO: "Fallido",
+  DENEGADO: "Denegado",
 };
 
-export const accion = (codigo: string) => ACCION[codigo] ?? humanizar(codigo);
-export const entidad = (codigo: string) =>
-  ENTIDAD[codigo] ?? humanizar(codigo);
+const ORIGEN: Record<OrigenAuditoria, string> = {
+  WEB: "Aplicación web",
+  CLI: "Línea de comandos",
+  SISTEMA: "Sistema",
+};
+export const etiquetaOrigen = (origen: OrigenAuditoria | null) =>
+  origen ? ORIGEN[origen] : "No registrado";
 
-/** A short handle to tell resources apart: the version for rules, the id's tail otherwise. */
-export function referencia(evento: EventoAuditoria) {
-  if (evento.entidad === "REGLAS") return `Versión ${evento.recursoId}`;
-  return `Ref. ${evento.recursoId.slice(-6)}`;
+export const etiquetaMotivo = (motivo: string | null) =>
+  motivo === null
+    ? null
+    : Object.hasOwn(MOTIVOS_AUDITORIA, motivo)
+      ? MOTIVOS_AUDITORIA[motivo as keyof typeof MOTIVOS_AUDITORIA]
+      : humanizar(motivo);
+
+/** "2 nov 2026, 14:05:09": the instant in the product's zone, with year and seconds. */
+export const fechaHora = (iso: string) => momentoConAnio(iso, true);
+
+type Directorio = readonly Pick<UsuarioDemoDTO, "userId" | "nombre" | "rol">[];
+const enDirectorio = (evento: EventoAuditoria, usuarios: Directorio) =>
+  usuarios.find((u) => u.userId === evento.actorId);
+
+/** The name the event stored; older events fall back to the session directory, then to "Sistema". */
+export const nombreActor = (evento: EventoAuditoria, usuarios: Directorio) =>
+  evento.actorNombre ?? enDirectorio(evento, usuarios)?.nombre ?? "Sistema";
+
+const rol = (codigo: string | null | undefined) =>
+  codigo && Object.hasOwn(ROL, codigo)
+    ? ROL[codigo as UsuarioDemoDTO["rol"]]
+    : null;
+export const rolActor = (evento: EventoAuditoria, usuarios: Directorio) =>
+  rol(evento.actorRol) ?? rol(enDirectorio(evento, usuarios)?.rol);
+
+/** What the event acted on: the type, its name when known and its code, always. */
+export function elemento(evento: EventoAuditoria) {
+  return {
+    tipo:
+      (ENTIDADES_AUDITORIA as Record<string, string>)[evento.entidad] ??
+      humanizar(evento.entidad),
+    nombre:
+      evento.recursoNombre ??
+      (evento.entidad === "REGLAS" ? `Versión ${evento.recursoId}` : null),
+    codigo: evento.recursoId,
+  };
 }
 
-/** Demo users by name; any other actor (scripts, the seed) is the system. */
-export function actor(
-  actorId: string,
-  usuarios: readonly { userId: string; nombre: string }[],
-) {
-  const usuario = actorId.startsWith("demo-")
-    ? usuarios.find((u) => u.userId === actorId)
-    : undefined;
-  return usuario?.nombre ?? "Sistema";
+const ruta = (base: string, id: string) => `${base}/${encodeURIComponent(id)}`;
+
+/** Screens that exist for a resource; the rest stay as text. */
+export function enlaceRecurso(evento: EventoAuditoria) {
+  switch (evento.entidad) {
+    case "EMPLEADO":
+      return ruta("/employees", evento.recursoId);
+    case "INFORME":
+      return ruta("/reports", evento.recursoId);
+    case "EQUIPO":
+      return ruta("/teams", evento.recursoId);
+    default:
+      return null;
+  }
 }
 
-const NUMERO = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
-const esFactor = (clave: string): clave is Factor =>
-  ["HE", "DS", "CT", "VP"].includes(clave);
-/** Long opaque values (hashes, ids) keep their head: enough to match, not to read. */
-const corto = (texto: string) =>
+export const enlacePersona = (evento: EventoAuditoria) =>
+  evento.sujetoId ? ruta("/employees", evento.sujetoId) : null;
+
+/** A hash keeps its head: enough to match two files, not to read. */
+const abreviar = (texto: string) =>
   texto.length > 14 ? `${texto.slice(0, 10)}…` : texto;
-
-function valor(clave: string, dato: unknown): string {
-  if (dato === null || dato === undefined)
-    return clave === "versionAnterior" ? "Ninguna" : "—";
-  if (clave === "codigosError" && Array.isArray(dato))
-    return dato.length
-      ? dato.map((c) => problema(String(c))).join(", ")
-      : "Ninguno";
-  if (clave === "estadoAnterior")
-    return ESTADO_IMPORTACION[String(dato)] ?? humanizar(String(dato));
-  if (clave === "etapa") return ETAPA[String(dato)] ?? humanizar(String(dato));
-  if (clave === "codigo") return problema(String(dato));
-  if (clave === "effectiveFrom" && typeof dato === "string")
-    return `${diaCorto(dato)} ${dato.slice(0, 4)}`;
-  if (
-    (clave === "weights" || clave === "thresholds") &&
-    typeof dato === "object"
-  )
-    return Object.entries(dato as Record<string, number>)
-      .map(([f, n]) =>
-        esFactor(f)
-          ? `${FACTOR[f]} ${clave === "weights" ? `${Math.round(n * 100)} %` : valorFactor(f, n)}`
-          : `${f} ${n}`,
-      )
-      .join(", ");
-  if (typeof dato === "number") return NUMERO.format(dato);
-  if (typeof dato === "boolean") return dato ? "Sí" : "No";
-  if (Array.isArray(dato)) return dato.map(String).join(", ");
-  if (typeof dato === "object") return JSON.stringify(dato);
-  return corto(String(dato));
-}
 
 /** The event's details as label/value pairs, known keys first and in words. */
 export function detalles(evento: EventoAuditoria) {
   return Object.entries(evento.detalles)
-    .sort(([a], [b]) => posicion(a) - posicion(b))
+    .sort(([a], [b]) => posicionCampo(a) - posicionCampo(b))
     .map(([clave, dato]) => ({
-      clave: CLAVE[clave] ?? humanizar(clave),
-      valor: valor(clave, dato),
+      clave: etiquetaCampo(clave),
+      valor:
+        clave === "versionAnterior" && (dato === null || dato === undefined)
+          ? "Ninguna"
+          : clave === "sourceHash" && typeof dato === "string"
+            ? abreviar(dato)
+            : textoDato(clave, dato),
     }));
+}
+
+/**
+ * The line under an actor's name: their role, or, when the name already is the role ("RR. HH."),
+ * where the event came from, so the same words never show twice.
+ */
+export const complementoActor = (evento: EventoAuditoria, usuarios: Directorio) => {
+  const rol = rolActor(evento, usuarios);
+  return rol && rol !== nombreActor(evento, usuarios)
+    ? rol
+    : etiquetaOrigen(evento.origen);
+};
+
+/** The person the event is about, by name; "no disponible" when the record no longer resolves. */
+export const nombrePersona = (evento: EventoAuditoria) =>
+  evento.sujetoNombre ?? "Persona no disponible";
+
+/** The action in words: the catalog's label, or the humanized code for an action it does not know. */
+export const etiquetaAccion = (evento: EventoAuditoria) =>
+  evento.etiqueta ?? humanizar(evento.accion);
+
+/** One sentence for the page header: "RRHH confirmó una importación". */
+export const resumen = (evento: EventoAuditoria, usuarios: Directorio) => {
+  const etiqueta = etiquetaAccion(evento);
+  return `${nombreActor(evento, usuarios)} ${etiqueta.charAt(0).toLowerCase()}${etiqueta.slice(1)}`;
+};
+
+/**
+ * The actions of the catalog grouped by what they act on, for a grouped select; one group when an
+ * entity is chosen. The labels are the catalog's own: a new action shows up here without edits.
+ */
+export function gruposDeAcciones(entidad: "" | EntidadAuditoria = "") {
+  const grupos = new Map<EntidadAuditoria, { accion: string; etiqueta: string }[]>();
+  for (const [accion, definicion] of Object.entries(CATALOGO_AUDITORIA)) {
+    if (entidad && definicion.entidad !== entidad) continue;
+    const lista = grupos.get(definicion.entidad) ?? [];
+    lista.push({ accion, etiqueta: definicion.etiqueta });
+    grupos.set(definicion.entidad, lista);
+  }
+  return [...grupos].map(([clave, acciones]) => ({
+    entidad: clave,
+    etiqueta: ENTIDADES_AUDITORIA[clave],
+    acciones,
+  }));
+}
+
+/** "1 evento", "1.234 eventos", "Más de 10.000 eventos" when the count stopped at its cap. */
+export const cantidadEventos = (total: number, acotado: boolean) =>
+  acotado
+    ? `Más de ${entero(total)} eventos`
+    : total === 1
+      ? "1 evento"
+      : `${entero(total)} eventos`;
+
+export type CodigoFiltro = "sujetoId" | "recursoId" | "correlacionId" | "solicitudId";
+
+/**
+ * Filters that arrive by link carry a code, which has no control in the bar. They are shown as
+ * removable chips, by name when the loaded events know it and never as a raw code.
+ */
+export function chipsDeCodigos(
+  filtros: Pick<FiltrosUi, CodigoFiltro>,
+  eventos: readonly EventoAuditoria[],
+) {
+  const chips: { clave: CodigoFiltro; texto: string }[] = [];
+  const persona = eventos.find((e) => e.sujetoId === filtros.sujetoId)?.sujetoNombre;
+  const recurso = eventos.find((e) => e.recursoId === filtros.recursoId)?.recursoNombre;
+  if (filtros.sujetoId)
+    chips.push({
+      clave: "sujetoId",
+      texto: persona ? `Persona: ${persona}` : "Persona seleccionada",
+    });
+  if (filtros.recursoId)
+    chips.push({
+      clave: "recursoId",
+      texto: recurso ? `Recurso: ${recurso}` : "Recurso seleccionado",
+    });
+  if (filtros.correlacionId)
+    chips.push({ clave: "correlacionId", texto: "Operación seleccionada" });
+  if (filtros.solicitudId)
+    chips.push({ clave: "solicitudId", texto: "Solicitud seleccionada" });
+  return chips;
 }

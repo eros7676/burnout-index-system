@@ -2,18 +2,6 @@
   display: grid;
   gap: var(--space-5);
 }
-/* The factors are the answer and the widest block; persistence and suggestions beside them. */
-.grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
-  gap: var(--space-5);
-  align-items: start;
-}
-.side {
-  display: grid;
-  gap: var(--space-5);
-  align-content: start;
-}
 .factors {
   min-width: 0;
 }
@@ -22,11 +10,13 @@
   display: grid;
   gap: var(--space-4);
 }
+/* The result's facts share the block's width in equal columns, like the key facts elsewhere,
+   instead of bunching on the left. */
 .figures {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-4) var(--space-10);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  align-items: start;
+  gap: var(--space-4) var(--space-6);
 }
 .fact {
   display: grid;
@@ -35,7 +25,7 @@
 }
 .label {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .explanation {
   max-width: 72ch;
@@ -55,7 +45,7 @@
   align-items: center;
   gap: 6px;
   color: var(--level-alto);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-strong);
 }
 /* The same diamond as Alto: shape repeats what the color says. */
@@ -84,14 +74,20 @@
 .lead {
   font-weight: var(--weight-strong);
 }
+/* Three short facts across the card, the factors on a full row below. */
 .facts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--space-4) var(--space-5);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-6);
+}
+@media (max-width: 600px) {
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .facts dt {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .facts dd {
   margin-top: var(--space-1);
@@ -109,18 +105,44 @@
   color: var(--ink-2);
 }
 
-.alert {
-  display: grid;
-  gap: var(--space-6);
-  align-items: start;
-}
-.alert[data-con-correo] {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
-}
 
-@media (max-width: 1100px) {
-  .grid,
-  .alert[data-con-correo] {
-    grid-template-columns: 1fr;
+/* Print (T10 report on paper). The shell goes in impresion.tsx; here, what the report itself hides or keeps whole.
+   MDN: @page sets the page margins; break-inside: avoid keeps a block on one page;
+   print-color-adjust: exact keeps the bars and tags, which carry level and factor marks. */
+@page {
+  margin: 16mm;
+}
+.soloImpresion {
+  display: none;
+}
+@media print {
+  /* Buttons, links and the notification panel mean nothing on paper. */
+  .controles {
+    display: none;
+  }
+  .soloImpresion {
+    display: block;
+    max-width: 72ch;
+    color: var(--ink-2);
+    font-size: var(--text-xs);
+  }
+  .page,
+  .page * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    gap: var(--space-4);
+  }
+  /* The back link is a control of the screen. */
+  .page > header > a {
+    display: none;
+  }
+  .page section,
+  .page tr {
+    break-inside: avoid;
+  }
+  .page thead {
+    display: table-header-group;
   }
 }

@@ -25,6 +25,7 @@ const confirmar = (page: Page) =>
   page.getByRole("button", { name: "Confirmar importación" });
 const procesamiento = (page: Page) =>
   page.getByRole("region", { name: "Procesamiento" });
+const cancelar = (page: Page) => page.getByRole("button", { name: "Cancelar" });
 const confirmada = (page: Page) =>
   page.getByRole("region", { name: "Importación confirmada" });
 
@@ -76,7 +77,7 @@ test("T06: archivo no CSV, tamaño excesivo y respuesta no JSON muestran errores
   await expect(alerta(page)).toContainText("supera 5 MiB");
   status = 500;
   await validar(page).click();
-  await expect(alerta(page)).toContainText("respuesta JSON válida");
+  await expect(alerta(page)).toContainText("respuesta inesperada");
   await expect(validar(page)).toBeEnabled();
   await expect(page.getByRole("region", { name: "Vista previa" })).toHaveCount(
     0,
@@ -134,8 +135,8 @@ test("T06: sin archivo no se valida; la vista previa se cancela y la confirmaci�
   await validar(page).click();
   const previa = page.getByRole("region", { name: "Vista previa" });
   await expect(previa).toContainText("Validada");
-  await expect(previa.getByRole("button", { name: "Cancelar" })).toBeEnabled();
-  await previa.getByRole("button", { name: "Cancelar" }).click();
+  await expect(cancelar(page)).toBeEnabled();
+  await cancelar(page).click();
   await expect(
     page.getByText(
       "Vista previa cancelada. No se guardaron registros laborales.",
@@ -148,11 +149,11 @@ test("T06: sin archivo no se valida; la vista previa se cancela y la confirmaci�
   await confirmar(page).dblclick();
   // While the confirmation runs every action is locked.
   await expect(confirmar(page)).toBeDisabled();
-  await expect(previa.getByRole("button", { name: "Cancelar" })).toBeDisabled();
+  await expect(cancelar(page)).toBeDisabled();
   liberar();
   await expect(confirmada(page)).toContainText(/Guardadas\s*2\s*filas nuevas/);
   await expect(procesamiento(page).getByRole("status")).toContainText(
-    "Terminado",
+    "Completado",
   );
   await expect(procesamiento(page)).toContainText(
     "El cálculo terminó para todas las semanas.",
@@ -221,12 +222,12 @@ test("T06: un archivo rechazado muestra fila y campo, no se confirma, y una vist
   ).toContainText("Revisar horas extremas");
   await expect(confirmar(page)).toBeDisabled();
 
-  await page.getByRole("button", { name: "Elegir otro archivo" }).click();
+  await page.getByRole("button", { name: "Volver" }).click();
   modo = "vencida";
   await elegir(page);
   await validar(page).click();
   await expect(alerta(page)).toContainText(
-    "La vista previa venció. Volvé a validar el archivo.",
+    "La vista previa venció. Valide el archivo nuevamente.",
   );
   await expect(confirmar(page)).toBeDisabled();
 });
@@ -255,7 +256,7 @@ test("T06: HTTP 200 con el cálculo FALLIDO conserva los datos, no se muestra co
   // The data is saved; the calculation is reported apart, as failed.
   await expect(confirmada(page)).toContainText(/Guardadas\s*2\s*filas nuevas/);
   await expect(procesamiento(page).getByRole("status")).toContainText(
-    "Falló el cálculo",
+    "Con error",
   );
   await expect(
     page.getByRole("region", { name: "Semanas que no se pudieron calcular" }),
@@ -266,16 +267,16 @@ test("T06: HTTP 200 con el cálculo FALLIDO conserva los datos, no se muestra co
   await expect(page.getByRole("link", { name: "Ver resumen" })).toHaveCount(0);
 
   await page.reload();
-  await expect(page.getByLabel("ID del procesamiento")).toHaveValue(
+  await expect(page.getByLabel("Código del procesamiento")).toHaveValue(
     jobMock.jobId,
   );
   await page.getByRole("button", { name: "Consultar estado" }).click();
   await expect(procesamiento(page).getByRole("status")).toContainText(
-    "Falló el cálculo",
+    "Con error",
   );
   await page.getByRole("button", { name: "Reintentar procesamiento" }).click();
   await expect(procesamiento(page).getByRole("status")).toContainText(
-    "Terminado",
+    "Completado",
   );
   await expect(procesamiento(page)).toContainText(
     "El cálculo terminó para todas las semanas.",
@@ -336,7 +337,7 @@ test("T06: un conflicto al confirmar exige validar otra vez y un cálculo en cur
         json: {
           error: {
             codigo: "CONFLICTO_HISTORICO",
-            mensaje: "El histórico cambió. Volvé a validar.",
+            mensaje: "El histórico cambió. Valide el archivo nuevamente.",
             detalles: [],
           },
         },
@@ -354,11 +355,11 @@ test("T06: un conflicto al confirmar exige validar otra vez y un cálculo en cur
   await expect(validar(page)).toBeVisible();
 
   // Recovery by a typed id.
-  await page.getByText("¿Se cortó un procesamiento?").click();
-  await page.getByLabel("ID del procesamiento").fill(jobMock.jobId);
+  await page.getByText("¿Se interrumpió un procesamiento?").click();
+  await page.getByLabel("Código del procesamiento").fill(jobMock.jobId);
   await page.getByRole("button", { name: "Consultar estado" }).click();
   await expect(procesamiento(page).getByRole("status")).toContainText(
-    "Calculando",
+    "En proceso",
   );
   await expect(
     page.getByRole("button", { name: "Reintentar procesamiento" }),

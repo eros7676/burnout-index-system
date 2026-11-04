@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import type { FactorInforme } from "../src/shared/contracts";
-import { alertaMock, informeMock, resumenVacioMock } from "../src/shared/mocks";
+import { alertaListadaMock, informeMock, resumenVacioMock } from "../src/shared/mocks";
 import {
   alerta,
   api,
@@ -15,6 +15,7 @@ import {
   resumen,
   sinDesbordeHorizontal,
 } from "./demo";
+import { ficha, organizacion } from "./organizacion-mocks";
 
 // T14 on the rebuilt screens: Resumen (/home), Personas (/employees and the
 // person's page), Alertas and the Informe page (/reports/[evaluationId]).
@@ -28,6 +29,7 @@ test("T14: cuatro niveles con Incompleto explícito y el procesamiento separado 
   page,
 }) => {
   await demo(page, "demo-rrhh");
+  await organizacion(page);
   await page.goto("/employees");
   const tabla = listaPersonas(page);
   for (const [persona, nivel, indice] of [
@@ -57,7 +59,7 @@ test("T14: cuatro niveles con Incompleto explícito y el procesamiento separado 
   const semanas005 = semanasDe(page, "Persona ficticia 005");
   const fallida = await celda(semanas005, "12–18 oct 2026", "Nivel");
   await expect(fallida).toContainText("Desactualizado");
-  await expect(fallida).toContainText("Falló el cálculo");
+  await expect(fallida).toContainText("Con error");
   await expect(await celda(semanas005, "12–18 oct 2026", "Índice")).toHaveText(
     "—",
   );
@@ -96,6 +98,7 @@ test("T14: un resultado desactualizado nunca se muestra como nivel actual y el i
   page,
 }) => {
   await demo(page, "demo-rrhh");
+  await organizacion(page);
   await page.route(api("/api/evaluaciones/mock-evaluation-stale"), (route) =>
     route.fulfill({
       json: informe("mock-evaluation-stale", {
@@ -160,12 +163,12 @@ test("T14: un resultado desactualizado nunca se muestra como nivel actual y el i
   ).toHaveAttribute("href", "/reports/mock-evaluation-2");
   const seccionAlerta = page.getByRole("region", { name: "Alerta" });
   await expect(seccionAlerta).toContainText("Superada");
-  await expect(seccionAlerta).toContainText(
-    "Alerta superada: solo queda su historial.",
+  // The simulated mail is its own section (one build on the alert page and the report).
+  const correo = page.getByRole("region", { name: "Correo simulado" });
+  await expect(correo).toContainText(
+    "Alerta superada: solo se conserva el historial.",
   );
-  await expect(
-    seccionAlerta.getByRole("button", { name: /^Simular/ }),
-  ).toHaveCount(0);
+  await expect(correo.getByRole("button", { name: /^Simular/ })).toHaveCount(0);
 });
 
 test("T14: el informe muestra el ranking del servidor, las reglas, la persistencia y la alerta guardada", async ({
@@ -205,7 +208,7 @@ test("T14: el informe muestra el ranking del servidor, las reglas, la persistenc
     name: "Factores, por aporte al índice",
   });
   await expect(factores.getByRole("rowheader")).toHaveText([
-    /^Días seguidos sin descanso/,
+    /^Días consecutivos sin descanso/,
     /^Horas extra/,
     /^Vacaciones pendientes/,
     /^Carga de tareas/,
@@ -213,7 +216,7 @@ test("T14: el informe muestra el ranking del servidor, las reglas, la persistenc
   ]);
   const anterior = page.getByRole("region", { name: "Semana anterior" });
   await expect(anterior).toContainText(
-    "La carga alta se sostiene dos semanas seguidas, con causas en común.",
+    "La carga alta se sostiene dos semanas seguidas, con factores en común.",
   );
   await expect(anterior).toContainText("5–11 oct 2026");
   await expect(anterior).toContainText("83,71");
@@ -250,8 +253,10 @@ test("T14: el resumen se consulta por semana, sin otros filtros, y cambia con la
   const equipos = page.getByRole("region", { name: "Por equipo" });
   await expect(
     equipos.getByRole("link", { name: "Célula ficticia 1" }),
-  ).toHaveAttribute("href", "/employees?equipo=EQ-01");
-  await expect(equipos).toContainText("Grupo demasiado chico para mostrar.");
+  ).toHaveAttribute("href", "/teams/EQ-01");
+  await expect(equipos).toContainText(
+    "No se muestra: el equipo tiene menos de 5 personas.",
+  );
 
   await page
     .getByRole("combobox", { name: "Semana" })
@@ -281,6 +286,8 @@ test("T14: vacío, error HTTP, respuesta no JSON y pérdida de conexión se recu
   page,
 }) => {
   await demo(page, "demo-rrhh");
+  // Before the test's own route, so that route answers first and falls back to this one.
+  await organizacion(page);
   let modo = "vacio";
   await page.route(datos, (route) => {
     if (modo === "datos") return route.fallback();
@@ -316,11 +323,13 @@ test("T14: vacío, error HTTP, respuesta no JSON y pérdida de conexión se recu
             : { items: [], total: 0, page: 1, pageSize: 100 },
     });
   });
-  for (const ruta of ["/home", "/employees", "/teams"]) {
+  for (const [ruta, vacio] of [
+    ["/home", "Todavía no hay semanas cargadas"],
+    ["/employees", "Todavía no hay personas registradas"],
+    ["/teams", "Todavía no hay equipos"],
+  ] as const) {
     await page.goto(ruta);
-    await expect(
-      page.getByText("Todavía no hay semanas cargadas"),
-    ).toBeVisible();
+    await expect(page.getByText(vacio)).toBeVisible();
     await expect(cargando(page)).toHaveCount(0);
   }
   await page.goto("/home");
@@ -332,7 +341,7 @@ test("T14: vacío, error HTTP, respuesta no JSON y pérdida de conexión se recu
   await page.reload();
   for (const [siguiente, texto] of [
     ["html", "periodStart debe ser lunes"],
-    ["red", "JSON válida"],
+    ["red", "respuesta inesperada"],
     ["datos", "No se pudo conectar"],
   ]) {
     await expect(alerta(page)).toContainText(texto);
@@ -367,6 +376,7 @@ test("T14: una respuesta demorada no reemplaza la de una semana o persona elegid
   page,
 }) => {
   await demo(page, "demo-rrhh");
+  await organizacion(page);
   let liberar!: () => void;
   const demorada = new Promise<void>((resolve) => (liberar = resolve));
   let entregada!: () => void;
@@ -387,7 +397,7 @@ test("T14: una respuesta demorada no reemplaza la de una semana o persona elegid
   });
   await page.goto("/home");
   const promedio = page.getByText(/^Índice promedio/);
-  await expect(promedio).toContainText("47,55 en 5 evaluaciones");
+  await expect(promedio).toContainText("47,55 sobre 5 evaluaciones");
 
   const enviada = page.waitForRequest((r) =>
     r.url().includes("periodStart=2026-10-05"),
@@ -400,10 +410,10 @@ test("T14: una respuesta demorada no reemplaza la de una semana o persona elegid
   await page
     .getByRole("combobox", { name: "Semana" })
     .selectOption("2026-10-12");
-  await expect(promedio).toContainText("47,55 en 5 evaluaciones");
+  await expect(promedio).toContainText("47,55 sobre 5 evaluaciones");
   liberar();
   await fin;
-  await expect(promedio).toContainText("47,55 en 5 evaluaciones");
+  await expect(promedio).toContainText("47,55 sobre 5 evaluaciones");
   await expect(page.getByText("11,11")).toHaveCount(0);
 
   // Same for a person: a late answer for the previous person never shows.
@@ -411,14 +421,10 @@ test("T14: una respuesta demorada no reemplaza la de una semana o persona elegid
   const personaDemorada = new Promise<void>((r) => (liberarPersona = r));
   let personaEntregada!: () => void;
   const finPersona = new Promise<void>((r) => (personaEntregada = r));
-  await page.route(api("/api/personas"), async (route) => {
-    const filtro = Object.fromEntries(
-      new URL(route.request().url()).searchParams,
-    );
-    if (filtro.employeeId !== "EMP-001")
-      return route.fulfill({ json: personas(filtro) });
+  // The person's page reads /api/personas/{employeeId}; only EMP-001 is held back.
+  await page.route(api("/api/personas/EMP-001"), async (route) => {
     await personaDemorada;
-    await route.fulfill({ json: personas(filtro) }).catch(() => {});
+    await route.fulfill({ json: ficha("EMP-001") }).catch(() => {});
     personaEntregada();
   });
   await page.goto("/employees/EMP-001");
@@ -446,12 +452,13 @@ test("T14: informe 404 recuperable, historial insuficiente y alerta sin destinat
   page,
 }) => {
   await demo(page, "demo-rrhh");
+  await organizacion(page);
   await page.route(api("/api/alertas"), (route) =>
     route.fulfill({
       json: {
         items: [
           {
-            ...alertaMock,
+            ...alertaListadaMock,
             destinatarioId: null,
             motivoDestinatario: "SIN_DESTINATARIO",
             estadoEnvio: "SIN_DESTINATARIO",
@@ -460,6 +467,7 @@ test("T14: informe 404 recuperable, historial insuficiente y alerta sin destinat
         total: 1,
         page: 1,
         pageSize: 100,
+        equipos: [{ teamId: "EQ-01", nombre: "Célula ficticia 1" }],
       },
     }),
   );
@@ -497,13 +505,14 @@ test("T14: informe 404 recuperable, historial insuficiente y alerta sin destinat
   await expect(
     await celda(alertas, "Persona ficticia 001", "Destinatario"),
   ).toHaveText("Sin destinatario");
-  await expect(
-    page.getByText(
-      "1 alerta no tiene a quién avisar: falta el responsable en el catálogo.",
-    ),
-  ).toBeVisible();
 
-  await alertas.getByRole("link", { name: "Ver informe" }).click();
+  // The row's person opens the alert's page, which links to the report.
+  await alertas.getByRole("link", { name: "Persona ficticia 001" }).click();
+  await expect(page).toHaveURL(/\/alerts\/mock-alert-1$/);
+  await page
+    .getByRole("main")
+    .getByRole("link", { name: "Ver informe", exact: true })
+    .click();
   await expect(page).toHaveURL(/\/reports\/mock-evaluation-2$/);
   await expect(alerta(page)).toContainText("Evaluación inexistente");
   falla = false;
@@ -529,6 +538,7 @@ test("T14: en pantalla angosta ninguna página desborda y las tablas se desplaza
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await demo(page, "demo-rrhh");
+  await organizacion(page);
   for (const [ruta, listo] of [
     ["/home", "Personas en nivel Alto"],
     ["/employees", "Personas"],

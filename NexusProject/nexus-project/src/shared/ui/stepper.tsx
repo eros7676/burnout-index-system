@@ -43,7 +43,9 @@ export function Stepper({
             </span>
             <span className={s.label}>
               {texto}
-              {estado === "hecho" && <span className="sr-only">, listo</span>}
+              {estado === "hecho" && (
+                <span className="sr-only">, completado</span>
+              )}
             </span>
           </li>
         );

@@ -2,13 +2,6 @@
   display: grid;
   gap: var(--space-5);
 }
-/* The latest week first and narrow; its eight-week index beside it. */
-.top {
-  display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(0, 1.9fr);
-  gap: var(--space-5);
-  align-items: stretch;
-}
 .week {
   display: grid;
   gap: var(--space-5);
@@ -21,7 +14,7 @@
 }
 .levelNote {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .figures {
   display: grid;
@@ -35,9 +28,6 @@
 /* A containing block for the hidden link text, so it scrolls with the table. */
 .weeks > [role="region"] {
   position: relative;
-}
-.weeks thead th {
-  vertical-align: bottom;
 }
 .weeks thead th.wrap {
   white-space: normal;
@@ -56,8 +46,20 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-@media (max-width: 960px) {
-  .top {
-    grid-template-columns: 1fr;
+
+/* Header actions: part of the header's own flex row on a wide screen; on a phone an even grid of
+   two columns, an odd last button spanning both. */
+.acciones {
+  display: contents;
+}
+@media (max-width: 600px) {
+  .acciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    width: 100%;
+  }
+  .acciones > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 }

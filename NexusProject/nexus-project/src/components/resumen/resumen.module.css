@@ -1,28 +1,9 @@
+/* One gutter between the header, the filter bar and every block (R7, R40). The answer
+   block is the widest and sits top-left; the week numbers and the teams stack beside it
+   (8+4, kit Columns); the trend takes the full width below. */
 .page {
   display: grid;
-  gap: var(--space-5);
-}
-/* Attention first and widest; the week's numbers beside it; teams and trend below. */
-.grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
-  grid-template-areas:
-    "attention side"
-    "trend trend";
-  gap: var(--space-5);
-  align-items: start;
-}
-.attention {
-  grid-area: attention;
-}
-.side {
-  grid-area: side;
-  display: grid;
-  gap: var(--space-5);
-  align-content: start;
-}
-.trend {
-  grid-area: trend;
+  gap: var(--gutter);
 }
 .figures {
   display: grid;
@@ -35,7 +16,7 @@
 }
 .note {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .strip {
   display: grid;
@@ -44,43 +25,42 @@
 }
 .streak {
   color: var(--level-alto);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-strong);
 }
 .causes {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   min-width: 180px;
-}
-.score {
-  font-weight: var(--weight-strong);
-  color: var(--ink);
-  text-decoration: underline;
-  text-decoration-color: var(--line-strong);
-  text-underline-offset: 3px;
-}
-.score:hover {
-  color: var(--accent);
-  text-decoration-color: currentColor;
 }
 .teamList {
   display: grid;
   gap: var(--space-4);
 }
+/* The name and its count share a baseline. */
 .teamHead {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
   margin-bottom: var(--space-2);
-  font-size: var(--text-md);
 }
 .teamHead span {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
-@media (max-width: 1100px) {
-  .grid {
-    grid-template-columns: 1fr;
-    grid-template-areas: "attention" "side" "trend";
-  }
+/* The level key sits in the section head, as on Equipos. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+}
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.trend {
+  display: grid;
+  gap: var(--space-3);
 }

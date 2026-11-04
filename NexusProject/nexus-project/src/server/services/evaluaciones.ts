@@ -109,7 +109,7 @@ async function publicarDentroDeTransaccion(
     if (permiso.length !== 1)
       throw new ErrorDominio(
         "REQUIERE_REPROCESO",
-        "El lease venció antes de terminar la publicación.",
+        "El procesamiento se interrumpió antes de terminar. Reintente el procesamiento.",
       );
   }
   return evaluacion;

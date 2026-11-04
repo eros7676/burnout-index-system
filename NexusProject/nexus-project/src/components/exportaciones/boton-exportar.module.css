@@ -1,0 +1,19 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2) var(--space-3);
+}
+/* Empty, the live region keeps its place in the accessibility tree but takes no row. */
+.message:empty {
+  position: absolute;
+}
+.message {
+  max-width: 40ch;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+.error {
+  color: var(--danger);
+}

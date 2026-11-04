@@ -1,0 +1,84 @@
+/* The blocks of a follow-up case, one under the other, separated by a line (no boxes inside a Section). */
+.contenido {
+  display: grid;
+  gap: var(--space-5);
+}
+.bloque {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--line);
+}
+.titulo {
+  font-size: var(--text-md);
+  font-weight: var(--weight-strong);
+}
+.tonos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+/* Under the state in a list row: who has it and when it is due. */
+.resumen {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+}
+.texto {
+  max-width: 72ch;
+  color: var(--ink-2);
+}
+.ayuda {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+.confirmacion {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+/* Empty, the status region stays in the accessibility tree but takes no row. */
+.confirmacion:empty {
+  position: absolute;
+}
+.error {
+  color: var(--danger);
+  font-size: var(--text-xs);
+}
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Measures: the row action sits on the column's key line (R36). */
+.accionFila {
+  margin-left: calc(-1 * var(--space-2));
+}
+
+/* Notes: newest first, one under the other. */
+.notas {
+  display: grid;
+  max-width: 72ch;
+  border-top: 1px solid var(--line);
+}
+.nota {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+.notaPie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+.notaTexto {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

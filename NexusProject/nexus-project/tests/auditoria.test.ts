@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { mock, test } from "node:test";
 import type { PrismaClient } from "@prisma/client";
 import {
   filtrosAuditoria,
@@ -15,7 +15,7 @@ test("T15b: filtros estrictos, fechas UTC reales y paginación acotada", () => {
   );
   for (const q of [
     "actorId=x&actorId=y",
-    "q=secret",
+    "secreto=1",
     "page=0",
     "pageSize=101",
     "accion=BORRAR",
@@ -26,6 +26,8 @@ test("T15b: filtros estrictos, fechas UTC reales y paginación acotada", () => {
     assert.throws(() => filtros(q));
 });
 test("T15b: errores uniformes y sin cache ni detalles de infraestructura", async () => {
+  // The cause goes to the server log; the test keeps it out of its own output.
+  mock.method(console, "error", () => {});
   const get = crearHttpAuditoria({} as PrismaClient);
   assert.equal((await get(new Request("http://local/?page=-1"))).status, 400);
   const response = await get(new Request("http://local/"));

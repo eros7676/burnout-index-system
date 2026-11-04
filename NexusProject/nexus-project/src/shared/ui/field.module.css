@@ -1,3 +1,4 @@
+/* Controls in a row share the control line (their bottom edge), not the label line (R11). */
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -5,25 +6,66 @@
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
+/* The page's filters, between the header and the content (R14). The page grid spaces it. */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
 .field {
   display: grid;
   gap: var(--space-1);
   min-width: 180px;
 }
+/* Filters sit on one six-column track (two at tablet width, one on a phone), so every field has
+   the same width and a second row starts under the first instead of wrapping at random widths.
+   Buttons and counts keep their own width and can still be pushed to the end. */
+.toolbar .field,
+.filterBar .field {
+  flex: 0 0 calc((100% - 5 * var(--space-3)) / 6);
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .toolbar .field,
+  .filterBar .field {
+    flex-basis: calc((100% - var(--space-3)) / 2);
+  }
+}
+@media (max-width: 600px) {
+  .toolbar .field,
+  .filterBar .field {
+    flex-basis: 100%;
+  }
+}
 .label {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .control {
+  box-sizing: border-box;
   width: 100%;
-  min-height: 36px;
+  min-height: var(--control-h);
   padding: 0 var(--space-3);
+  line-height: var(--leading);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
 }
 .control:hover {
   border-color: var(--ink-3);
+}
+/* A derived or locked value reads as a fact, not as something to type into: no box, a quiet fill. */
+.control:read-only:not(select),
+.control:disabled {
+  border-color: transparent;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  cursor: default;
+}
+.control:read-only:not(select):hover,
+.control:disabled:hover {
+  border-color: transparent;
 }
 .search {
   position: relative;
@@ -37,6 +79,117 @@
   pointer-events: none;
 }
 .search .control {
-  padding-left: calc(var(--space-3) + 22px);
-  min-width: 240px;
+  padding-left: calc(var(--space-3) + var(--icon-sm) + var(--space-2));
+  width: 100%;
+  min-width: 0;
+}
+
+/* Forms (form.tsx): dedicated pages use 24 px between fields, 32 px before the actions (R42). */
+.form {
+  display: grid;
+  gap: var(--space-8);
+  max-width: 640px;
+}
+.group {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-strong);
+}
+.stack {
+  display: grid;
+  gap: var(--space-6);
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-6);
+}
+/* A short control is 220 px wide; its hint and error use the whole column, not the control's width. */
+.field[data-ancho="corto"] {
+  min-width: 0;
+}
+.field[data-ancho="corto"] .control {
+  max-width: 220px;
+}
+/* On a row of short fields each one is as wide as its control. */
+.row > .field[data-ancho="corto"] {
+  width: 220px;
+}
+.optional {
+  color: var(--ink-3);
+}
+.help,
+.error {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+}
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--danger);
+}
+.control[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+.textarea {
+  min-height: 88px;
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+}
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  min-height: var(--control-h);
+  gap: var(--space-1) var(--space-2);
+}
+.check .help {
+  grid-column: 2;
+}
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+/* Columns come from the item count (columnasBalanceadas), so a second row is never one orphan, and
+   a column is at least as wide as its value, so a value does not wrap while the strip has room. */
+.facts {
+  display: grid;
+  /* min-content: a column never breaks a word, yet a long code (which may wrap anywhere) cannot
+     push the strip past its container. */
+  grid-template-columns: repeat(var(--columnas, 4), minmax(min-content, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin: 0;
+}
+@media (max-width: 1100px) {
+  .facts {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+.fact {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+  min-width: 0;
+}
+.fact dt {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+.fact dd {
+  margin: 0;
+  font-weight: var(--weight-strong);
+  overflow-wrap: anywhere;
 }

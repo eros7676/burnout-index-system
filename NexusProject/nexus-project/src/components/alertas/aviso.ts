@@ -1,5 +1,5 @@
 // How an alert reads: who it went to, how far its (simulated) delivery got, its
-// causes and suggestions in words. Shared by Alertas and the Informe.
+// factors and suggestions in words. Shared by Alertas and the Informe.
 import type {
   Alerta,
   Factor,
@@ -17,7 +17,7 @@ export function nombreDestinatario(
   personas: readonly PersonaDTO[],
   propio?: string | null,
 ) {
-  if (propio && destinatarioId === propio) return "Vos";
+  if (propio && destinatarioId === propio) return "Usted";
   return (
     personas.find((p) => p.employeeId === destinatarioId)?.nombre ??
     "Gerencia de Operaciones"
@@ -61,10 +61,10 @@ export function envio(alerta: Alerta): { texto: string; tono: Tono } {
   }
 }
 
-/** "Horas extra, Carga de tareas y Vacaciones pendientes" */
+/** "Horas extra, Carga de tareas y Vacaciones pendientes" (the alert's factors) */
 export function causasEnPalabras(causas: readonly Factor[]) {
   const nombres = causas.map((f) => FACTOR[f]);
-  if (!nombres.length) return "Sin causas registradas";
+  if (!nombres.length) return "Sin factores registrados";
   return nombres.length > 1
     ? `${nombres.slice(0, -1).join(", ")} y ${nombres.at(-1)}`
     : nombres[0];

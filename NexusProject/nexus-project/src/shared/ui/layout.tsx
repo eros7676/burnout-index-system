@@ -64,6 +64,44 @@ export function Section({
   );
 }
 
+/**
+ * Blocks side by side on the 12-column grid: `8-4` (answer and support), `4-8`, `6-6` or
+ * `4-4-4` (peers). Below 1100 px they stack. Children stretch to end level.
+ */
+export function Columns({
+  division = "8-4",
+  children,
+  className,
+}: {
+  division?: "8-4" | "4-8" | "6-6" | "4-4-4";
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={[s.columns, className].filter(Boolean).join(" ")}
+      data-division={division}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Blocks stacked in one column of Columns; the last one grows so the column ends level. */
+export function Stack({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={[s.stack, className].filter(Boolean).join(" ")}>
+      {children}
+    </div>
+  );
+}
+
 /** A labelled figure: the number first, its meaning beneath. */
 export function Figure({
   valor,

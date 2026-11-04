@@ -1,5 +1,7 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { ErrorDominio } from "../../shared/errors";
+import { registrarEvento } from "../repositories/auditoria";
+import { actorDemo } from "./permisos-demo";
 import { consultarResultados } from "../services/consultas";
 import { construirInforme } from "../services/informes";
 import {
@@ -7,6 +9,9 @@ import {
   filtrosConsulta,
   identificador,
 } from "../services/filtros-consultas";
+import { listarAlertas } from "../services/seguimiento-alertas";
+import { filtrosAlertas } from "../services/seguimiento-filtros";
+import { solicitanteDe } from "./seguimiento";
 
 export async function respuesta(accion: () => Promise<unknown>) {
   let status = 200;
@@ -45,22 +50,40 @@ export async function respuesta(accion: () => Promise<unknown>) {
 }
 export function crearHttpConsultas(db: PrismaClient) {
   const listar =
-    (tipo: "evaluaciones" | "alertas" | "resumen") => (request: Request) =>
+    (tipo: "evaluaciones" | "resumen") => (request: Request) =>
       respuesta(() =>
         consultarResultados(db, filtrosConsulta(request, tipo), tipo),
       );
   return {
     evaluaciones: listar("evaluaciones"),
-    alertas: listar("alertas"),
+    // Alerts carry their names, weeks and follow-up status, and take the follow-up filters.
+    alertas: (request: Request) =>
+      respuesta(async () =>
+        listarAlertas(db, filtrosAlertas(request), await solicitanteDe(db, request)),
+      ),
     resumen: listar("resumen"),
     informe: (request: Request, id: string) =>
       respuesta(async () => {
         if (new URL(request.url).search)
           throw new ErrorConsulta(400, "El detalle no admite filtros.");
         const evaluationId = identificador(id, 36);
-        return db.$transaction((tx) => construirInforme(tx, evaluationId), {
-          isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead,
-        });
+        // Reading one person's report is a consultation of personal data: the trace is written
+        // with the read and fails closed, so a report is never shown without it
+        // (audit-trail §1.4 and §2.3: CNIL §6 "consultation", Ley 25.326 art. 9, OWASP sensitive_read).
+        return db.$transaction(
+          async (tx) => {
+            const informe = await construirInforme(tx, evaluationId);
+            await registrarEvento(tx, {
+              accion: "INFORME_CONSULTADO",
+              recursoId: evaluationId,
+              sujetoId: informe.evaluacion.employeeId,
+              actor: actorDemo(request),
+              detalles: { semana: informe.evaluacion.periodStart },
+            });
+            return informe;
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
+        );
       }),
   };
 }

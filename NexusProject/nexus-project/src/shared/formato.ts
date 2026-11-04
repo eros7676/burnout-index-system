@@ -34,6 +34,12 @@ export function diaCorto(fecha: string) {
   return `${dia} ${mes}`;
 }
 
+/** "5 oct 2026": the same month names as the week labels, whatever the runtime's ICU data says. */
+export function diaCompleto(fecha: string) {
+  const { dia, mes, anio } = partes(fecha);
+  return `${dia} ${mes} ${anio}`;
+}
+
 /** "12–18 oct 2026", "28 sep – 4 oct 2026", "28 dic 2026 – 3 ene 2027" */
 export function semana(inicio: string, fin: string) {
   const a = partes(inicio);
@@ -44,18 +50,24 @@ export function semana(inicio: string, fin: string) {
   return `${a.dia}–${b.dia} ${b.mes} ${b.anio}`;
 }
 
-/** Date and time of an ISO UTC instant, shown in the product's fixed zone. */
-export function momento(iso: string) {
-  return new Intl.DateTimeFormat("es-AR", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-    timeZone: "America/Argentina/Buenos_Aires",
-  })
-    .format(new Date(iso))
-    .replace(".", "");
+const RELOJ_CON_ANIO = new Intl.DateTimeFormat("es-AR", {
+  day: "numeric",
+  month: "numeric",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+  timeZone: "America/Argentina/Buenos_Aires",
+});
+
+/** "4 nov 2026, 03:22" (with `segundos`, "4 nov 2026, 03:22:47"): an instant with its year, for records people keep. */
+export function momentoConAnio(iso: string, segundos = false) {
+  const p = Object.fromEntries(
+    RELOJ_CON_ANIO.formatToParts(new Date(iso)).map((x) => [x.type, x.value]),
+  );
+  const hora = `${p.hour}:${p.minute}${segundos ? `:${p.second}` : ""}`;
+  return `${Number(p.day)} ${MESES[Number(p.month) - 1]} ${p.year}, ${hora}`;
 }
 
 const DOS = new Intl.NumberFormat("es-AR", {
@@ -89,14 +101,14 @@ export const NIVEL: Record<Nivel, string> = {
 /** What each level means, in one line; shown once, where the level is explained. */
 export const NIVEL_DETALLE: Record<Nivel, string> = {
   BAJO: "Índice menor a 40.",
-  MEDIO: "Índice de 40 o más, sin sobrecarga sostenida.",
-  ALTO: "Índice de 70 o más dos semanas seguidas, con causas en común.",
+  MEDIO: "Índice de 40 o más, sin cumplir la condición de Alto.",
+  ALTO: "Índice de 70 o más durante dos semanas consecutivas, con factores en común.",
   INCOMPLETO: "Sin semana anterior para confirmar si la carga se sostiene.",
 };
 
 export const FACTOR: Record<Factor, string> = {
   HE: "Horas extra",
-  DS: "Días seguidos sin descanso",
+  DS: "Días consecutivos sin descanso",
   CT: "Carga de tareas",
   VP: "Vacaciones pendientes",
 };
@@ -108,9 +120,9 @@ export function valorFactor(factor: Factor, valor: number) {
 
 export const ESTADO_PROCESO: Record<EstadoJob, string> = {
   PENDIENTE: "Pendiente",
-  PROCESANDO: "Procesando",
-  COMPLETADO: "Al día",
-  FALLIDO: "Falló el cálculo",
+  PROCESANDO: "En proceso",
+  COMPLETADO: "Completado",
+  FALLIDO: "Con error",
 };
 
 export const ESTADO_ENVIO: Record<Alerta["estadoEnvio"], string> = {
@@ -126,12 +138,13 @@ export const VIGENCIA: Record<Alerta["vigencia"], string> = {
 };
 
 export const ROL: Record<UsuarioDemoDTO["rol"], string> = {
-  RRHH: "RRHH",
+  RRHH: "RR. HH.",
   GERENCIA: "Gerencia",
   TEAM_LEAD: "Team Lead",
   EMPLEADO: "Empleado",
 };
-export const TIPO: Record<"TECNICO" | "TEAM_LEAD", string> = {
+export const TIPO: Record<"TECNICO" | "TEAM_LEAD" | "GERENCIA", string> = {
   TECNICO: "Técnico",
   TEAM_LEAD: "Team Lead",
+  GERENCIA: "Gerencia",
 };

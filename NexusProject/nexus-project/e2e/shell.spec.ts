@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { demo, menu } from "./demo";
 
-test("Ingreso: elegir RRHH abre el resumen con todo el menú", async ({ page }) => {
+test("Ingreso: elegir RR. HH. abre el resumen con todo el menú", async ({ page }) => {
   await demo(page, null);
   await page.goto("/");
-  await page.getByRole("button", { name: /^RRHH/ }).click();
+  await page.getByRole("button", { name: /^RR\. HH\./ }).click();
   await expect(page).toHaveURL(/\/home$/);
   await expect(page.getByRole("heading", { level: 1, name: "Resumen" })).toBeVisible();
   for (const seccion of ["Resumen", "Personas", "Equipos", "Alertas", "Importar datos", "Reglas del índice", "Auditoría"])
@@ -41,7 +41,7 @@ test("Shell: sin sesión, una pantalla interna vuelve al ingreso", async ({ page
   await demo(page, null);
   await page.goto("/employees");
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole("heading", { name: "Elegí con qué perfil entrar" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Seleccione un perfil para ingresar" })).toBeVisible();
 });
 
 test("Shell: cambiar de usuario desde la franja de demo", async ({ page }) => {

@@ -47,7 +47,7 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
     ).toContainText("Tareas vencidas");
     await expect(confirmar).toBeDisabled();
     expect(await db.registroLaboral.count()).toBe(0);
-    await previa.getByRole("button", { name: "Cancelar" }).click();
+    await page.getByRole("button", { name: "Cancelar" }).click();
     await expect(
       page.getByText("Vista previa cancelada.", { exact: false }),
     ).toBeVisible();
@@ -56,7 +56,7 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
     await validar.click();
     await expect(previa).toContainText("Validada");
     await confirmar.click();
-    await expect(procesamiento.getByRole("status")).toContainText("Terminado");
+    await expect(procesamiento.getByRole("status")).toContainText("Completado");
     await expect(confirmada).toContainText(/Guardadas\s*2\s*filas nuevas/);
     await expect(confirmada).toContainText(/Omitidas\s*0/);
     expect(await db.registroLaboral.count()).toBe(2);
@@ -74,12 +74,12 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
     await expect(enAlto).toContainText("Persona ficticia 001");
     await expect(enAlto.getByRole("link", { name: "91,21" })).toBeVisible();
     await expect(
-      page.getByText(/^Índice promedio 91,21 en 1 evaluaciones/),
+      page.getByText(/^Índice promedio 91,21 sobre 1 evaluación/),
     ).toBeVisible();
     await page
       .getByRole("combobox", { name: "Semana" })
       .selectOption("2026-10-05");
-    await expect(page.getByText("Nadie en Alto esta semana")).toBeVisible();
+    await expect(page.getByText("Ninguna persona en nivel Alto esta semana")).toBeVisible();
 
     await page.goto("/employees/EMP-001");
     const semanas = page.getByRole("region", {
@@ -132,26 +132,26 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
     expect(await db.alerta.count()).toBe(1);
 
     // T12: the answer to processing is lost; the pending attempt lives in the database.
+    // The simulated mail is on the alert's page, which the list's person links to.
     await page.goto("/alerts");
-    await expect(
-      page.getByText("1 alerta activa de 1 persona", { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByRole("status").filter({ hasText: /^1 alerta$/ })).toBeVisible();
+    await page
+      .getByRole("region", { name: "Alertas activas" })
+      .getByRole("link", { name: "Persona ficticia 001" })
+      .click();
+    await expect(page).toHaveURL(/\/alerts\/[^/]+$/);
     const correo = page.getByRole("region", { name: "Correo simulado" });
     const historial = correo.getByRole("list", {
       name: "Historial de envíos simulados",
     });
-    const abrir = () =>
-      page.getByRole("button", { name: /^Sugerencias y correo/ }).click();
-    await abrir();
     await page.route("**/procesar", (route) => route.abort());
-    await correo.getByRole("button", { name: "Simular fallo" }).click();
+    await correo.getByRole("button", { name: "Simular envío fallido" }).click();
     await expect(correo.getByRole("alert")).toContainText(
       "No se pudo conectar",
     );
     await page.unroute("**/procesar");
     // Recargar demuestra que el pendiente se recupera desde la base.
     await page.reload();
-    await abrir();
     await expect(historial.getByRole("listitem")).toHaveText([
       /Intento 1.*Pendiente de procesar/,
     ]);
@@ -167,16 +167,16 @@ test("T06/T14/T12 real: importar, consultar y simular fallo/reintento sin duplic
       /Intento 1.*Fallido \(simulado\)/,
     ]);
     await page.reload();
-    await expect(
-      page.getByRole("region", { name: "Alertas activas" }),
-    ).toContainText("Enviado (simulado)");
-    await abrir();
     await expect(historial.getByRole("listitem").first()).toContainText(
       "Enviado (simulado)",
     );
     await expect(correo.getByRole("button", { name: /^Simular/ })).toHaveCount(
       0,
     );
+    await page.goto("/alerts");
+    await expect(
+      page.getByRole("region", { name: "Alertas activas" }),
+    ).toContainText("Enviado (simulado)");
     expect(await db.alerta.count()).toBe(1);
     expect(await db.intentoNotificacion.count()).toBe(2);
     await page.screenshot({

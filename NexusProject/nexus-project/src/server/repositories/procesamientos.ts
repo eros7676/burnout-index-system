@@ -75,7 +75,23 @@ export async function obtenerJob(
   });
 }
 
-export async function reclamarJob(db: PrismaClient, jobId: string) {
+/** What the claim knows about the job, for the audit events written with it. */
+export type DatosJob = {
+  importId: string | null;
+  origen: ProcessingJob["origen"];
+  rulesVersion: string | null;
+  estadoAnterior: ProcessingJob["estado"];
+  /** The attempt this claim starts (1 for the first run). */
+  intentos: number;
+  totalPares: number;
+};
+
+/** `alReclamar` runs inside the claim's transaction: the event commits with the claim. */
+export async function reclamarJob(
+  db: PrismaClient,
+  jobId: string,
+  alReclamar?: (tx: Prisma.TransactionClient, job: DatosJob) => Promise<void>,
+) {
   return transaccionImportacion(db, async (tx) => {
     await tx.$queryRaw`SELECT jobId FROM ProcessingJob WHERE jobId = ${jobId} FOR UPDATE`;
     const job = await leerJob(tx, jobId);
@@ -93,7 +109,16 @@ export async function reclamarJob(db: PrismaClient, jobId: string) {
         "JOB_RECLAMADO",
         "Otro ejecutor está procesando este trabajo.",
       );
-    return { propietario: { jobId, ownerToken }, pares: job.pares };
+    const datos: DatosJob = {
+      importId: job.importId,
+      origen: job.origen,
+      rulesVersion: job.rulesVersion,
+      estadoAnterior: job.estado,
+      intentos: job.intentos + 1,
+      totalPares: job.pares.length,
+    };
+    await alReclamar?.(tx, datos);
+    return { propietario: { jobId, ownerToken }, pares: job.pares, job: datos };
   });
 }
 
@@ -117,7 +142,7 @@ async function conPropietarioTx<T>(
     throw new ErrorImportacion(
       409,
       "JOB_RECLAMADO",
-      "El ejecutor perdió su lease o token; reintente el trabajo.",
+      "El procesamiento se interrumpió antes de terminar. Reintente el procesamiento.",
     );
   const resultado = await ejecutar(tx);
   // Comprobar también después del trabajo, antes de permitir su commit.
@@ -128,7 +153,7 @@ async function conPropietarioTx<T>(
     throw new ErrorImportacion(
       409,
       "JOB_RECLAMADO",
-      "Venció el permiso del ejecutor.",
+      "El procesamiento se interrumpió antes de terminar. Reintente el procesamiento.",
     );
   return resultado;
 }
@@ -179,10 +204,12 @@ export async function completarPar(
   });
 }
 
+/** `alFinalizar` runs in the closing transaction: the final state and its event commit together. */
 export async function finalizarJob(
   db: PrismaClient,
   p: PropietarioJob,
   fallo?: { periodoId: string; codigo: string; detalle: string },
+  alFinalizar?: (tx: Prisma.TransactionClient) => Promise<void>,
 ) {
   await conPropietario(db, p, async (tx) => {
     if (fallo)
@@ -206,6 +233,7 @@ export async function finalizarJob(
         finishedAt: new Date(),
       },
     });
+    await alFinalizar?.(tx);
   });
 }
 

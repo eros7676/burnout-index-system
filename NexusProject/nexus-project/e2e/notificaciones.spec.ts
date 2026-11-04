@@ -1,10 +1,16 @@
 import { test, expect, type Page } from "@playwright/test";
 import type { Alerta, IntentoNotificacion } from "../src/shared/contracts";
-import { alertaMock, intentoNotificacionMock } from "../src/shared/mocks";
+import {
+  alertaListadaMock,
+  alertaMock,
+  intentoNotificacionMock,
+  paginaAlertasMock,
+} from "../src/shared/mocks";
 import { api, celda, demo, type UsuarioDemo } from "./demo";
+import { ALERTA_ID, RUTA_ALERTA, seguimientoSinCaso } from "./seguimiento-mocks";
 
-// T12 on the rebuilt screens: the simulated email lives in the alert's detail
-// row on /alerts and in the report's Alerta section, for RRHH only.
+// T12 on the rebuilt screens: the simulated email lives in the alert's page (/alerts/[alertId]) and in
+// the report's Alerta section, for RR. HH. only. The list links to the page instead of opening a panel.
 
 const alertas = (page: Page) =>
   page.getByRole("region", { name: "Alertas activas" });
@@ -12,8 +18,8 @@ const correo = (page: Page) =>
   page.getByRole("region", { name: "Correo simulado" });
 const historial = (page: Page) =>
   correo(page).getByRole("list", { name: "Historial de envíos simulados" });
-const abrirDetalle = (page: Page, nombre: RegExp) =>
-  alertas(page).getByRole("button", { name: nombre }).click();
+const datosDeLaAlerta = (page: Page) =>
+  page.getByRole("region", { name: "Datos de la alerta" });
 
 /**
  * The T12 server as a state machine over one alert: preparing stores a pending
@@ -31,7 +37,10 @@ async function servidorCorreo(page: Page) {
   };
   await page.route(api("/api/alertas"), (route) =>
     route.fulfill({
-      json: { items: [estado.alerta], total: 1, page: 1, pageSize: 100 },
+      json: {
+        ...paginaAlertasMock,
+        items: [{ ...alertaListadaMock, ...estado.alerta }],
+      },
     }),
   );
   await page.route(
@@ -39,6 +48,12 @@ async function servidorCorreo(page: Page) {
     (route) => {
       const request = route.request();
       const ruta = new URL(request.url()).pathname;
+      if (ruta === `/api/alertas/${ALERTA_ID}`)
+        return route.fulfill({
+          json: { ...alertaListadaMock, ...estado.alerta },
+        });
+      if (ruta.endsWith("/seguimiento"))
+        return route.fulfill({ json: seguimientoSinCaso });
       if (ruta.endsWith("/procesar")) {
         if (estado.perder) return route.abort();
         const intento = estado.intentos.find((i) =>
@@ -103,12 +118,21 @@ test("T12: un envío pendiente se recupera tras recargar, el fallo se reintenta 
   );
   await expect(destinatario).toContainText("Team Lead ficticio 1");
   await expect(destinatario).toContainText("Solo aviso interno");
-  await abrirDetalle(page, /^Sugerencias y correo/);
-  await expect(correo(page)).toContainText("Todavía no hay intentos.");
+  // The list links to the alert's page, where the mail lives.
+  await expect(
+    alertas(page).getByRole("button", { name: /correo/ }),
+  ).toHaveCount(0);
+  await alertas(page)
+    .getByRole("link", { name: "Persona ficticia 001" })
+    .click();
+  await expect(page).toHaveURL(new RegExp(`${RUTA_ALERTA}$`));
+  await expect(correo(page)).toContainText("Sin intentos registrados.");
 
   // The answer to processing is lost: the pending attempt stays recoverable.
   servidor.perder = true;
-  await correo(page).getByRole("button", { name: "Simular fallo" }).click();
+  await correo(page)
+    .getByRole("button", { name: "Simular envío fallido" })
+    .click();
   await expect(correo(page).getByRole("alert")).toContainText(
     "No se pudo conectar",
   );
@@ -117,8 +141,7 @@ test("T12: un envío pendiente se recupera tras recargar, el fallo se reintenta 
   ]);
   servidor.perder = false;
   await page.reload();
-  await expect(destinatario).toContainText("Envío simulado pendiente");
-  await abrirDetalle(page, /^Sugerencias y correo/);
+  await expect(datosDeLaAlerta(page)).toContainText("Envío simulado pendiente");
   await expect(historial(page).getByRole("listitem")).toHaveText([
     /Intento 1.*Pendiente de procesar/,
   ]);
@@ -126,25 +149,25 @@ test("T12: un envío pendiente se recupera tras recargar, el fallo se reintenta 
     .getByRole("button", { name: "Procesar envío pendiente" })
     .click();
   await expect(correo(page).getByRole("status")).toHaveText(
-    "Quedó registrado como fallido (simulado). Podés volver a simularlo.",
+    "Envío registrado como fallido (simulado). Se puede volver a simularlo.",
   );
   await expect(historial(page).getByRole("listitem")).toHaveText([
     /Intento 1.*Fallido \(simulado\).*Fallo simulado\./,
   ]);
-  await expect(destinatario).toContainText("Envío simulado fallido");
+  await expect(datosDeLaAlerta(page)).toContainText("Envío simulado fallido");
 
   // A retry is a new attempt with a new request id; the history keeps both.
   await correo(page)
     .getByRole("button", { name: "Simular envío exitoso" })
     .click();
   await expect(correo(page).getByRole("status")).toHaveText(
-    "Quedó registrado como enviado (simulado).",
+    "Envío registrado como enviado (simulado).",
   );
   await expect(historial(page).getByRole("listitem")).toHaveText([
     /Intento 2.*Enviado \(simulado\)/,
     /Intento 1.*Fallido \(simulado\)/,
   ]);
-  await expect(destinatario).toContainText("Enviado (simulado)");
+  await expect(datosDeLaAlerta(page)).toContainText("Enviado (simulado)");
   await expect(
     correo(page).getByRole("button", { name: /^Simular/ }),
   ).toHaveCount(0);
@@ -163,20 +186,21 @@ test("T12: un error al leer el historial deja visible la alerta y se recupera; S
   await demo(page, "demo-rrhh");
   const servidor = await servidorCorreo(page);
   servidor.fallaListado = "http";
-  await page.goto("/alerts");
-  await abrirDetalle(page, /^Sugerencias y correo/);
+  await page.goto(RUTA_ALERTA);
   await expect(correo(page).getByRole("alert")).toContainText(
     "temporalmente indisponible",
   );
-  await expect(page.getByText("1 alerta activa de 1 persona")).toBeVisible();
-  await expect(alertas(page)).toContainText("Persona ficticia 001");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Alerta de Persona ficticia 001" }),
+  ).toBeVisible();
+  await expect(datosDeLaAlerta(page)).toContainText("Team Lead ficticio 1");
 
   servidor.fallaListado = "html";
   await correo(page)
     .getByRole("button", { name: "Actualizar historial" })
     .click();
   await expect(correo(page).getByRole("alert")).toContainText(
-    "respuesta JSON válida",
+    "respuesta inesperada",
   );
 
   servidor.fallaListado = null;
@@ -217,21 +241,22 @@ test("T12: el correo simulado del informe actualiza el envío como simulado", as
 
 for (const [usuario, destinatario] of [
   ["demo-gerencia", "Team Lead ficticio 1"],
-  ["demo-tl-01", "Vos"],
+  ["demo-tl-01", "Team Lead ficticio 1 (usted)"],
 ] as [UsuarioDemo, string][]) {
   test(`T12/T15a: ${usuario} lee la alerta y sus sugerencias sin controles de correo`, async ({
     page,
   }) => {
     await demo(page, usuario);
+    await servidorCorreo(page);
     await page.goto("/alerts");
     await expect(
       await celda(alertas(page), "Persona ficticia 001", "Destinatario"),
     ).toContainText(destinatario);
-    await expect(
-      alertas(page).getByRole("button", { name: /correo/ }),
-    ).toHaveCount(0);
-    await abrirDetalle(page, /^Sugerencias/);
-    await expect(alertas(page)).toContainText("Para revisar con la persona");
+    await alertas(page)
+      .getByRole("link", { name: "Persona ficticia 001" })
+      .click();
+    await expect(page.getByRole("region", { name: "Sugerencias de revisión" })).toBeVisible();
+    await expect(datosDeLaAlerta(page)).toContainText(destinatario);
     await expect(correo(page)).toHaveCount(0);
     await page.goto("/reports/mock-evaluation-2");
     await expect(page.getByRole("region", { name: "Alerta" })).toContainText(

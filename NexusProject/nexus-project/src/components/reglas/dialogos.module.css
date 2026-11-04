@@ -1,0 +1,5 @@
+.motivo {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--line-strong);
+  overflow-wrap: anywhere;
+}

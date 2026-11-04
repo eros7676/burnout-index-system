@@ -2,18 +2,36 @@
   display: grid;
   gap: var(--space-5);
 }
-/* How it is calculated first and widest; what it is not, and its history, beside it. */
-.grid {
+/* Two rows of two cards: the cards of a row share their top and bottom edges (R17). Stacked,
+   they keep the reading order factors, levels, what it is not, versions. */
+.rejilla {
   display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
-  gap: var(--space-5);
-  align-items: start;
+  gap: var(--gutter);
 }
-.main,
-.side {
-  display: grid;
-  gap: var(--space-5);
-  align-content: start;
+@media (min-width: 1101px) {
+  .rejilla {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .factores,
+  .niveles {
+    grid-column: span 8;
+  }
+  .noEsSeccion,
+  .versiones {
+    grid-column: span 4;
+  }
+  .factores {
+    grid-row: 1;
+  }
+  .niveles {
+    grid-row: 2;
+  }
+  .noEsSeccion {
+    grid-row: 1;
+  }
+  .versiones {
+    grid-row: 2;
+  }
 }
 .umbral {
   font-weight: var(--weight-strong);
@@ -43,7 +61,7 @@
 .formula {
   margin-top: var(--space-4);
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   max-width: 72ch;
 }
 .niveles {
@@ -86,12 +104,21 @@
   height: 2px;
   background: var(--ink-3);
 }
-.vigente {
-  color: var(--success);
-  font-weight: var(--weight-strong);
+/* The draft's reason: wraps in a measured column instead of stretching the table. */
+.motivo {
+  min-width: 220px;
+  max-width: 40ch;
+  overflow-wrap: anywhere;
 }
-@media (max-width: 1100px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+/* Who published a version and why: wraps in a measured column inside the nowrap row header. */
+.detalleVersion {
+  white-space: normal;
+  max-width: 24ch;
+}
+.pie {
+  margin-top: var(--space-4);
+}
+/* Dates and times in a cell stay on one line. */
+.fecha {
+  white-space: nowrap;
 }

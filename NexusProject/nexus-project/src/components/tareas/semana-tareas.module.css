@@ -1,0 +1,18 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+/* Sits on the controls' line, not the labels'. */
+.count {
+  margin-left: auto;
+  padding-block: var(--space-2);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+/* The last answer stays while the next one loads. */
+.results[data-actualizando] {
+  opacity: 0.6;
+}
+.pager {
+  margin-top: var(--space-4);
+}

@@ -1,0 +1,177 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+/* One column of form, as wide as its fields need (R41). */
+.formulario {
+  display: grid;
+  gap: var(--space-8);
+  max-width: 560px;
+}
+.resumen {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--ink);
+}
+.resumen:focus-visible {
+  outline: 2px solid var(--danger);
+  outline-offset: 2px;
+}
+.resumenTitulo {
+  color: var(--danger);
+  font-weight: var(--weight-strong);
+}
+.resumen ul {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  padding-left: var(--space-4);
+  list-style: disc;
+}
+.resumen a {
+  color: var(--danger);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* A confirmation before a step that is hard to undo. */
+.confirmacion {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  padding: var(--space-4);
+  border-left: 3px solid var(--notice);
+  border-radius: var(--radius-sm);
+  background: var(--notice-soft);
+  color: var(--ink);
+}
+.confirmacion p {
+  max-width: 60ch;
+}
+.lista {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-4);
+  list-style: disc;
+}
+.link {
+  color: var(--accent);
+  font-weight: var(--weight-strong);
+}
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4);
+}
+.cuerpo {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+.cuerpo > * {
+  max-width: 100%;
+}
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.fallo {
+  color: var(--danger);
+  font-weight: var(--weight-strong);
+}
+/* The same file picker as the import wizard: the native input covers the zone, so a click opens the
+   picker and a drop selects the file. */
+.zona {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-5);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+.zona:hover,
+.zona:focus-within {
+  border-color: var(--accent);
+}
+.zona:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.zona[data-elegido] {
+  border-style: solid;
+  background: var(--surface);
+}
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.input:disabled {
+  cursor: not-allowed;
+}
+.zonaIcono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.zonaTexto {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.zonaTitulo {
+  font-weight: var(--weight-strong);
+}
+.zonaNombre {
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.zona[data-elegido] .zonaNombre {
+  color: var(--ink);
+}
+.zonaAccion {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-weight: var(--weight-strong);
+}
+/* «Descargar plantilla» as on the import wizard: an accent text action. */
+.plantilla {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+.plantilla:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

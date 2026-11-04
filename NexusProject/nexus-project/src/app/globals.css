@@ -30,29 +30,36 @@
   --level-medio-soft: #fbefd9;
   --level-alto: #b42318;
   --level-alto-soft: #fce7e4;
+  /* Calm and middle weeks recede on the strip: the same hue, mixed toward the surface. */
+  --level-bajo-mute: color-mix(in srgb, var(--level-bajo) 55%, var(--surface));
+  --level-medio-mute: color-mix(in srgb, var(--level-medio) 85%, var(--surface));
   --level-incompleto: #5c6875;
   --level-incompleto-soft: #eceef1;
 
-  --danger: #b42318;
-  --danger-soft: #fce7e4;
-  --success: #2a6f4d;
-  --success-soft: #e1f0e7;
-  --notice: #7a4f00;
-  --notice-soft: #fff3d6;
+  /* State colors (errors, completed actions, simulated or pending): hues of their
+     own, never the level hues (R27), and always paired with an icon. */
+  --danger: #a3174f;
+  --danger-soft: #fbe8ef;
+  --danger-hover: #87123f;
+  --success: #0b6a62;
+  --success-soft: #dff2ef;
+  --notice: #5b3d9e;
+  --notice-soft: #ece8f8;
 
   /* Type: one family; tabular figures wherever numbers line up. */
   --font-sans: var(--font-ui), system-ui, sans-serif;
-  /* Carbon "productive" sizes; values never below 14 px. */
-  --text-xs: 0.75rem; /* 12/16: column headers, axis labels, helper text */
-  --text-sm: 0.8125rem; /* 13/18: secondary lines under a value */
-  --text-md: 0.875rem; /* 14/20: body, table cells */
+  /* Carbon "productive" steps (R31): 12/16, 14/20, 16/24, 20/28, 28/36, 32/40. The
+     line height is part of the step: --leading resolves each size to its pair. */
+  --text-xs: 0.75rem; /* 12/16: column headers, labels, secondary lines, tags, axis labels */
+  --text-md: 0.875rem; /* 14/20: body, table cells, controls */
   --text-lg: 1rem; /* 16/24: section titles */
   --text-xl: 1.25rem; /* 20/28: sub-headlines, legend figures */
   --text-2xl: 1.75rem; /* 28/36: page titles */
   --text-display: 2rem; /* 32/40: headline figures */
-  --leading-tight: 1.25;
-  --leading-snug: 1.4;
-  --leading-body: 1.45;
+  --leading: round(nearest, calc(1.2em + 3px), 4px);
+  --leading-tight: var(--leading);
+  --leading-snug: var(--leading);
+  --leading-body: var(--leading);
   --weight-regular: 400;
   --weight-strong: 600;
 
@@ -66,10 +73,25 @@
   --space-8: 32px;
   --space-10: 40px;
   --space-12: 48px;
+  --radius-2xs: 2px; /* marks, chart bars */
   --radius-xs: 3px; /* tags, week cells */
   --radius-sm: 6px; /* inputs, buttons */
   --radius-md: 10px; /* sections */
+  --scroll-shade: rgb(24 33 43 / 14%);
   --shadow-pop: 0 6px 24px rgb(24 33 43 / 12%);
+
+  /* Control line: one height for every button, link-button, field and nav link in the app (R10). */
+  --control-h: 2rem; /* 32 */
+  --tag-h: 1.5rem; /* 24: LevelTag and StatusTag (R12) */
+  --row-h: 3rem; /* 48: a table body row */
+  --row-h-2: 4rem; /* 64: a row whose first cell has two lines (person and team) */
+  --icon-sm: 1rem; /* 16: next to 12-14 px text (R22) */
+  --icon-md: 1.25rem; /* 20: next to 16 px text */
+
+  /* Page: 12 columns and one gutter between columns, rows and the header (R1, R7, R40). */
+  --gutter: var(--space-5);
+  --pad-section: var(--space-6); /* the same on all four sides (R9) */
+  --plot-h: 13.75rem; /* 220: plot of every weekly chart (R39) */
   --sidebar: 248px;
   --content-max: 1320px;
 
@@ -79,6 +101,7 @@
   --motion-base: 180ms;
   --motion-slow: 240ms;
   --motion-page: 300ms;
+  --quiet: 0.6; /* opacity of a past week next to the current one */
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -99,18 +122,37 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+/* Every element resolves its own line height from its own size, so the declared
+   pair is the rendered one and text boxes sit on the 4 px grid (R32). */
+* {
+  line-height: var(--leading);
+}
+
 body {
   min-height: 100dvh;
   font-size: var(--text-md);
-  line-height: var(--leading-body);
+}
+
+h1 {
+  font-size: var(--text-2xl);
+}
+
+h2 {
+  font-size: var(--text-lg);
 }
 
 h1,
 h2,
 h3 {
-  line-height: var(--leading-tight);
   font-weight: var(--weight-strong);
   text-wrap: balance;
+}
+
+/* Only 400 and 600 are loaded: the UA's bold (700) on th and strong is not a token. */
+th,
+strong,
+b {
+  font-weight: var(--weight-strong);
 }
 
 p {
@@ -127,6 +169,7 @@ input,
 select,
 textarea {
   font: inherit;
+  line-height: var(--leading);
   color: inherit;
 }
 
@@ -137,6 +180,8 @@ textarea {
 }
 
 /* Visually hidden, still read by assistive technology. */
+/* A table is never 1 px tall, so a visually hidden table sits inside an .sr-only wrapper:
+   on the table itself its rows would still lengthen the page. */
 .sr-only {
   position: absolute;
   width: 1px;

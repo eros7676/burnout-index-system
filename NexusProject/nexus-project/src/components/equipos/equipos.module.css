@@ -6,9 +6,6 @@
 .teams > [role="region"] {
   position: relative;
 }
-.teams thead th {
-  vertical-align: bottom;
-}
 .teams thead th.wrap {
   white-space: normal;
   text-wrap: balance;
@@ -23,7 +20,7 @@
   display: block;
   margin-top: var(--space-1);
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 /* This week's count, then how it got there. */
 .alto {
@@ -45,7 +42,7 @@
 .link {
   display: block;
   color: var(--accent);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-strong);
 }
 .link:hover {
@@ -62,30 +59,7 @@
 .key {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-}
-.key::before {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  background: var(--fill);
-}
-.key[data-nivel="BAJO"] {
-  --fill: var(--level-bajo);
-}
-.key[data-nivel="MEDIO"] {
-  --fill: var(--level-medio);
-}
-.key[data-nivel="ALTO"] {
-  --fill: var(--level-alto);
-}
-.key[data-nivel="INCOMPLETO"] {
-  --fill: repeating-linear-gradient(
-    -45deg,
-    var(--level-incompleto) 0 2px,
-    var(--level-incompleto-soft) 2px 4px
-  );
+  gap: var(--space-2);
 }
 
 /* Alto per week: eight small columns on one baseline. */
@@ -93,7 +67,7 @@
   display: inline-flex;
   align-items: flex-end;
   gap: 3px;
-  height: 28px;
+  height: var(--control-h);
   border-bottom: 1px solid var(--line-strong);
   vertical-align: middle;
 }
@@ -106,10 +80,58 @@
 .trendBar {
   width: 100%;
   min-height: 3px;
-  border-radius: 2px 2px 0 0;
+  border-radius: var(--radius-2xs) var(--radius-2xs) 0 0;
   background: var(--level-alto);
-  opacity: 0.5;
+  opacity: var(--quiet);
 }
 .trendWeek[data-actual] .trendBar {
   opacity: 1;
+}
+
+/* The level key keeps its counts next to the labels instead of at the far edge of a wide card; the
+   bar above still spans the card. */
+
+/* The week of one team: the mix, then the figures that read from it. */
+/* The week's mix: the bar across the block, then one row of four equal columns (legend, average,
+   people in Alto, coverage), so no column is left with a blank beside it. The legend and the
+   figures become items of this grid (display: contents). */
+.resumen {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5) var(--space-6);
+}
+.mezcla,
+.mezcla > div,
+.cifras {
+  display: contents;
+}
+.mezcla > div > :first-child {
+  grid-column: 1 / -1;
+}
+@media (max-width: 900px) {
+  .resumen {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .resumen {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Header actions: part of the header's own flex row on a wide screen; on a phone an even grid of
+   two columns, an odd last button spanning both. */
+.acciones {
+  display: contents;
+}
+@media (max-width: 600px) {
+  .acciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    width: 100%;
+  }
+  .acciones > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }

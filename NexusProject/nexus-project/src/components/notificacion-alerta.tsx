@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { notificacionesApi as api } from "@/client/notificaciones-api";
 import type {
   Alerta,
@@ -7,8 +7,8 @@ import type {
   ResultadoSimulado,
   SolicitudNotificacion,
 } from "@/shared/contracts";
-import { momento } from "@/shared/formato";
-import { Button, Icon } from "@/shared/ui";
+import { momentoConAnio } from "@/shared/formato";
+import { Button } from "@/shared/ui";
 import { StatusTag } from "@/shared/ui/status-tag";
 import s from "./notificacion-alerta.module.css";
 
@@ -23,19 +23,21 @@ const INTENTO: Record<
   SIN_DESTINATARIO: { texto: "Sin destinatario", tono: "incidencia" },
 };
 const RESULTADO: Record<Estado, string> = {
-  PENDIENTE: "Quedó un envío simulado pendiente de procesar.",
-  ENVIADO: "Quedó registrado como enviado (simulado).",
-  FALLIDO: "Quedó registrado como fallido (simulado). Podés volver a simularlo.",
-  SIN_DESTINATARIO:
-    "No hay a quién avisar: falta el responsable en el catálogo.",
+  PENDIENTE: "Envío simulado pendiente de procesar.",
+  ENVIADO: "Envío registrado como enviado (simulado).",
+  FALLIDO:
+    "Envío registrado como fallido (simulado). Se puede volver a simularlo.",
+  SIN_DESTINATARIO: "No hay destinatario: falta el responsable en el catálogo.",
 };
 const mensajeDe = (e: unknown) =>
   e instanceof Error
     ? e.message
-    : "No se pudo completar la simulación. Volvé a intentar.";
+    : "No se pudo completar la simulación. Inténtelo nuevamente.";
 
 /**
- * The simulated email of one alert (T12): no message ever leaves the app.
+ * The simulated email of one alert (T12): no message ever leaves the app. It is plain
+ * content for a titled Section ("Correo simulado") on both the alert and the report, so
+ * nothing is boxed twice.
  * Each simulation prepares an attempt and processes it; a pending attempt left
  * behind (a reload, a lost answer) can be processed later, and every attempt
  * stays in the history.
@@ -50,7 +52,6 @@ export function NotificacionAlerta({
   /** The recipient's name for an attempt's employeeId snapshot. */
   destinatario: (destinatarioId: string) => string;
 }) {
-  const titulo = useId();
   const [intentos, setIntentos] = useState<IntentoNotificacion[]>();
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState("");
@@ -128,19 +129,11 @@ export function NotificacionAlerta({
   const activa = alerta.vigencia === "ACTIVA";
 
   return (
-    <section
-      className={s.panel}
-      aria-labelledby={titulo}
-      aria-busy={ocupado !== null}
-    >
+    <div className={s.panel} aria-busy={ocupado !== null}>
       <div className={s.head}>
-        <h3 id={titulo} className={s.title}>
-          <Icon nombre="correo" size={16} />
-          Correo simulado
-        </h3>
         <Button
           variante="quiet"
-          className={s.refresh}
+          alinearTexto
           disabled={ocupado !== null}
           onClick={listar}
         >
@@ -163,11 +156,13 @@ export function NotificacionAlerta({
             Simular envío exitoso
           </Button>
           <Button disabled={ocupado !== null} onClick={() => simular("FALLO")}>
-            Simular fallo
+            Simular envío fallido
           </Button>
         </div>
       ) : !activa ? (
-        <p className={s.note}>Alerta superada: solo queda su historial.</p>
+        <p className={s.note}>
+          Alerta superada: solo se conserva el historial.
+        </p>
       ) : null}
 
       <p role="status" className={s.status}>
@@ -191,7 +186,7 @@ export function NotificacionAlerta({
                 <span className={s.number}>Intento {i.numero}</span>
                 <StatusTag tono={estado.tono}>{estado.texto}</StatusTag>
                 <time className={s.when} dateTime={cuando}>
-                  {momento(cuando)}
+                  {momentoConAnio(cuando)}
                 </time>
                 {i.destinatarioId && (
                   <span className={s.to}>
@@ -208,8 +203,8 @@ export function NotificacionAlerta({
           })}
         </ol>
       ) : (
-        <p className={s.note}>Todavía no hay intentos.</p>
+        <p className={s.note}>Sin intentos registrados.</p>
       )}
-    </section>
+    </div>
   );
 }

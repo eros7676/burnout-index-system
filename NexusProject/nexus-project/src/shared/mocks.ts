@@ -1,6 +1,8 @@
 import type { CuerposExito, OperacionApi, RespuestaApi } from "./api";
 import type {
   Alerta,
+  AlertaListada,
+  PaginaAlertas,
   ConfiguracionIndice,
   Evaluacion,
   FilaTablero,
@@ -12,6 +14,13 @@ import type {
   VistaPrevia,
 } from "./contracts";
 import { ErrorDominio } from "./errors";
+import { MOCKS_ORGANIZACION } from "./contratos/organizacion";
+import { MOCKS_IMPORTACIONES } from "./contratos/importaciones";
+import { MOCKS_TAREAS } from "./contratos/tareas";
+import { MOCKS_REGLAS } from "./contratos/reglas";
+import { MOCKS_AUDITORIA } from "./contratos/auditoria";
+import { MOCKS_SEGUIMIENTO } from "./contratos/seguimiento";
+import { MOCKS_EXPORTACIONES } from "./contratos/exportaciones";
 
 /** Datos fijos para desarrollar consumidores. No son seed, motor ni API real. */
 const createdAt = "2026-10-19T12:00:00.000Z";
@@ -137,6 +146,47 @@ export const alertaMock: Alerta = {
   canal: "INTERNO",
   estadoEnvio: "NO_APLICA",
   createdAt,
+};
+export const alertaListadaMock: AlertaListada = {
+  ...alertaMock,
+  persona: {
+    nombre: "Persona ficticia 001",
+    equipo: "Célula ficticia 1",
+    teamId: "EQ-01",
+    tipo: "TECNICO",
+  },
+  destinatario: "Team Lead ficticio 1",
+  semana: {
+    periodStart: "2026-10-12",
+    periodEnd: "2026-10-18",
+    nivel: "ALTO",
+    indice: 91.21,
+    actualizado: true,
+  },
+  serie: [
+    {
+      periodStart: "2026-10-05",
+      periodEnd: "2026-10-11",
+      nivel: "INCOMPLETO",
+      indice: 83.71,
+      actualizado: true,
+    },
+    {
+      periodStart: "2026-10-12",
+      periodEnd: "2026-10-18",
+      nivel: "ALTO",
+      indice: 91.21,
+      actualizado: true,
+    },
+  ],
+  seguimiento: null,
+};
+export const paginaAlertasMock: PaginaAlertas = {
+  items: [alertaListadaMock],
+  total: 1,
+  page: 1,
+  pageSize: 50,
+  equipos: [{ teamId: "EQ-01", nombre: "Célula ficticia 1" }],
 };
 export const informeMock: InformeDTO = {
   evaluacion: evaluacionAltaMock,
@@ -275,13 +325,20 @@ export const cuerposExitoMock = {
   seleccionarUsuarioDemo: {
     usuario: {
       userId: "demo-rrhh",
-      nombre: "RRHH",
+      nombre: "RR. HH.",
       rol: "RRHH",
       employeeId: null,
       teamId: null,
     },
   },
-  listarAuditoria: { items: [], total: 0, page: 1, pageSize: 50 },
+  listarAuditoria: {
+    items: [],
+    total: 0,
+    totalAcotado: false,
+    pageSize: 50,
+    siguiente: null,
+    consultasOcultas: 0,
+  },
   validarImportacion: vistaPreviaMock,
   confirmarImportacion: resultadoImportacionMock,
   cancelarImportacion: { importId: "mock-import-1", status: "CANCELADA" },
@@ -295,7 +352,8 @@ export const cuerposExitoMock = {
   },
   obtenerInforme: informeMock,
   obtenerResumen: resumenMock,
-  listarAlertas: { items: [alertaMock], total: 1, page: 1, pageSize: 50 },
+  listarAlertas: paginaAlertasMock,
+  obtenerAlerta: alertaListadaMock,
   listarNotificaciones: [intentoNotificacionMock],
   prepararNotificacion: intentoNotificacionMock,
   procesarNotificacion: {
@@ -320,6 +378,13 @@ export const cuerposExitoMock = {
       },
     ],
   },
+  ...MOCKS_ORGANIZACION,
+  ...MOCKS_IMPORTACIONES,
+  ...MOCKS_TAREAS,
+  ...MOCKS_REGLAS,
+  ...MOCKS_AUDITORIA,
+  ...MOCKS_SEGUIMIENTO,
+  ...MOCKS_EXPORTACIONES,
 } satisfies CuerposExito;
 
 /** Copia aislada por consumidor; no hace fetch ni conserva estado. */

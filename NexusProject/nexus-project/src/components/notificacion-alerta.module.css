@@ -2,32 +2,10 @@
   display: grid;
   gap: var(--space-3);
   align-content: start;
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
   min-width: 0;
 }
 .head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-.title {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-md);
-}
-.title svg {
-  color: var(--ink-3);
-}
-.refresh {
-  min-height: 28px;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-regular);
 }
 .actions {
   display: flex;
@@ -40,18 +18,18 @@
 }
 .status {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .error {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--danger-soft);
   color: var(--danger);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .note {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .history {
   display: grid;
@@ -64,7 +42,7 @@
   gap: var(--space-1) var(--space-3);
   padding: var(--space-2) 0;
   border-bottom: 1px solid var(--line);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .attempt:last-child {
   border-bottom: 0;

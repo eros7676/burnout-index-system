@@ -14,8 +14,8 @@ diagnosis and never rates people. Every screen answers one question in its
 header; everything else on the screen supports that answer.
 
 Audience: RRHH analysts, Team Leads and management on desktop Chrome/Firefox
-(RNF07). UI copy is Spanish (es-AR, voseo). Code, comments and this file are
-English.
+(RNF07). UI copy is Spanish (es-AR) in a formal neutral register (see Content).
+Code, comments and this file are English.
 
 ## Principles
 
@@ -23,7 +23,7 @@ English.
    answers; the first block is that answer (a sorted list, not KPI tiles).
    Overview → filter → detail on demand (Shneiderman).
 2. **Conditions, not people.** Alerts and levels describe workload conditions
-   ("Horas extra y días seguidos sin descanso"), with causes before the score.
+   ("Horas extra y días consecutivos sin descanso"), with factors before the score.
 3. **The week is the unit.** Every value belongs to a week; the eight-week
    strip is the product's signature and appears wherever a person does.
 4. **Say it once.** The demo/"not a diagnosis" disclaimer lives in one place:
@@ -46,27 +46,42 @@ English.
 | `--level-medio` | #9a5b0b | Medio |
 | `--level-alto` | #b42318 | Alto (the only urgent color) |
 | `--level-incompleto` | #5c6875, hatched | Incompleto: a gap in history, not a severity |
-| `--danger`, `--success`, `--notice` | | request errors, completed actions, simulated/pending states |
+| `--level-bajo-mute`, `--level-medio-mute` | Bajo and Medio mixed toward the surface | the calm weeks on the strip recede; the same hue, one token each, no opacity |
+| `--danger` / `--success` / `--notice` (+ `-soft`) | #a3174f / #0b6a62 / #5b3d9e | states: request errors (berry), completed actions (teal), simulated or pending (violet). Hues of their own, apart from the level scale and the accent, and always with an icon |
 | `--strip` family | #18212b | the dark demo strip of the shell |
 
 The level scale is sequential (calm → urgent). Each level also differs in
 shape: Bajo/Medio a square mark, Alto a diamond, Incompleto/Desactualizado an
-outline; Incompleto fills are hatched (WCAG 1.4.1).
+outline; Incompleto fills are hatched (WCAG 1.4.1). The mark is the same in a
+LevelTag, a legend key (`LevelMark`) and the distribution key.
+
+States are drawn another way, so they never read as a level (visual-system
+R27): a soft fill with a 1 px outline in the state's hue and a circle icon
+(`exito` check, `info`, `error`), where a level is a soft fill without outline
+and a square or diamond. The accent is for what can be clicked or is selected
+(R28): the info notice is neutral and the stepper uses ink.
 
 ## Type
 
 IBM Plex Sans (next/font, weights 400 and 600 only): its digits are tabular by
-default, so columns of figures align. Sizes follow Carbon's productive set:
+default, so columns of figures align. Sizes are Carbon's productive steps, and the
+line height is part of the step:
 
 | Token | Size/line | Use |
 |---|---|---|
-| `--text-xs` | 12/16 | column headers, axis labels, group titles — never a value |
-| `--text-sm` | 13/18 | secondary line under a value, captions |
+| `--text-xs` | 12/16 | column headers, labels above controls, secondary lines under a value, asides, tags, axis labels |
 | `--text-md` | 14/20 | body, table cells, controls |
 | `--text-lg` | 16/24 | section titles |
-| `--text-xl` | 20/28 | legend figures |
+| `--text-xl` | 20/28 | sub-headlines |
 | `--text-2xl` | 28/36 | page title (h1) |
 | `--text-display` | 32/40 | headline figures |
+
+`* { line-height: var(--leading) }` with `--leading: round(nearest, 1.2em + 3px, 4px)`
+resolves every element's line height from its own size to the pair above, so
+the declared pair is the rendered one and text boxes sit on the 4 px grid (R31,
+R32). A module sets a size and nothing else. Weights are the two tokens;
+`th` and `strong` use `--weight-strong`, not the UA's bold. A Section uses at
+most three sizes (R33).
 
 Sentence case everywhere; no all-caps labels, no eyebrows, no middle-dot meta
 strings; separate facts with commas or layout.
@@ -74,53 +89,104 @@ strings; separate facts with commas or layout.
 ## Layout
 
 ```
-┌──────────────── demo strip: "Modo demo…" · Viendo como [usuario ▾] ───────┐
+┌── demo strip: "Modo demostración…" · Perfil activo [usuario ▾] ───────────┐
 ├─────────────┬──────────────────────────────────────────────────────────────┤
-│ Nexo Laboral│ PageHeader: h1 + one context line        [filters] [primary] │
-│ rol, alcance│                                                              │
-│             │ Sections (white, 10 px radius, 1 px line), 20 px apart      │
-│ Seguimiento │ ┌ answer (wide) ─────────────┐ ┌ supporting column ┐        │
-│ Datos       │ └────────────────────────────┘ └───────────────────┘        │
-│ Mi espacio  │ ┌ trend / detail (full width) ─────────────────────┐        │
+│ Nexo Laboral│ PageHeader: h1 + one context line                  [primary] │
+│ rol, alcance│ FilterBar: [Semana ▾] [other filters]                        │
+│             │                                                              │
+│ Seguimiento │ Sections (white, 10 px radius, 1 px line), one gutter apart  │
+│ Datos       │ ┌ answer, 8 columns ─────────┐ ┌ support, 4 ──────┐          │
+│ Mi espacio  │ └────────────────────────────┘ └──────────────────┘          │
+│             │ ┌ trend / detail, 12 columns ──────────────────────┐          │
 └─────────────┴──────────────────────────────────────────────────────────────┘
 ```
 
 Sidebar 248 px, content max 1320 px, 32 px page padding, 4 px spacing grid.
-Content is left-aligned. Radii by role: 3 px tags and week cells, 6 px
-controls, 10 px sections. One elevation (`--shadow-pop`) for popovers only.
+The content is one container that centers once the window is wider than its
+maximum (Polaris "center when there is no secondary column"). The sidebar and
+the page start on one line: equal top padding, and the brand row is as tall as
+the title's line, so brand and h1 share a center.
+
+**Grid.** Twelve columns with one gutter (`--gutter`, 20 px). Splits are 12,
+8+4 (answer and support, the answer top-left), 4+8, 6+6 and 4+4+4 (peers of
+one kind), built with `Columns`; below 1100 px they stack. The gutter is also
+the row gap, the distance between sections and the distance from the header to
+the first block, so no gap is a compound of two values. The shell lays out a
+screen's root as one grid with that gutter, so a screen cannot lose the header
+gap. Blocks side by side
+end on one line: the containers stretch (`Columns`, `Stack`) and their content
+stays top-aligned, never stretched.
+
+**Breakpoints.** Two: 900 px (the sidebar moves above the page) and 1100 px
+(side-by-side blocks stack). Media queries cannot read tokens, so the set is
+written here.
+
+**Sizes (tokens).**
+
+| Token | Value | Where |
+|---|---|---|
+| `--control-h` | 32 px | every Button, ButtonLink, SelectField, SearchField, DateField, form field, Pagination and nav link (Carbon small, Fiori compact for mouse use) |
+| `--tag-h` | 24 px | LevelTag and StatusTag |
+| `--row-h`, `--row-h-2` | 48 / 64 px | a table body row; a row whose first cell has a second line (person and team) |
+| `--pad-section` | 24 px | Section padding, the same on four sides |
+| `--icon-sm`, `--icon-md` | 16 / 20 px | icons next to 12-14 px text and next to 16 px text; the rendered stroke is 1.5 px at both |
+| `--plot-h` | 220 px | plot of every weekly chart; bars take 60 % of their slot |
+| `--radius-2xs`, `-xs`, `-sm`, `-md` | 2 / 3 / 6 / 10 px | marks and chart bars, tags and week cells, controls, sections |
+
+Table header 12/16; text of the first and last columns sits on the Section's
+key lines (the table bleeds one cell padding past them). Column rules are
+1 px; focus and selection use 2 px.
 
 ## Components (src/shared/ui)
 
 | Component | Rule |
 |---|---|
-| `PageHeader` | every screen opens with it; `volver` only on detail pages |
-| `Section` | a titled block; it is one piece of the entrance cascade |
-| `Figure` | a number with its label above and meaning below |
-| `LevelTag` | level as word + color + shape; `actualizado=false` reads "Desactualizado" |
+| `PageHeader` | every screen opens with it; title and context on the left, actions on the right ending on the content's edge and on one control line; `volver` only on detail pages; no bottom margin (the page grid spaces it) |
+| `Section` | a titled block; it is one piece of the entrance cascade; title at 16/24, aside at 12/16 on its baseline |
+| `Columns`, `Stack` | `8-4`, `4-8`, `6-6`, `4-4-4` on twelve columns; blocks end level, the last block of a `Stack` takes the leftover height |
+| `FilterBar`, `Toolbar` | the page's filters, week included, on one control line: `FilterBar` between the header and the content, `Toolbar` inside a Section |
+| `Figure` | a number with its label above and meaning below; peers share width, top and gap |
+| `LevelTag`, `LevelMark` | level as word + color + shape; `actualizado=false` reads "Desactualizado"; the mark alone for legends |
 | `WeekStrip` | eight weeks, oldest → newest; consecutive Alto weeks join into one bar |
-| `DistributionBar`, `WeekColumns`, `IndexChart`, `FactorBullet` | SVG-free, dependency-free charts, each with a hidden data table or aria-label |
-| `DataTable` | scrollable region with a label; numbers right-aligned; row header is the person |
-| `SkeletonRows`, `Empty`, `ErrorBox`, `Notice` | loading inside the datum's box; empty says what would appear and the next step; errors say what failed and offer retry |
-| `SelectField`, `SearchField`, `Toolbar`, `DateField` | visible labels; selects carry names, values carry ids — nobody types an ID |
+| `DistributionBar`, `WeekColumns`, `IndexChart`, `FactorBullet` | SVG-free, dependency-free charts, each with a hidden data table or aria-label; weekly charts share plot height and bar width |
+| `DataTable` | scrollable region with a label; numbers right-aligned with their header; first and last columns on the Section's key lines; `tabla.rowLink` names a row (ink), `tabla.cellLink` is the one action or value that opens a detail (accent) |
+| `Button`, `ButtonLink` | one height (`--control-h`); primary filled, secondary outlined, quiet text-only; `alinearTexto` offsets a quiet button's padding so its text continues the column |
+| `SkeletonRows`, `Empty`, `ErrorBox`, `Notice` | loading inside the datum's box; empty says what would appear and the next step, left-aligned; errors say what failed and offer retry; each state carries an icon |
+| `SelectField`, `SearchField`, `DateField`, `Pagination` | visible labels; selects carry names, values carry ids — nobody types an ID |
+| `TextField`, `TextAreaField`, `SelectFormField`, `CheckboxField`, `Form`, `FormGroup`, `FormActions`, `KeyFacts` | create and edit pages: one column, labels above, short fields on one row, buttons at the bottom left |
 | `TaskBar`, `TaskLegend`, `textoTareas` | a week's tasks as one bar (vencidas, pendientes, completadas) with the same counts in words; the legend once per block |
 | `HoursColumns` | hours per week with extra hours stacked; neutral, never a level |
 | `WeekDataTable` | loaded weekly data as loaded (7,5 h stays 7,5 h), no index or level |
-| `StatusTag` | the state of an action or record (neutral, aviso, éxito, incidencia); never a level |
-| `Stepper`, `Pagination` | a flow's steps with the current one marked; previous/next with "Página n de m" |
+| `StatusTag` | the state of an action or record (neutro, aviso, éxito, incidencia): outlined, with an icon; never a level |
+| `Icon` | 16 or 20 px only (other sizes snap), one rendered stroke |
+| `Stepper` | a flow's steps with the current one marked, in ink |
 
 A new pattern is added to the kit first, then used.
 
 ## Content
 
+Register (D1; research work/enterprise/research/ux-writing-es.md §2, after the RAE
+DPD, Microsoft's Spanish style guide and Workday/SAP/Oracle/IBM product copy):
+buttons are an infinitive plus its object ("Confirmar importación"); titles,
+labels and column headers are noun phrases; states, empty states and success
+messages are impersonal ("Se guardaron 120 registros."); *usted* only when the
+user must act ("Corrija el archivo y valídelo nuevamente."); permission errors
+say "No tiene permiso para…". Never voseo, tú, «acá», exclamations, "por favor"
+or emojis. Terms (D2): RR. HH., Gerencia, Team Lead, Empleado as role labels;
+"equipo" for the org unit (data names keep «Célula ficticia N»); "persona" for
+whoever the index covers; "factores", never "causas"; "importar", never
+"cargar" as a noun.
+
 - Levels: Bajo, Medio, Alto, Incompleto (no previous week to confirm), plus
   "Desactualizado" when the stored result is not current (T14).
-- Factors: Horas extra, Días seguidos sin descanso, Carga de tareas, Vacaciones
+- Factors: Horas extra, Días consecutivos sin descanso, Carga de tareas, Vacaciones
   pendientes — always with units ("16 h", "9 días").
 - Weeks: "12–18 oct 2026", built from the date string (no browser time zone).
 - Numbers: decimal comma, two decimals for indices ("91,21").
 - Buttons say what happens ("Validar archivo", "Simular envío"); an action keeps
   its name through its result.
-- Empty: what would appear here + how to fill it. Error: what failed + retry.
+- Empty: what would appear here + how to fill it. Error: what failed
+  ("No se pudo…") + the remedy in *usted*.
 
 ## Motion
 
@@ -146,22 +212,39 @@ alternative.
 
 ## Module map
 
+Roles: RR. HH. = RRHH; reading = RRHH, Gerencia and Team Lead (a Team Lead is
+narrowed to their own team by the server). Lists link to detail pages; create
+and edit are dedicated pages (R41–R43), never inline panels.
+
 | Module | Route | Roles | Data |
 |---|---|---|---|
 | Ingreso | `/` | anyone | `GET /api/demo/sesion` |
-| Resumen | `/home` | RRHH, Gerencia, Team Lead | `/api/personas`, `/api/resumen`, `/api/alertas` |
-| Personas | `/employees`, `/employees/[employeeId]` | RRHH, Gerencia, Team Lead | `/api/personas` |
-| Equipos | `/teams` | RRHH, Gerencia | `/api/personas` |
-| Alertas | `/alerts` | RRHH, Gerencia, Team Lead | `/api/alertas`, notifications (T12) |
-| Informe | `/reports/[evaluationId]` | RRHH, Gerencia, Team Lead | `/api/evaluaciones/[id]` |
-| Importación | `/importaciones` | RRHH | T04 routes, `/api/procesamientos` |
-| Reglas | `/rules-config` | RRHH, Gerencia, Team Lead | `/api/reglas` |
-| Auditoría | `/audit` | RRHH, Gerencia | `/api/auditoria` |
-| Mis datos | `/my-data` | Empleado, Team Lead | `/api/mis-datos` |
+| Resumen | `/home` | reading | `/api/personas`, `/api/resumen`, `/api/alertas` |
+| Personas | `/employees` | reading | `/api/personas/directorio` (server-paged), `/api/equipos` (filter) |
+| Persona (ficha) | `/employees/[employeeId]` | reading | `/api/personas/{id}`, `/api/reglas`, tasks section |
+| Semana de una persona | `/employees/[employeeId]/weeks/[periodStart]` | reading | `/api/tareas`, `/api/tareas/historial` |
+| Nueva persona | `/employees/new` | RR. HH. | `POST /api/personas`, `/api/personas/opciones` |
+| Editar, cambiar equipo o puesto, dar de baja | `/employees/[employeeId]/edit`, `/move`, `/deactivate` | RR. HH. | `PATCH /api/personas/{id}`, `/asignaciones`, `/baja` |
+| Importar personas | `/employees/import` | RR. HH. | `/api/personas/importacion/validar`, `/confirmar` (`personas-v1`) |
+| Equipos | `/teams` | RR. HH., Gerencia | `/api/equipos` |
+| Equipo | `/teams/[teamId]` | RR. HH., Gerencia; Team Lead only their own («Mi equipo» in the sidebar) | `/api/equipos/{teamId}` |
+| Nuevo equipo, editar, cambiar líder, desactivar | `/teams/new`, `/teams/[teamId]/edit`, `/lead`, `/deactivate` | RR. HH. | `/api/equipos`, `/api/equipos/opciones` |
+| Alertas | `/alerts` | reading | `/api/alertas`, CSV `/api/exportaciones/alertas` |
+| Alerta | `/alerts/[alertId]` | reading (mail: RR. HH.) | `/api/alertas/{id}`, `/seguimiento`, notifications (T12) |
+| Informe | `/reports/[evaluationId]` | reading | `/api/evaluaciones/[id]` |
+| Importación | `/importaciones` | RR. HH. | T04 routes, `/api/importaciones/tareas/validar` (`tareas-v1`), `/api/procesamientos` |
+| Reglas | `/rules-config` | reading (edit: RR. HH.) | `/api/reglas`, `/api/reglas/versiones` |
+| Borrador de reglas | `/rules-config/drafts/[borradorId]` | reading (edit: RR. HH.; approve: Gerencia) | `/api/reglas/borradores/{id}` and its simulate, submit, approve, reject, publish, discard actions |
+| Auditoría | `/audit` | RR. HH., Gerencia | `/api/auditoria` (keyset-paged), `/api/auditoria/exportacion` (CSV, JSON) |
+| Evento de auditoría | `/audit/[eventoId]` | RR. HH., Gerencia | `/api/auditoria/{eventoId}` |
+| Operación de auditoría | `/audit/operations/[correlacionId]` | RR. HH., Gerencia | `/api/auditoria/operaciones/{correlacionId}` |
+| Mis datos | `/my-data` | Empleado, Team Lead | `/api/mis-datos`, `/api/mis-datos/tareas` |
 
 The sidebar shows only what the role may open (`src/components/shell/sesion.tsx`);
 the server enforces the same scope (`proteger`). Aggregates smaller than five
-people are not shown (`GRUPO_MINIMO`).
+people are not shown (`GRUPO_MINIMO`). CSV exports share one format
+(`FORMATO_CSV`: semicolon, BOM, CRLF), and the audit export adds its own
+formula guard.
 
 ## Decisions
 
@@ -173,16 +256,37 @@ people are not shown (`GRUPO_MINIMO`).
 - 2026-11-02 — IBM Plex Sans, weights 400 and 600, Carbon productive sizes. (held by src/app/layout.tsx)
 - 2026-11-02 — The level scale is the only saturated color; Alto is the only red. (held by owner)
 - 2026-11-02 — Component styles are CSS Modules; Tailwind runs on globals.css only, for its reset. (held by next.config.ts)
+- 2026-11-02 — Every control in the main area is `--control-h` (32 px); no screen sets its own control height. (held by work/enterprise/audit/rules.mjs, R10)
+- 2026-11-02 — Type is Carbon's productive pairs, and the line height is resolved from the size by `--leading`. (held by globals.css)
+- 2026-11-02 — Danger, success and notice have hues of their own and an icon; the four level hues appear only on level encodings. (held by globals.css)
+- 2026-11-02 — The accent appears only on interactive or selected elements. (held by owner)
 
 #### Patrones
 
 - 2026-11-02 — Every screen opens with PageHeader: title, one context line, at most one primary action. (held by owner)
+- 2026-11-02 — The page is a 12-column grid with one gutter; splits are 12, 8+4, 4+8, 6+6 or 4+4+4, and blocks side by side end level. (held by shared/ui Columns)
+- 2026-11-02 — The week is a filter: it sits in the page's FilterBar with the other filters, never in the header actions. (held by owner)
+- 2026-11-02 — The first and last columns of a table sit on the Section's key lines. (held by shared/ui table.module.css)
 - 2026-11-02 — The demo/not-a-diagnosis disclaimer appears once, in the shell's demo strip. (held by e2e/shell.spec.ts)
 - 2026-11-02 — Visible text never shows raw IDs, enums or ISO dates; formato.ts maps them. (held by tests/formato.test.ts)
 - 2026-11-02 — A level is always word + color + shape; a non-current result reads Desactualizado. (held by owner)
 - 2026-11-02 — Wherever a person appears with history, the eight-week strip shows it. (held by owner)
 - 2026-11-02 — Filters are selects with names; no screen asks to type an ID. (held by owner)
 - 2026-11-02 — App code animates only through src/shared/motion; reduced motion is decided there. (held by the motion git-grep check)
-- 2026-11-02 — [provisional] Tasks are shown as the week's counts (activas, pendientes, vencidas), never as task items. (held by owner)
+- 2026-11-03 — Lists show a week's task counts (activas, pendientes, vencidas); the task items live on the week page and the task history, which back those counts (D5). (held by e2e/tareas.spec.ts)
 - 2026-11-02 — [provisional] An action's or record's state uses StatusTag; a level only ever uses LevelTag. (held by owner)
 - 2026-11-02 — [provisional] The report page is the one detail of a week's result; lists link to it instead of opening inline panels. (held by owner)
+- 2026-11-03 — Every CSV export uses `FORMATO_CSV` (semicolon, BOM, CRLF; cells with the separator are quoted), the audit export included. (held by tests/auditoria-exportacion.test.ts)
+- 2026-11-03 — An alert opens on its own page with the follow-up case and the simulated mail; lists never expand inline (D4). (held by e2e/seguimiento.spec.ts)
+- 2026-11-03 — Weekly tasks are imported as `tareas-v1` snapshots whose counts must match the week's totals, or the batch is rejected (D5). (held by tests/importacion-tareas*.test.ts)
+- 2026-11-03 — Team membership is effective-dated; people and teams are deactivated, never deleted (D6). (held by tests/organizacion*.test.ts)
+- 2026-11-03 — Rules change through a draft that is simulated before it is published; a retroactive change needs a second user from Gerencia (D7). (held by tests/reglas-borradores*.test.ts)
+- 2026-11-03 — A person has at most one open follow-up case; notes are append-only and closing needs a reason (D8). (held by tests/seguimiento*.test.ts)
+- 2026-11-03 — Every write, denial and sensitive read records a catalog event with actor, subject and outcome in the same transaction (D9). (held by tests/auditoria*.test.ts)
+- 2026-11-03 — Lists that grow with headcount × weeks page on the server (50 by default, 100 at most) (D10). (held by tests/rutas-api.test.ts and the repositories' tests)
+- 2026-11-04 — Fields in a Toolbar or FilterBar share a six-column track (two columns at tablet width, one on a phone), so a second row of filters starts under the first. (held by shared/ui field.module.css, work/enterprise/audit/rules.mjs R11)
+- 2026-11-04 — A StatusTag draws the one icon of its tone; callers pass only the word. (held by shared/ui status-tag.tsx)
+- 2026-11-04 — A filter that changes several sections (Resumen's week) sits in the FilterBar above the content; a filter of one list sits in that section's Toolbar. (held by owner)
+- 2026-11-04 — Deactivating is «Dar de baja» and its state «De baja»; the entry button is `dangerSecondary`, the confirming submit `danger`, and a condition that blocks it disables the submit and says why. (held by tests/organizacion*.test.ts, shared/ui button.tsx)
+- 2026-11-04 — Every timestamp shown carries its year («4 nov 2026, 03:22») through formato.ts momentoConAnio. (held by tests/formato.test.ts)
+- 2026-11-04 — Key facts sit in one row up to six; more balance over rows with no orphan item. (held by tests/columnas.test.ts)

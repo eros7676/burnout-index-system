@@ -1,9 +1,13 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
-import { tableroApi } from "@/client/tablero-api";
+import { useRef, useState } from "react";
 import { useConsulta } from "@/client/use-consulta";
-import type { Nivel, PersonaDTO } from "@/shared/contracts";
+import type { Nivel } from "@/shared/contracts";
+import type {
+  EquipoFilaDTO,
+  EquiposDTO,
+  EstadoEquipo,
+} from "@/shared/contratos/organizacion";
 import {
   NIVEL,
   decimal,
@@ -12,53 +16,37 @@ import {
   semana as textoSemana,
 } from "@/shared/formato";
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
-import { GRUPO_MINIMO, conteoSemana, semanaDe } from "@/shared/semanas";
+import { tienePermiso } from "@/shared/permisos";
 import {
+  ButtonLink,
   DataTable,
   DistributionBar,
   Empty,
   ErrorBox,
+  LevelMark,
   PageHeader,
   Section,
+  SelectField,
   SkeletonRows,
+  Toolbar,
   tabla,
 } from "@/shared/ui";
-import {
-  SelectorSemana,
-  periodos,
-  type Periodo,
-} from "../personas/selector-semana";
+import { StatusTag } from "@/shared/ui/status-tag";
+import { organizacionApi } from "../organizacion/api";
+import { SelectorSemanas, finDeSemana } from "../organizacion/piezas";
+import { contar } from "../organizacion/textos";
 import { useSesion } from "../shell/sesion";
 import s from "./equipos.module.css";
 
-type Datos = { personas: PersonaDTO[]; semanas: string[] };
-
-async function cargar(signal: AbortSignal): Promise<Datos> {
-  const respuesta = await tableroApi.personas({}, signal);
-  return { personas: respuesta.items, semanas: respuesta.semanas };
-}
-
 const NIVELES: Nivel[] = ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"];
 
-/** The team's lead; failing that, whom most of its members report to. */
-function responsableDe(miembros: PersonaDTO[]) {
-  const lider = miembros.find((m) => m.tipo === "TEAM_LEAD");
-  if (lider) return lider.nombre;
-  const votos = new Map<string, number>();
-  for (const m of miembros)
-    if (m.responsable) votos.set(m.responsable, (votos.get(m.responsable) ?? 0) + 1);
-  return [...votos].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-}
-
-type PuntoAlto = Periodo & { alto: number };
-
 /** People in Alto per week, oldest → newest; the chosen week stands out. */
-function TendenciaAlto({
+export function TendenciaAlto({
   puntos,
   maximo,
   actual,
 }: {
-  puntos: PuntoAlto[];
+  puntos: { periodStart: string; alto: number }[];
   maximo: number;
   actual: string;
 }) {
@@ -75,7 +63,7 @@ function TendenciaAlto({
           key={p.periodStart}
           className={s.trendWeek}
           data-actual={p.periodStart === actual || undefined}
-          title={`${textoSemana(p.periodStart, p.periodEnd)}: ${p.alto} en Alto`}
+          title={`${textoSemana(p.periodStart, finDeSemana(p.periodStart))}: ${p.alto} en Alto`}
         >
           {p.alto > 0 && (
             <span
@@ -89,105 +77,64 @@ function TendenciaAlto({
   );
 }
 
-/** Answers "¿Qué célula concentra la carga?": teams by people in Alto. */
+/** Why a team shows no aggregates: it is too small, or hiding it protects a smaller one. */
+export const MOTIVO_SUPRESION: Record<NonNullable<EquipoFilaDTO["suprimido"]>, string> = {
+  GRUPO_PEQUENO: "Grupo demasiado pequeño para mostrar.",
+  COMPLEMENTARIA: "Oculto para proteger a un grupo más pequeño.",
+};
+
+/** Answers "¿Qué equipo concentra la carga?": teams by people in Alto. */
 export function Equipos() {
   const { usuario } = useSesion();
   const pagina = useRef<HTMLDivElement>(null);
   const caja = useRef<HTMLDivElement>(null);
   const filas = useRef<HTMLTableSectionElement>(null);
   const { readyFor } = usePageEnter(pagina);
-  const consulta = useConsulta(cargar, usuario ? "equipos" : null);
-  const datos = useArrival(
-    readyFor,
-    caja,
-    consulta.estado === "listo" ? consulta.datos : null,
-  );
   const [elegida, setElegida] = useState<string>();
-  const semana = elegida ?? datos?.semanas[0];
-  const opciones = useMemo(
-    () => (datos ? periodos(datos.personas, datos.semanas) : []),
-    [datos],
+  const [estado, setEstado] = useState<EstadoEquipo>("ACTIVOS");
+  const consulta = useConsulta(
+    (signal) => organizacionApi.equipos({ periodStart: elegida, estado }, signal),
+    usuario ? JSON.stringify(["equipos", elegida, estado]) : null,
   );
+  const [ultimo, setUltimo] = useState<EquiposDTO | null>(null);
+  if (consulta.estado === "listo" && consulta.datos !== ultimo) setUltimo(consulta.datos);
+  const datos = useArrival(readyFor, caja, ultimo);
+  useRowsEnter(filas, datos ? `${datos.periodStart}|${estado}` : undefined);
 
-  const vista = useMemo(() => {
-    if (!datos || !semana) return null;
-    const cronologia = [...opciones].reverse();
-    const grupos = new Map<string, PersonaDTO[]>();
-    for (const p of datos.personas)
-      grupos.set(p.teamId, [...(grupos.get(p.teamId) ?? []), p]);
-    const equipos = [...grupos]
-      .map(([teamId, miembros]) => {
-        // Descriptive only: the mean of this week's current indices.
-        const indices = miembros
-          .map((m) => semanaDe(m, semana))
-          .flatMap((w) => (w?.actualizado && w.indice !== null ? [w.indice] : []));
-        return {
-          teamId,
-          nombre: miembros[0].equipo,
-          responsable: responsableDe(miembros),
-          miembros: miembros.length,
-          visible: miembros.length >= GRUPO_MINIMO,
-          conteo: conteoSemana(miembros, semana),
-          promedio: indices.length
-            ? indices.reduce((suma, i) => suma + i, 0) / indices.length
-            : null,
-          evaluadas: indices.length,
-          tendencia: cronologia.map((p) => ({
-            ...p,
-            alto: conteoSemana(miembros, p.periodStart).ALTO,
-          })),
-        };
-      })
-      // Small groups go last and in name order, so their mix cannot be inferred.
-      .sort(
-        (a, b) =>
-          Number(b.visible) - Number(a.visible) ||
-          (a.visible
-            ? b.conteo.ALTO - a.conteo.ALTO || b.conteo.MEDIO - a.conteo.MEDIO
-            : 0) ||
-          a.nombre.localeCompare(b.nombre, "es", { numeric: true }),
-      );
-    const maximo = Math.max(
-      1,
-      ...equipos
-        .filter((e) => e.visible)
-        .flatMap((e) => e.tendencia.map((t) => t.alto)),
-    );
-    return {
-      equipos,
-      maximo,
-      periodo: opciones.find((o) => o.periodStart === semana),
-    };
-  }, [datos, semana, opciones]);
-  useRowsEnter(filas, vista?.equipos);
+  const puedeAdministrar = !!usuario && tienePermiso(usuario.rol, "ADMINISTRAR_PERSONAS");
+  const semana = datos?.periodStart ?? undefined;
+  const maximo = Math.max(
+    1,
+    ...(datos?.items.flatMap((e) => e.tendenciaAlto?.map((t) => t.alto) ?? []) ?? []),
+  );
+  const activos = estado === "ACTIVOS";
 
   return (
     <div ref={pagina} className={s.page}>
       <PageHeader
         titulo="Equipos"
         contexto={
-          vista?.periodo
-            ? `Semana ${textoSemana(vista.periodo.periodStart, vista.periodo.periodEnd)}, ${entero(vista.equipos.length)} equipos, ${entero(datos!.personas.length)} personas`
+          datos
+            ? `${semana ? `Semana ${textoSemana(semana, finDeSemana(semana))}, ` : ""}${contar(datos.items.length, activos ? "equipo" : "equipo de baja", activos ? "equipos" : "equipos de baja")}`
             : "Dónde se concentra la carga de trabajo"
         }
         acciones={
-          datos && semana && opciones.length > 0 ? (
-            <SelectorSemana
-              opciones={opciones}
-              valor={semana}
-              onCambio={setElegida}
-            />
+          puedeAdministrar ? (
+            <ButtonLink variante="primary" href="/teams/new">
+              Nuevo equipo
+            </ButtonLink>
           ) : undefined
         }
       />
 
       <Section
-        titulo="Equipos por personas en Alto"
+        titulo={activos ? "Equipos por personas en Alto" : "Equipos de baja"}
         aside={
-          vista && vista.equipos.length > 0 ? (
+          activos && datos && datos.items.length > 0 ? (
             <ul className={s.legend} aria-label="Referencia de niveles">
               {NIVELES.map((n) => (
-                <li key={n} className={s.key} data-nivel={n}>
+                <li key={n} className={s.key}>
+                  <LevelMark nivel={n} />
                   {NIVEL[n]}
                 </li>
               ))}
@@ -195,91 +142,116 @@ export function Equipos() {
           ) : undefined
         }
       >
+        <Toolbar>
+          {datos && semana && datos.semanas.length > 0 && activos && (
+            <SelectorSemanas semanas={datos.semanas} valor={semana} onCambio={setElegida} />
+          )}
+          <SelectField
+            etiqueta="Estado"
+            value={estado}
+            onChange={(e) => setEstado(e.target.value as EstadoEquipo)}
+          >
+            <option value="ACTIVOS">Activos</option>
+            <option value="INACTIVOS">De baja</option>
+          </SelectField>
+        </Toolbar>
         <div ref={caja}>
           {consulta.estado === "error" ? (
             <ErrorBox mensaje={consulta.mensaje} onRetry={consulta.reintentar} />
           ) : !datos ? (
             <SkeletonRows filas={4} />
-          ) : !vista || vista.equipos.length === 0 ? (
-            // No week loaded yet (no week to show) or nobody in scope.
-            <Empty titulo="Todavía no hay semanas cargadas">
-              Cuando RRHH importe la primera semana, acá vas a ver cada equipo.
-            </Empty>
+          ) : datos.items.length === 0 ? (
+            <Empty
+              titulo={activos ? "Todavía no hay equipos" : "No hay equipos de baja"}
+              accion={
+                activos && puedeAdministrar ? (
+                  <ButtonLink variante="primary" href="/teams/new">
+                    Nuevo equipo
+                  </ButtonLink>
+                ) : undefined
+              }
+            />
           ) : (
             <div className={s.teams}>
-              <DataTable etiqueta="Equipos por personas en Alto">
+              <DataTable etiqueta={activos ? "Equipos por personas en Alto" : "Equipos de baja"}>
                 <thead>
                   <tr>
                     <th scope="col">Equipo</th>
                     <th scope="col" className={tabla.num}>
                       Personas
                     </th>
-                    <th scope="col">Niveles</th>
-                    <th scope="col">En Alto</th>
-                    <th scope="col" className={`${tabla.num} ${s.wrap}`}>
-                      Índice promedio
-                    </th>
+                    {activos ? (
+                      <>
+                        <th scope="col">Niveles</th>
+                        <th scope="col" className={tabla.centro}>
+                          En Alto
+                        </th>
+                        <th scope="col" className={`${tabla.num} ${s.wrap}`}>
+                          Índice promedio
+                        </th>
+                      </>
+                    ) : (
+                      <th scope="col" className={tabla.centro}>
+                        Estado
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody ref={filas}>
-                  {vista.equipos.map((e) => (
+                  {datos.items.map((e) => (
                     <tr key={e.teamId}>
                       <th scope="row">
-                        {e.nombre}
+                        <Link className={tabla.rowLink} href={`/teams/${encodeURIComponent(e.teamId)}`}>
+                          {e.nombre}
+                        </Link>
                         <span className={tabla.sub}>
-                          {e.responsable
-                            ? `Responsable: ${e.responsable}`
-                            : "Sin responsable asignado"}
+                          {e.lider ? `Líder: ${e.lider.nombre}` : "Sin líder asignado"}
                         </span>
                       </th>
                       <td className={tabla.num}>
-                        {entero(e.miembros)}
-                        <Link
-                          className={s.link}
-                          href={`/employees?equipo=${e.teamId}`}
-                        >
+                        {entero(e.personasActivas)}
+                        <Link className={s.link} href={`/employees?equipo=${encodeURIComponent(e.teamId)}`}>
                           Ver personas
                           <span className="sr-only"> de {e.nombre}</span>
                         </Link>
                       </td>
-                      {e.visible ? (
+                      {!activos ? (
+                        <td className={tabla.centro}>
+                          <StatusTag>De baja</StatusTag>
+                        </td>
+                      ) : e.suprimido || !e.conteo ? (
+                        <td colSpan={3} className={tabla.muted}>
+                          {e.suprimido ? MOTIVO_SUPRESION[e.suprimido] : "Sin semanas cargadas."}
+                        </td>
+                      ) : (
                         <>
                           <td className={s.mix}>
                             <DistributionBar conteo={e.conteo} leyenda={false} />
                             <span className={s.mixText} aria-hidden="true">
-                              {NIVELES.filter((n) => e.conteo[n])
-                                .map((n) => `${entero(e.conteo[n])} ${NIVEL[n]}`)
+                              {NIVELES.filter((n) => e.conteo![n])
+                                .map((n) => `${entero(e.conteo![n])} ${NIVEL[n]}`)
                                 .join(", ") || "Sin evaluaciones vigentes"}
                             </span>
                           </td>
-                          <td>
+                          <td className={tabla.centro}>
                             <span className={s.alto}>
-                              <strong
-                                className="num"
-                                data-cero={e.conteo.ALTO === 0 || undefined}
-                              >
+                              <strong className="num" data-cero={e.conteo.ALTO === 0 || undefined}>
                                 {entero(e.conteo.ALTO)}
                               </strong>
-                              <TendenciaAlto
-                                puntos={e.tendencia}
-                                maximo={vista.maximo}
-                                actual={semana!}
-                              />
+                              {e.tendenciaAlto && semana && (
+                                <TendenciaAlto puntos={e.tendenciaAlto} maximo={maximo} actual={semana} />
+                              )}
                             </span>
                           </td>
                           <td className={tabla.num}>
-                            {decimal(e.promedio)}
-                            {e.evaluadas < e.miembros && (
+                            {decimal(e.promedioIndice)}
+                            {e.evaluadas !== null && e.evaluadas < e.personasEvaluables && (
                               <span className={tabla.sub}>
-                                {`en ${entero(e.evaluadas)} de ${entero(e.miembros)}`}
+                                {`en ${entero(e.evaluadas)} de ${entero(e.personasEvaluables)}`}
                               </span>
                             )}
                           </td>
                         </>
-                      ) : (
-                        <td colSpan={3} className={tabla.muted}>
-                          Grupo demasiado chico para mostrar.
-                        </td>
                       )}
                     </tr>
                   ))}

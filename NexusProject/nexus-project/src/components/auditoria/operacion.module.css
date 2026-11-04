@@ -1,0 +1,86 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+.aviso {
+  margin-bottom: var(--space-4);
+}
+
+/* One step per event: when, the rail with its mark, then what happened. */
+.linea {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.paso {
+  display: grid;
+  grid-template-columns: 11rem 16px minmax(0, 1fr);
+  column-gap: var(--space-4);
+  padding-bottom: var(--space-5);
+}
+.paso:last-child {
+  padding-bottom: 0;
+}
+.cuando {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  /* Sits on the first line of the step's text. */
+  padding-top: 1px;
+  white-space: nowrap;
+}
+.riel {
+  position: relative;
+  display: block;
+}
+/* The line joins the marks; the last step ends it. */
+.riel::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: calc(-1 * var(--space-5) + 4px);
+  left: 50%;
+  width: 1px;
+  background: var(--line-strong);
+}
+.paso:last-child .riel::before {
+  display: none;
+}
+.punto {
+  position: absolute;
+  top: 5px;
+  left: 3px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--ink-3);
+  border-radius: 50%;
+  background: var(--surface);
+}
+.contenido {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+  min-width: 0;
+}
+.estado {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+  margin-top: var(--space-1);
+}
+
+@media (max-width: 900px) {
+  .paso {
+    grid-template-columns: 16px minmax(0, 1fr);
+  }
+  .cuando {
+    grid-column: 2;
+  }
+  .riel {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+  .contenido {
+    grid-column: 2;
+  }
+}

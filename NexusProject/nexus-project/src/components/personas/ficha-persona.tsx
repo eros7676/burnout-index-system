@@ -4,9 +4,9 @@ import { useMemo, useRef } from "react";
 import { tableroApi } from "@/client/tablero-api";
 import { useConsulta } from "@/client/use-consulta";
 import type { SemanaPersona } from "@/shared/contracts";
+import { tienePermiso } from "@/shared/permisos";
 import {
   ESTADO_PROCESO,
-  TIPO,
   decimal,
   diaCorto,
   entero,
@@ -15,14 +15,16 @@ import {
   variacion,
 } from "@/shared/formato";
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
-import { racha } from "@/shared/semanas";
+import { nivelVigente } from "@/shared/semanas";
 import {
   ButtonLink,
+  Columns,
   DataTable,
   Empty,
   ErrorBox,
   Figure,
   IndexChart,
+  KeyFacts,
   LevelTag,
   Notice,
   PageHeader,
@@ -31,7 +33,12 @@ import {
   SkeletonRows,
   tabla,
 } from "@/shared/ui";
+import { StatusTag } from "@/shared/ui/status-tag";
 import { TaskBar, TaskLegend } from "@/shared/ui/task-bar";
+import { SeccionTareas } from "@/components/tareas";
+import { organizacionApi } from "../organizacion/api";
+import { rutaHistorial } from "../organizacion/rutas";
+import { MOTIVO, PUESTO, fechaCorta } from "../organizacion/textos";
 import { useSesion } from "../shell/sesion";
 import s from "./ficha-persona.module.css";
 
@@ -45,6 +52,19 @@ const pendiente = (w: SemanaPersona) =>
     ? ESTADO_PROCESO.FALLIDO
     : "Espera recálculo";
 
+/** The person page reads a bounded window of weeks (D10), not the whole history. */
+const SEMANAS_DE_FICHA = 12;
+
+/** Weeks in a row at Alto, newest first, stopping at the first week that is not. */
+function rachaEnAlto(recientes: SemanaPersona[]) {
+  let n = 0;
+  for (const w of recientes) {
+    if (nivelVigente(w) !== "ALTO") break;
+    n++;
+  }
+  return n;
+}
+
 /** Answers "¿Qué le pasa a esta persona semana a semana?". */
 export function FichaPersona({ employeeId }: { employeeId: string }) {
   const { usuario } = useSesion();
@@ -53,8 +73,8 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
   const filas = useRef<HTMLTableSectionElement>(null);
   const { readyFor } = usePageEnter(pagina);
   const consulta = useConsulta(
-    (signal) => tableroApi.personas({ employeeId }, signal),
-    usuario ? `persona:${employeeId}` : null,
+    (signal) => organizacionApi.ficha(employeeId, signal, SEMANAS_DE_FICHA),
+    usuario ? `ficha:${employeeId}:${SEMANAS_DE_FICHA}` : null,
   );
   const reglas = useConsulta(tableroApi.reglas, usuario ? "reglas" : null);
   const respuesta = useArrival(
@@ -62,18 +82,20 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
     caja,
     consulta.estado === "listo" ? consulta.datos : null,
   );
-  const persona = respuesta?.items[0];
+  const persona = respuesta?.persona;
+  const puedeAdministrar = !!usuario && tienePermiso(usuario.rol, "ADMINISTRAR_PERSONAS");
+  const historial = usuario ? rutaHistorial(usuario.rol, { sujetoId: employeeId }) : null;
 
   const vista = useMemo(() => {
-    if (!persona) return null;
+    if (!respuesta) return null;
     // Oldest → newest, as the strip and the chart read.
-    const serie = [...persona.semanas].sort((a, b) =>
+    const serie = [...respuesta.semanas].sort((a, b) =>
       a.periodStart < b.periodStart ? -1 : 1,
     );
     const actual = serie.at(-1);
     if (!actual) return { serie, recientes: [], actual };
     const indice = indiceVigente(actual);
-    const enAlto = racha(persona, actual.periodStart);
+    const enAlto = rachaEnAlto([...serie].reverse());
     return {
       serie,
       recientes: [...serie].reverse(),
@@ -85,11 +107,11 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
       desde: enAlto ? serie[serie.length - enAlto].periodStart : null,
       escala: Math.max(...serie.map((w) => w.tareasActivas)),
     };
-  }, [persona]);
+  }, [respuesta]);
   useRowsEnter(filas, vista?.recientes);
 
-  const noEncontrada = respuesta !== null && !persona;
   const volver = { href: "/employees", texto: "Personas" };
+  const base = `/employees/${encodeURIComponent(employeeId)}`;
 
   if (consulta.estado === "error" && !respuesta)
     return (
@@ -99,40 +121,94 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
       </div>
     );
 
-  if (noEncontrada)
-    return (
-      <div ref={pagina} className={s.page}>
-        <PageHeader titulo="Persona no encontrada" volver={volver} />
-        <Section>
-          <Empty
-            titulo="No hay nadie con este enlace en tu alcance"
-            accion={
-              <ButtonLink variante="primary" href="/employees">
-                Ver personas
-              </ButtonLink>
-            }
-          >
-            Elegí a la persona desde la lista.
-          </Empty>
-        </Section>
-      </div>
-    );
-
   return (
     <div ref={pagina} className={s.page}>
       <PageHeader
         volver={volver}
         titulo={persona ? persona.nombre : <Skeleton ancho="16ch" />}
         contexto={
-          persona
-            ? `${TIPO[persona.tipo]} en ${persona.equipo}${
-                persona.responsable ? `, responde a ${persona.responsable}` : ""
-              }`
-            : <Skeleton ancho="32ch" />
+          persona ? (
+            `${PUESTO[persona.tipo]}${persona.equipo ? ` en ${persona.equipo}` : ""}`
+          ) : (
+            <Skeleton ancho="32ch" />
+          )
+        }
+        acciones={
+          persona && (puedeAdministrar || historial) ? (
+            <div className={s.acciones}>
+              {historial && <ButtonLink href={historial}>Ver historial</ButtonLink>}
+              {puedeAdministrar && (
+                <>
+                  <ButtonLink href={`${base}/edit`}>Editar datos</ButtonLink>
+                  {persona.activo && (
+                    <>
+                      <ButtonLink href={`${base}/move`}>Cambiar equipo o puesto</ButtonLink>
+                      <ButtonLink variante="dangerSecondary" href={`${base}/deactivate`}>
+                        Dar de baja
+                      </ButtonLink>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          ) : undefined
         }
       />
 
-      <div className={s.top}>
+      {persona && (
+        <KeyFacts
+          items={[
+            { termino: "Legajo", valor: persona.employeeId },
+            {
+              termino: "Equipo",
+              valor:
+                persona.equipo && persona.teamId ? (
+                  <Link className={s.link} href={`/teams/${encodeURIComponent(persona.teamId)}`}>
+                    {persona.equipo}
+                  </Link>
+                ) : (
+                  "Sin equipo"
+                ),
+            },
+            {
+              termino: "Responsable",
+              valor:
+                persona.responsable && persona.responsableId && usuario?.rol !== "TEAM_LEAD" ? (
+                  <Link
+                    className={s.link}
+                    href={`/employees/${encodeURIComponent(persona.responsableId)}`}
+                  >
+                    {persona.responsable}
+                  </Link>
+                ) : (
+                  (persona.responsable ?? "Sin asignar")
+                ),
+            },
+            {
+              termino: "Puesto",
+              valor: persona.lidera
+                ? `${PUESTO[persona.tipo]}, líder de ${persona.lidera.nombre}`
+                : PUESTO[persona.tipo],
+            },
+            {
+              termino: "Vigente desde",
+              valor: persona.vigenteDesde ? fechaCorta(persona.vigenteDesde) : "—",
+            },
+            {
+              termino: "Estado",
+              valor: persona.activo ? (
+                <StatusTag tono="exito">Activa</StatusTag>
+              ) : (
+                <StatusTag>
+                  {persona.fechaBaja ? `Baja el ${fechaCorta(persona.fechaBaja)}` : "Baja"}
+                </StatusTag>
+              ),
+            },
+          ]}
+        />
+      )}
+
+      <Columns division="4-8">
         <Section
           titulo="Última semana"
           aside={
@@ -148,7 +224,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
               <SkeletonRows filas={4} />
             ) : !vista.actual ? (
               <Empty titulo="Todavía no tiene semanas cargadas">
-                Cuando RRHH importe una semana con sus datos, acá vas a ver su
+                Cuando RR. HH. importe una semana con sus datos, aquí se verá su
                 nivel.
               </Empty>
             ) : (
@@ -194,7 +270,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                   />
                 </div>
                 {vista.actual.alertId && vista.actual.actualizado && (
-                  <Notice tono="aviso">Esta semana generó una alerta.</Notice>
+                  <Notice>Esta semana generó una alerta.</Notice>
                 )}
                 {vista.actual.evaluationId && (
                   <ButtonLink
@@ -216,7 +292,8 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
               <span>
                 Líneas en {entero(reglas.datos.vigente.mediumLimit)} y{" "}
                 {entero(reglas.datos.vigente.highLimit)}: límites de Medio y
-                Alto
+                Alto. Superar el límite de Alto una sola semana queda en Medio;
+                pasa a Alto si se repite en dos semanas seguidas.
               </span>
             ) : undefined
           }
@@ -235,7 +312,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
             />
           )}
         </Section>
-      </div>
+      </Columns>
 
       <Section
         titulo="Semana a semana"
@@ -251,7 +328,9 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
               <thead>
                 <tr>
                   <th scope="col">Semana</th>
-                  <th scope="col">Nivel</th>
+                  <th scope="col" className={tabla.centro}>
+                    Nivel
+                  </th>
                   <th scope="col" className={tabla.num}>
                     Índice
                   </th>
@@ -259,13 +338,13 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                     Horas extra
                   </th>
                   <th scope="col" className={`${tabla.num} ${s.wrap}`}>
-                    Días seguidos sin descanso
+                    Días consecutivos sin descanso
                   </th>
                   <th scope="col">Tareas</th>
                   <th scope="col" className={`${tabla.num} ${s.wrap}`}>
                     Vacaciones pendientes
                   </th>
-                  <th scope="col">
+                  <th scope="col" className={tabla.centro}>
                     <span className="sr-only">Informe</span>
                   </th>
                 </tr>
@@ -276,7 +355,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                   return (
                     <tr key={w.periodStart}>
                       <th scope="row">{periodo}</th>
-                      <td>
+                      <td className={tabla.centro}>
                         <LevelTag nivel={w.nivel} actualizado={w.actualizado} />
                         {!w.actualizado && (
                           <span className={tabla.sub}>{pendiente(w)}</span>
@@ -302,10 +381,10 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                       <td className={tabla.num}>
                         {valorFactor("VP", w.vacacionesPendientesDias)}
                       </td>
-                      <td className={tabla.num}>
+                      <td className={tabla.centro}>
                         {w.evaluationId ? (
                           <Link
-                            className={s.link}
+                            className={tabla.cellLink}
                             href={`/reports/${w.evaluationId}`}
                           >
                             Ver informe
@@ -323,6 +402,48 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
           </div>
         )}
       </Section>
+
+      <Section titulo="Historial de asignaciones">
+        {!respuesta ? (
+          <SkeletonRows filas={3} />
+        ) : respuesta.asignaciones.length === 0 ? (
+          <Empty titulo="Sin asignaciones registradas" />
+        ) : (
+          <DataTable etiqueta={`Asignaciones de ${persona!.nombre}`}>
+            <thead>
+              <tr>
+                <th scope="col">Desde</th>
+                <th scope="col">Hasta</th>
+                <th scope="col">Motivo</th>
+                <th scope="col">Equipo</th>
+                <th scope="col">Puesto</th>
+                <th scope="col">Responsable</th>
+                <th scope="col">Registrado por</th>
+                <th scope="col">Comentario</th>
+              </tr>
+            </thead>
+            <tbody>
+              {respuesta.asignaciones.map((a) => (
+                <tr key={a.asignacionId}>
+                  <th scope="row">{fechaCorta(a.desde)}</th>
+                  <td>{a.hasta ? fechaCorta(a.hasta) : <StatusTag tono="exito">Vigente</StatusTag>}</td>
+                  <td>{MOTIVO[a.motivo]}</td>
+                  <td>{a.equipo ?? "—"}</td>
+                  <td>
+                    {PUESTO[a.tipo]}
+                    {!a.enCobertura && <span className={tabla.sub}>Fuera de cobertura</span>}
+                  </td>
+                  <td>{a.responsable ?? "—"}</td>
+                  <td>{a.registradoPor}</td>
+                  <td>{a.comentario ?? <span className={tabla.muted}>—</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </DataTable>
+        )}
+      </Section>
+
+      <SeccionTareas employeeId={employeeId} />
     </div>
   );
 }

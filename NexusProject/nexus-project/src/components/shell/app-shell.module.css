@@ -3,6 +3,14 @@
   grid-template-columns: var(--sidebar) minmax(0, 1fr);
   grid-template-rows: auto 1fr;
   min-height: 100dvh;
+  /* The sidebar column keeps its surface and rule down the whole page, also below the sticky
+     panel when the page is taller than the viewport (a full-page capture, a print preview). */
+  background: linear-gradient(
+    to right,
+    var(--surface) calc(var(--sidebar) - 1px),
+    var(--line) calc(var(--sidebar) - 1px) var(--sidebar),
+    transparent var(--sidebar)
+  );
 }
 .center {
   max-width: 560px;
@@ -21,7 +29,7 @@
   padding: var(--space-2) var(--space-6);
   background: var(--strip);
   color: var(--on-strip);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .demo a {
   color: var(--on-accent);
@@ -37,7 +45,7 @@
   gap: var(--space-2);
 }
 .switcher select {
-  min-height: 30px;
+  min-height: var(--control-h);
   padding: 0 var(--space-2);
   border-radius: var(--radius-sm);
   border: 1px solid var(--strip-line);
@@ -49,6 +57,8 @@
   color: var(--on-strip-error);
 }
 
+/* The sidebar and the page start on the same line: equal top padding, and a brand row
+   as tall as the page title's line, so the brand and the h1 share a center (D8). */
 .sidebar {
   position: sticky;
   top: 0;
@@ -58,7 +68,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: var(--space-5) var(--space-4);
+  padding: var(--space-8) var(--space-4) var(--space-5);
   border-right: 1px solid var(--line);
   background: var(--surface);
 }
@@ -66,6 +76,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: 2.25rem;
   padding: 0 var(--space-2);
   font-size: var(--text-lg);
   font-weight: var(--weight-strong);
@@ -85,7 +96,7 @@
   padding: 0 var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--line);
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .group {
   margin-top: var(--space-4);
@@ -99,7 +110,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  min-height: 36px;
+  min-height: var(--control-h);
   padding: 0 var(--space-2);
   border-radius: var(--radius-sm);
   color: var(--ink-2);
@@ -114,22 +125,33 @@
   font-weight: var(--weight-strong);
 }
 
+/* The page is one container, centered once the window is wider than its maximum (R1). */
 .main {
   min-width: 0;
   width: 100%;
   max-width: var(--content-max);
+  margin-inline: auto;
   padding: var(--space-8) var(--space-8) var(--space-12);
+}
+
+/* The shell lays out a screen's root as one grid with one gutter, so the header, the
+   filter bar and every block are a gutter apart whatever the screen declares (R7, R40). */
+.main > div {
+  display: grid;
+  gap: var(--gutter);
 }
 
 @media (max-width: 900px) {
   .app {
     grid-template-columns: 1fr;
+    background: none;
   }
   .sidebar {
     position: static;
     height: auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    padding-top: var(--space-5);
   }
   .sidebar nav {
     display: flex;
@@ -141,5 +163,22 @@
   }
   .main {
     padding: var(--space-5) var(--space-4) var(--space-10);
+  }
+}
+
+/* A printed page is the document alone: no demo strip, no sidebar, full width (MDN @media print). */
+@media print {
+  .app {
+    display: block;
+    min-height: 0;
+    background: none;
+  }
+  .demo,
+  .sidebar {
+    display: none;
+  }
+  .main {
+    max-width: none;
+    padding: 0;
   }
 }
