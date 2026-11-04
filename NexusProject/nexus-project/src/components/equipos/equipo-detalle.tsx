@@ -27,7 +27,7 @@ import { Pagination } from "@/shared/ui/pagination";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { organizacionApi } from "../organizacion/api";
 import { SelectorSemanas, finDeSemana } from "../organizacion/piezas";
-import { rutaHistorial } from "../organizacion/rutas";
+import { rutaHistorial, rutaMiEquipo } from "../organizacion/rutas";
 import { PUESTO, contar } from "../organizacion/textos";
 import { useSesion } from "../shell/sesion";
 import { MOTIVO_SUPRESION, TendenciaAlto } from "./equipos";
@@ -69,7 +69,11 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
   const puedeAdministrar = !!usuario && tienePermiso(usuario.rol, "ADMINISTRAR_PERSONAS");
   const historial = usuario ? rutaHistorial(usuario.rol, { equipoId: teamId }) : null;
   const base = `/teams/${encodeURIComponent(teamId)}`;
-  const volver = { href: "/teams", texto: "Equipos" };
+  // A Team Lead cannot open the list: the way back is the sidebar's own «Mi equipo».
+  const miEquipo = usuario ? rutaMiEquipo(usuario.rol, usuario.teamId) : null;
+  const volver = miEquipo
+    ? { href: miEquipo, texto: "Mi equipo" }
+    : { href: "/teams", texto: "Equipos" };
   const semana = equipo?.periodStart ?? undefined;
 
   if (consulta.estado === "error" && !equipo)
@@ -94,16 +98,18 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
         }
         acciones={
           equipo && (puedeAdministrar || historial) ? (
-            <>
-              {historial && <ButtonLink href={historial}>Historial</ButtonLink>}
+            <div className={s.acciones}>
+              {historial && <ButtonLink href={historial}>Ver historial</ButtonLink>}
               {puedeAdministrar && equipo.activo && (
                 <>
                   <ButtonLink href={`${base}/edit`}>Editar equipo</ButtonLink>
                   <ButtonLink href={`${base}/lead`}>Cambiar líder</ButtonLink>
-                  <ButtonLink href={`${base}/deactivate`}>Desactivar equipo</ButtonLink>
+                  <ButtonLink variante="dangerSecondary" href={`${base}/deactivate`}>
+                    Dar de baja
+                  </ButtonLink>
                 </>
               )}
-            </>
+            </div>
           ) : undefined
         }
       />
@@ -157,7 +163,7 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
             {!equipo ? (
               <SkeletonRows filas={3} />
             ) : equipo.suprimido ? (
-              <Notice tono="aviso">
+              <Notice>
                 {MOTIVO_SUPRESION[equipo.suprimido]} Los datos de cada persona están en la lista
                 de integrantes.
               </Notice>
@@ -165,7 +171,9 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
               <Empty titulo="Todavía no hay semanas cargadas" />
             ) : (
               <div className={s.resumen}>
-                <DistributionBar conteo={equipo.conteo} leyenda />
+                <div className={s.mezcla}>
+                  <DistributionBar conteo={equipo.conteo} leyenda />
+                </div>
                 <div className={s.cifras}>
                   <Figure etiqueta="Índice promedio" valor={decimal(equipo.promedioIndice)} />
                   <Figure

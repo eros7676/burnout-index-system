@@ -294,7 +294,7 @@ export function ListaPersonas() {
                           {w ? (
                             <LevelTag nivel={w.nivel} actualizado={w.actualizado} />
                           ) : (
-                            <span className={tabla.muted}>Sin datos</span>
+                            <span className={s.sinDatos}>Sin datos</span>
                           )}
                         </td>
                         <td className={`${tabla.num} ${s.index}`}>

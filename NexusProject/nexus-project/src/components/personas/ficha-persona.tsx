@@ -135,20 +135,22 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
         }
         acciones={
           persona && (puedeAdministrar || historial) ? (
-            <>
-              {historial && <ButtonLink href={historial}>Historial</ButtonLink>}
+            <div className={s.acciones}>
+              {historial && <ButtonLink href={historial}>Ver historial</ButtonLink>}
               {puedeAdministrar && (
                 <>
                   <ButtonLink href={`${base}/edit`}>Editar datos</ButtonLink>
                   {persona.activo && (
                     <>
                       <ButtonLink href={`${base}/move`}>Cambiar equipo o puesto</ButtonLink>
-                      <ButtonLink href={`${base}/deactivate`}>Dar de baja</ButtonLink>
+                      <ButtonLink variante="dangerSecondary" href={`${base}/deactivate`}>
+                        Dar de baja
+                      </ButtonLink>
                     </>
                   )}
                 </>
               )}
-            </>
+            </div>
           ) : undefined
         }
       />
@@ -268,7 +270,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                   />
                 </div>
                 {vista.actual.alertId && vista.actual.actualizado && (
-                  <Notice tono="aviso">Esta semana generó una alerta.</Notice>
+                  <Notice>Esta semana generó una alerta.</Notice>
                 )}
                 {vista.actual.evaluationId && (
                   <ButtonLink
@@ -290,7 +292,8 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
               <span>
                 Líneas en {entero(reglas.datos.vigente.mediumLimit)} y{" "}
                 {entero(reglas.datos.vigente.highLimit)}: límites de Medio y
-                Alto
+                Alto. Superar el límite de Alto una sola semana queda en Medio;
+                pasa a Alto si se repite en dos semanas seguidas.
               </span>
             ) : undefined
           }

@@ -14,6 +14,7 @@ import {
   DataTable,
   Empty,
   Figure,
+  Icon,
   Notice,
   PageHeader,
   Section,
@@ -24,6 +25,11 @@ import { PaginaOrg } from "./piezas";
 import { PLANTILLA_PERSONAS, PUESTO, contar, fechaCorta } from "./textos";
 import { useEnvio } from "./use-envio";
 import s from "./organizacion.module.css";
+
+const tamano = (bytes: number) =>
+  bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;
 
 function descargarPlantilla() {
   const url = URL.createObjectURL(
@@ -183,7 +189,11 @@ export function ImportarPersonas() {
         <>
           <Section
             titulo="Archivo"
-            aside={<Button onClick={descargarPlantilla}>Descargar plantilla</Button>}
+            aside={
+              <button type="button" className={s.plantilla} onClick={descargarPlantilla}>
+                Descargar plantilla
+              </button>
+            }
           >
             <div className={s.cuerpo}>
               <p>
@@ -204,20 +214,38 @@ export function ImportarPersonas() {
                   actual. <code>en_cobertura</code> es true o false.
                 </li>
               </ul>
-              <label className={s.archivo}>
-                <span>Archivo CSV</span>
+              <div className={s.zona} data-elegido={archivo ? "" : undefined}>
                 <input
                   key={intento}
+                  id="archivo-personas"
+                  className={s.input}
                   type="file"
                   name="archivo"
                   accept=".csv,text/csv"
+                  aria-labelledby="archivo-personas-etiqueta"
                   disabled={enviando}
                   onChange={(e) => {
                     setArchivo(e.target.files?.[0] ?? null);
                     setVista(null);
                   }}
                 />
-              </label>
+                <span className={s.zonaIcono} aria-hidden="true">
+                  <Icon nombre="importar" size={20} />
+                </span>
+                <span className={s.zonaTexto}>
+                  <span id="archivo-personas-etiqueta" className={s.zonaTitulo}>
+                    Archivo CSV
+                  </span>
+                  <span className={s.zonaNombre}>
+                    {archivo
+                      ? `${archivo.name}, ${tamano(archivo.size)}`
+                      : "Arrastre el archivo aquí o selecciónelo"}
+                  </span>
+                </span>
+                <span className={s.zonaAccion} aria-hidden="true">
+                  {archivo ? "Cambiar archivo" : "Seleccionar archivo"}
+                </span>
+              </div>
               <div className={s.acciones}>
                 <Button
                   variante="primary"
