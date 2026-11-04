@@ -38,9 +38,11 @@
 }
 /* The key is a list of rows, one per level: the LevelTag mark, the word, then the count
    and the share on the right, so the numbers align (R6, R18). */
+/* A legend is read label → count: in a wide block its counts stay next to their labels. */
 .legend {
   display: grid;
   gap: var(--space-2);
+  max-width: 20rem;
 }
 .legend li {
   display: grid;

@@ -90,9 +90,6 @@
 
 /* The level key keeps its counts next to the labels instead of at the far edge of a wide card; the
    bar above still spans the card. */
-.mezcla ul {
-  max-width: 20rem;
-}
 
 /* The week of one team: the mix, then the figures that read from it. */
 .resumen {
