@@ -3,9 +3,10 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { tableroApi } from "@/client/tablero-api";
 import { useConsulta } from "@/client/use-consulta";
-import type { Alerta, PersonaDTO } from "@/shared/contracts";
+import type { Alerta, Nivel, PersonaDTO } from "@/shared/contracts";
 import {
   FACTOR,
+  NIVEL,
   decimal,
   entero,
   semana as textoSemana,
@@ -28,6 +29,7 @@ import {
   ErrorBox,
   FilterBar,
   Figure,
+  LevelMark,
   Notice,
   PageHeader,
   Section,
@@ -41,6 +43,8 @@ import {
 import { BotonExportar } from "../exportaciones/boton-exportar";
 import { useSesion } from "../shell/sesion";
 import s from "./resumen.module.css";
+
+const NIVELES: Nivel[] = ["BAJO", "MEDIO", "ALTO", "INCOMPLETO"];
 
 type Datos = {
   personas: PersonaDTO[];
@@ -383,14 +387,27 @@ export function Resumen() {
             titulo="Evolución"
             aside={
               vista ? (
-                <span>Personas por nivel, semana a semana</span>
+                <ul className={s.legend} aria-label="Referencia de niveles">
+                  {NIVELES.map((n) => (
+                    <li key={n} className={s.key}>
+                      <LevelMark nivel={n} />
+                      {NIVEL[n]}
+                    </li>
+                  ))}
+                </ul>
               ) : undefined
             }
           >
             {!vista ? (
               <SkeletonRows filas={4} />
             ) : (
-              <WeekColumns semanas={vista.evolucion} actual={semana} />
+              <div className={s.trend}>
+                <p className={s.note}>
+                  Personas por nivel, semana a semana. La semana elegida se
+                  muestra en color pleno y las demás, atenuadas.
+                </p>
+                <WeekColumns semanas={vista.evolucion} actual={semana} />
+              </div>
             )}
           </Section>
         </>
