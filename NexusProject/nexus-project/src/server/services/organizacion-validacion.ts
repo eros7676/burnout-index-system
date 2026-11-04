@@ -236,7 +236,7 @@ function validarPuestoYEquipo(
     if (!teamId) err("teamId", "OBLIGATORIO", "Seleccione un equipo.");
     else if (!equipo) err("teamId", "EQUIPO_INEXISTENTE", "El equipo seleccionado no existe.");
     else if (!equipo.activo)
-      err("teamId", "EQUIPO_INACTIVO", "El equipo seleccionado está desactivado. Seleccione otro.");
+      err("teamId", "EQUIPO_INACTIVO", "El equipo seleccionado está de baja. Seleccione otro.");
   }
   return {
     errores,

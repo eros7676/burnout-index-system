@@ -314,9 +314,9 @@ test("Equipos: cada fila abre su equipo y los grupos pequeños no muestran agreg
     "/teams/new",
   );
 
-  await estado(page).selectOption({ label: "Desactivados" });
+  await estado(page).selectOption({ label: "De baja" });
   await expect(tabla.getByRole("row").filter({ hasText: "Célula ficticia 9" })).toContainText(
-    "Desactivado",
+    "De baja",
   );
   await estado(page).selectOption({ label: "Activos" });
 

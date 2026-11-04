@@ -90,7 +90,7 @@ function PantallaDeEquipo({
           ) : datos.activo ? (
             children(datos, opciones.estado === "listo" ? opciones.datos : null)
           ) : (
-            <p>El equipo está desactivado: no se puede modificar.</p>
+            <p>El equipo está de baja: no se puede modificar.</p>
           )}
         </div>
       </Section>

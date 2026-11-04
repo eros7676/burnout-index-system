@@ -69,11 +69,10 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
   const puedeAdministrar = !!usuario && tienePermiso(usuario.rol, "ADMINISTRAR_PERSONAS");
   const historial = usuario ? rutaHistorial(usuario.rol, { equipoId: teamId }) : null;
   const base = `/teams/${encodeURIComponent(teamId)}`;
-  // A Team Lead cannot open the list: the way back is the sidebar's own «Mi equipo».
+  // For a Team Lead this page is «Mi equipo», a top-level screen of the sidebar: no way back, like
+  // every other top-level screen. Everyone else came from the list.
   const miEquipo = usuario ? rutaMiEquipo(usuario.rol, usuario.teamId) : null;
-  const volver = miEquipo
-    ? { href: miEquipo, texto: "Mi equipo" }
-    : { href: "/teams", texto: "Equipos" };
+  const volver = miEquipo ? undefined : { href: "/teams", texto: "Equipos" };
   const semana = equipo?.periodStart ?? undefined;
 
   if (consulta.estado === "error" && !equipo)
@@ -93,7 +92,7 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
           equipo
             ? equipo.activo
               ? `${contar(equipo.personasActivas, "persona activa", "personas activas")}${semana ? `, semana ${textoSemana(semana, finDeSemana(semana))}` : ""}`
-              : "Equipo desactivado"
+              : "Equipo de baja"
             : undefined
         }
         acciones={
@@ -138,7 +137,7 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
               valor: equipo.activo ? (
                 <StatusTag tono="exito">Activo</StatusTag>
               ) : (
-                <StatusTag>Desactivado</StatusTag>
+                <StatusTag>De baja</StatusTag>
               ),
             },
           ]}

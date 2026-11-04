@@ -176,7 +176,7 @@ export async function crearEquipo(
 async function equipoActivo(tx: Prisma.TransactionClient, teamId: string) {
   const equipo = await tx.equipo.findUnique({ where: { teamId } });
   if (!equipo) throw noEncontrado("El equipo no existe.");
-  if (!equipo.activo) throw conflicto("El equipo está desactivado. No se puede modificar.");
+  if (!equipo.activo) throw conflicto("El equipo está de baja. No se puede modificar.");
   return equipo;
 }
 
@@ -300,7 +300,7 @@ export async function desactivarEquipo(
   return db.$transaction(async (tx) => {
     const equipo = await tx.equipo.findUnique({ where: { teamId } });
     if (!equipo) throw noEncontrado("El equipo no existe.");
-    if (!equipo.activo) throw conflicto("El equipo ya está desactivado.");
+    if (!equipo.activo) throw conflicto("El equipo ya está de baja.");
     const { valor: justificacion, errores } = validarJustificacion(entrada.justificacion);
     if (!justificacion) throw validacionFallida(errores);
     const personas = await tx.empleado.count({

@@ -115,7 +115,7 @@ export function Equipos() {
         titulo="Equipos"
         contexto={
           datos
-            ? `${semana ? `Semana ${textoSemana(semana, finDeSemana(semana))}, ` : ""}${contar(datos.items.length, activos ? "equipo" : "equipo desactivado", activos ? "equipos" : "equipos desactivados")}`
+            ? `${semana ? `Semana ${textoSemana(semana, finDeSemana(semana))}, ` : ""}${contar(datos.items.length, activos ? "equipo" : "equipo de baja", activos ? "equipos" : "equipos de baja")}`
             : "Dónde se concentra la carga de trabajo"
         }
         acciones={
@@ -128,7 +128,7 @@ export function Equipos() {
       />
 
       <Section
-        titulo={activos ? "Equipos por personas en Alto" : "Equipos desactivados"}
+        titulo={activos ? "Equipos por personas en Alto" : "Equipos de baja"}
         aside={
           activos && datos && datos.items.length > 0 ? (
             <ul className={s.legend} aria-label="Referencia de niveles">
@@ -152,7 +152,7 @@ export function Equipos() {
             onChange={(e) => setEstado(e.target.value as EstadoEquipo)}
           >
             <option value="ACTIVOS">Activos</option>
-            <option value="INACTIVOS">Desactivados</option>
+            <option value="INACTIVOS">De baja</option>
           </SelectField>
         </Toolbar>
         <div ref={caja}>
@@ -162,7 +162,7 @@ export function Equipos() {
             <SkeletonRows filas={4} />
           ) : datos.items.length === 0 ? (
             <Empty
-              titulo={activos ? "Todavía no hay equipos" : "No hay equipos desactivados"}
+              titulo={activos ? "Todavía no hay equipos" : "No hay equipos de baja"}
               accion={
                 activos && puedeAdministrar ? (
                   <ButtonLink variante="primary" href="/teams/new">
@@ -173,7 +173,7 @@ export function Equipos() {
             />
           ) : (
             <div className={s.teams}>
-              <DataTable etiqueta={activos ? "Equipos por personas en Alto" : "Equipos desactivados"}>
+              <DataTable etiqueta={activos ? "Equipos por personas en Alto" : "Equipos de baja"}>
                 <thead>
                   <tr>
                     <th scope="col">Equipo</th>
@@ -213,7 +213,7 @@ export function Equipos() {
                       </td>
                       {!activos ? (
                         <td>
-                          <StatusTag>Desactivado</StatusTag>
+                          <StatusTag>De baja</StatusTag>
                         </td>
                       ) : e.suprimido || !e.conteo ? (
                         <td colSpan={3} className={tabla.muted}>
