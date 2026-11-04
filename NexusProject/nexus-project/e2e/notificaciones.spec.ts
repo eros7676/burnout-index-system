@@ -200,7 +200,7 @@ test("T12: un error al leer el historial deja visible la alerta y se recupera; S
     .getByRole("button", { name: "Actualizar historial" })
     .click();
   await expect(correo(page).getByRole("alert")).toContainText(
-    "respuesta JSON válida",
+    "respuesta inesperada",
   );
 
   servidor.fallaListado = null;

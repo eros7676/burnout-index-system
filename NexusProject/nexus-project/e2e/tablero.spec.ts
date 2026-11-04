@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import type { FactorInforme } from "../src/shared/contracts";
-import { alertaMock, informeMock, resumenVacioMock } from "../src/shared/mocks";
+import { alertaListadaMock, informeMock, resumenVacioMock } from "../src/shared/mocks";
 import {
   alerta,
   api,
@@ -208,7 +208,7 @@ test("T14: el informe muestra el ranking del servidor, las reglas, la persistenc
     name: "Factores, por aporte al índice",
   });
   await expect(factores.getByRole("rowheader")).toHaveText([
-    /^Días seguidos sin descanso/,
+    /^Días consecutivos sin descanso/,
     /^Horas extra/,
     /^Vacaciones pendientes/,
     /^Carga de tareas/,
@@ -458,7 +458,7 @@ test("T14: informe 404 recuperable, historial insuficiente y alerta sin destinat
       json: {
         items: [
           {
-            ...alertaMock,
+            ...alertaListadaMock,
             destinatarioId: null,
             motivoDestinatario: "SIN_DESTINATARIO",
             estadoEnvio: "SIN_DESTINATARIO",
@@ -467,6 +467,7 @@ test("T14: informe 404 recuperable, historial insuficiente y alerta sin destinat
         total: 1,
         page: 1,
         pageSize: 100,
+        equipos: [{ teamId: "EQ-01", nombre: "Célula ficticia 1" }],
       },
     }),
   );

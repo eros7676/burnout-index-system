@@ -51,7 +51,7 @@ test("Tareas de la semana: la persona, la semana, los cuatro indicadores y el de
   await expect(hecho(page, "Índice")).toHaveText("91,21");
   await expect(hecho(page, "Nivel")).toContainText("Alto");
   await expect(hecho(page, "Horas extra")).toHaveText("16 h");
-  await expect(hecho(page, "Días seguidos sin descanso")).toHaveText("16 días");
+  await expect(hecho(page, "Días consecutivos sin descanso")).toHaveText("16 días");
   await expect(hecho(page, "Carga de tareas")).toHaveText(
     "7 pendientes de 10, 5 vencidas",
   );
@@ -237,7 +237,7 @@ test("Tareas de la semana: el historial de una tarea muestra en cuántos cierres
 
   // The history link is part of the address too.
   await page.goto(`${SEMANA}?tarea=OPS-1432`);
-  await expect(historial).toContainText("Revisar");
+  await expect(historial).toContainText("Conciliar facturación de septiembre");
 });
 
 test("Tareas de la semana: sin detalle importado lo dice, y un resumen que no coincide con las filas se señala", async ({

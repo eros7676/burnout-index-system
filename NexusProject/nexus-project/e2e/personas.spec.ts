@@ -95,7 +95,7 @@ test("Personas: elegir la semana, abrir a una persona y ver sus semanas con las 
   ).toContainText("91,21");
 });
 
-test("Personas: el enlace de un equipo desde el resumen abre la lista filtrada", async ({
+test("Personas: el enlace de un equipo desde el resumen abre la página del equipo con sus integrantes", async ({
   page,
 }) => {
   await demo(page, "demo-rrhh");
@@ -105,9 +105,14 @@ test("Personas: el enlace de un equipo desde el resumen abre la lista filtrada",
     .getByRole("region", { name: "Por equipo" })
     .getByRole("link", { name: "Célula ficticia 2" })
     .click();
-  await expect(page).toHaveURL(/\/employees\?equipo=EQ-02$/);
-  await expect(equipo(page)).toHaveValue("EQ-02");
-  await expect(lista(page).getByRole("row")).toHaveCount(4);
+  await expect(page).toHaveURL(/\/teams\/EQ-02$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Célula ficticia 2" }),
+  ).toBeVisible();
+  // Its people are listed on the team's own page (the filtered list stays one click away on Equipos).
+  await expect(
+    page.getByRole("region", { name: "Integrantes de Célula ficticia 2" }).getByRole("rowheader"),
+  ).toHaveCount(3);
 });
 
 test("Personas/T15a: un Team Lead solo ve a su equipo y no abre a nadie de otro", async ({
