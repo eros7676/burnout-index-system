@@ -21,8 +21,12 @@ const resumen = (page: Page) =>
   page.getByRole("region", { name: "Estado de las tareas" });
 const hechos = (page: Page) =>
   page.getByRole("region", { name: "Datos de la semana" });
+// The term may sit inside its definition tooltip, so it is matched on the dt's whole text.
 const hecho = (page: Page, termino: string) =>
-  hechos(page).locator(`dt:text-is("${termino}") + dd`);
+  hechos(page)
+    .locator("dt")
+    .filter({ hasText: new RegExp(`^${termino}$`) })
+    .locator("xpath=following-sibling::dd[1]");
 const paginacion = (page: Page) =>
   page.getByRole("navigation", { name: "Paginación de tareas" });
 
