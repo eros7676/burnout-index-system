@@ -10,6 +10,7 @@ import {
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
+import { Tip } from "./tip";
 import { columnasBalanceadas } from "../columnas";
 import { Icon } from "./icons";
 import s from "./field.module.css";
@@ -198,11 +199,12 @@ export function FormActions({ children }: { children: ReactNode }) {
   return <div className={s.formActions}>{children}</div>;
 }
 
-/** Key facts of a record: equal-width term/value pairs (R38, R46). */
+/** Key facts of a record: equal-width term/value pairs (R38, R46). `ayuda` defines the term in a
+ *  tooltip, for a metric whose meaning the term alone does not state. */
 export function KeyFacts({
   items,
 }: {
-  items: { termino: string; valor: ReactNode }[];
+  items: { termino: string; valor: ReactNode; ayuda?: string }[];
 }) {
   return (
     <dl
@@ -211,7 +213,9 @@ export function KeyFacts({
     >
       {items.map((item) => (
         <div key={item.termino} className={s.fact}>
-          <dt>{item.termino}</dt>
+          <dt>
+            {item.ayuda ? <Tip contenido={item.ayuda}>{item.termino}</Tip> : item.termino}
+          </dt>
           <dd>{item.valor}</dd>
         </div>
       ))}

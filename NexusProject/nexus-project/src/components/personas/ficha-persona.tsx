@@ -295,8 +295,8 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                 Bandas en {entero(reglas.datos.vigente.mediumLimit)} y{" "}
                 {entero(reglas.datos.vigente.highLimit)}: límites de Medio y
                 Alto. Un punto hueco superó el límite de Alto sin repetirlo la
-                semana anterior, por eso queda en Medio. Pase el cursor o use
-                las flechas para ver cada semana.
+                semana anterior, por eso queda en Medio. Pase el cursor, toque
+                o use las flechas para ver cada semana.
               </span>
             ) : undefined
           }
