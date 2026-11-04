@@ -134,7 +134,8 @@ export const ROL: Record<UsuarioDemoDTO["rol"], string> = {
   TEAM_LEAD: "Team Lead",
   EMPLEADO: "Empleado",
 };
-export const TIPO: Record<"TECNICO" | "TEAM_LEAD", string> = {
+export const TIPO: Record<"TECNICO" | "TEAM_LEAD" | "GERENCIA", string> = {
   TECNICO: "Técnico",
   TEAM_LEAD: "Team Lead",
+  GERENCIA: "Gerencia",
 };
