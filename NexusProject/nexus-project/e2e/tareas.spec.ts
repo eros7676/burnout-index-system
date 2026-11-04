@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { alerta, celda, demo, menu, sinDesbordeHorizontal } from "./demo";
-import { organizacion } from "./organizacion-mocks";
+import { SEMANAS, equipos, organizacion } from "./organizacion-mocks";
 import { tareasMocks } from "./tareas-mocks";
 
 // Task evidence: a week's tasks inside the person page (/employees/[employeeId]?semana=), a team's tasks on
@@ -300,6 +300,7 @@ test("Equipo: las tareas de todos los integrantes en una lista, primero las venc
   ).toHaveAttribute("href", SEMANA);
 
   await tareas.getByRole("button", { name: "Ver las tareas del equipo" }).click();
+  await expect(page).toHaveURL(/\/teams\/EQ-01\?tareas=todas$/);
   const lista = tareas.getByRole("region", { name: "Tareas del equipo Célula ficticia 1" });
   await expect(lista.getByRole("row")).toHaveCount(12);
   await expect(tareas.getByRole("status")).toHaveText("11 tareas de 2 personas; 6 vencidas al cierre.");
@@ -317,6 +318,68 @@ test("Equipo: las tareas de todos los integrantes en una lista, primero las venc
   await tareas.getByRole("combobox", { name: "Estado" }).selectOption({ label: "Abiertas al cierre, vencidas (6)" });
   await expect(lista.getByRole("row")).toHaveCount(7);
   expect(pedidos.at(-1)!.searchParams.get("estado")).toBe("VENCIDA");
+  await expect(page).toHaveURL(/\?tareas=VENCIDA$/);
+});
+
+/** EQ-01 as a team large enough to show its aggregates (every mocked team is under the minimum). */
+async function equipoVisible(page: Page) {
+  const [fila] = equipos(undefined, "ACTIVOS", "EQ-01");
+  await page.route(
+    (url) => url.pathname === "/api/equipos/EQ-01",
+    (route) =>
+      route.fulfill({
+        json: {
+          ...fila,
+          suprimido: null,
+          alertasActivas: 1,
+          conteo: { BAJO: 3, MEDIO: 1, ALTO: 1, INCOMPLETO: 0 },
+          promedioIndice: 41.2,
+          evaluadas: 5,
+          tendenciaAlto: [],
+          tareas: { activas: 11, vencidas: 6, personasConVencidas: 2, personas: 5 },
+          periodStart: SEMANAS[0],
+          semanas: SEMANAS,
+          tecnicosActivos: 4,
+        },
+      }),
+  );
+}
+
+test("Equipo: el total de tareas vencidas abre la lista en las vencidas, y la dirección la conserva", async ({
+  page,
+}) => {
+  const pedidos = await abrir(page, "demo-rrhh");
+  await equipoVisible(page);
+  await page.goto("/teams/EQ-01");
+  const tareas = page.getByRole("region", { name: "Tareas del equipo", exact: true });
+  await expect(tareas.getByRole("button", { name: "Ver las 6 tareas vencidas del equipo" })).toBeVisible();
+  const estadoSemana = page.getByRole("region", { name: "Estado de la semana" });
+  await expect(estadoSemana).toContainText(/Tareas vencidas\s*6\s*de 11 tareas, en 2 personas/);
+  await estadoSemana.getByRole("link", { name: "Ver cuáles" }).click();
+  await expect(page).toHaveURL(/\/teams\/EQ-01\?tareas=VENCIDA$/);
+  const lista = tareas.getByRole("region", { name: "Tareas del equipo Célula ficticia 1" });
+  await expect(lista.getByRole("row")).toHaveCount(7);
+  await expect(tareas.getByRole("combobox", { name: "Estado" })).toHaveValue("VENCIDA");
+  expect(pedidos.at(-1)!.searchParams.get("estado")).toBe("VENCIDA");
+
+  // The address alone opens the same list.
+  await page.goto("/teams/EQ-01?tareas=VENCIDA");
+  await expect(lista.getByRole("row")).toHaveCount(7);
+  await tareas.getByRole("combobox", { name: "Estado" }).selectOption("");
+  await expect(lista.getByRole("row")).toHaveCount(12);
+  await expect(page).toHaveURL(/\?tareas=todas$/);
+});
+
+test("Equipo: a Gerencia no le promete un total de vencidas que su lista no tiene", async ({ page }) => {
+  await abrir(page, "demo-gerencia");
+  await equipoVisible(page);
+  await page.goto("/teams/EQ-01");
+  const tareas = page.getByRole("region", { name: "Tareas del equipo", exact: true });
+  await expect(tareas.getByRole("button", { name: "Ver las tareas del equipo" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Estado de la semana" })).toContainText("Tareas vencidas");
+  await expect(
+    page.getByRole("region", { name: "Estado de la semana" }).getByRole("link", { name: "Ver cuáles" }),
+  ).toHaveCount(0);
 });
 
 test("Resumen y Equipos: el total de tareas vencidas de la semana está a la vista", async ({ page }) => {

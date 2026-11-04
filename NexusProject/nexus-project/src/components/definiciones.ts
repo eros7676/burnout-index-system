@@ -19,8 +19,6 @@ export const DEFINICION = {
     "Personas con un resultado calculado y al día con los datos y las reglas actuales, sobre las personas evaluables del equipo.",
   tareasVencidas:
     "Tareas abiertas al cierre de la semana con la fecha de vencimiento ya pasada. Describen la carga asignada, no el desempeño de la persona.",
-  nuevasEnAlto:
-    "Personas en nivel Alto esta semana que no lo estaban en la anterior.",
   puntaje:
     "Puntaje del factor, de 0 a 100: 50 al alcanzar el umbral y 100 al duplicarlo.",
   aporte:

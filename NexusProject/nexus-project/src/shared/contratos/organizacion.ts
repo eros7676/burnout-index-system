@@ -141,6 +141,7 @@ export type EquipoFilaDTO = {
   personasEvaluables: number;
   /** Why the aggregates below are withheld; null when they are shown. */
   suprimido: null | "GRUPO_PEQUENO" | "COMPLEMENTARIA";
+  /** People with at least one active alert (not alert-weeks). */
   alertasActivas: number | null;
   /** People per current level in the chosen week. */
   conteo: Record<Nivel, number> | null;

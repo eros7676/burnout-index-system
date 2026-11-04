@@ -49,8 +49,9 @@ export async function resumenPorEquipoYSemana(
 }
 
 /**
- * Active alerts of the people currently in each team. An alert counts only while its evaluation is
- * the current result of its week, the same rule that hides it from the alerts list when stale.
+ * People with an active alert, per team (one person with alerts in several weeks counts once). An
+ * alert counts only while its evaluation is the current result of its week, the same rule that hides
+ * it from the alerts list when stale.
  */
 export async function alertasActivasPorEquipo(
   tx: Prisma.TransactionClient,
@@ -58,7 +59,7 @@ export async function alertasActivasPorEquipo(
 ): Promise<Map<string, number>> {
   if (!teamIds.length) return new Map();
   const filas = await tx.$queryRaw<{ teamId: string; n: bigint }[]>`
-    SELECT e.teamId AS teamId, COUNT(*) AS n
+    SELECT e.teamId AS teamId, COUNT(DISTINCT a.employeeId) AS n
     FROM Alerta a
     JOIN Empleado e ON e.employeeId = a.employeeId
     JOIN PeriodoEmpleado p ON p.evaluacionVigenteId = a.evaluationId

@@ -27,7 +27,7 @@ import { DEFINICION, DEFINICION_FACTOR } from "../definiciones";
 import { Pagination } from "@/shared/ui/pagination";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { TextoTareas } from "@/shared/ui/tareas";
-import { TareasEquipo } from "../tareas";
+import { ANCLA_TAREAS_EQUIPO, PARAM_TAREAS_EQUIPO, TareasEquipo } from "../tareas";
 import { hrefTareasSemana } from "../tareas/textos";
 import { organizacionApi } from "../organizacion/api";
 import { SelectorSemanas, finDeSemana } from "../organizacion/piezas";
@@ -79,6 +79,8 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
   const semana = equipo?.periodStart ?? undefined;
   // Gerencia reads a technician's counts, not their task rows (the server decides; this hides the way in).
   const verTareasDe = (tipo: string) => !(usuario?.rol === "GERENCIA" && tipo === "TECNICO");
+  // Gerencia's team list holds only the Team Leads' rows, so the team's overdue count is not its length.
+  const vencidasCompletas = usuario?.rol !== "GERENCIA";
 
   if (consulta.estado === "error" && !equipo)
     return (
@@ -134,7 +136,7 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
             { termino: "Gerencia responsable", valor: equipo.gerente?.nombre ?? "Sin asignar" },
             { termino: "Personas activas", valor: entero(equipo.personasActivas) },
             {
-              termino: "Alertas activas",
+              termino: "Personas con alerta activa",
               valor:
                 equipo.alertasActivas === null ? (
                   "No disponible"
@@ -213,9 +215,23 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                       etiqueta={<Tip contenido={DEFINICION.tareasVencidas}>Tareas vencidas</Tip>}
                       valor={entero(equipo.tareas.vencidas)}
                       detalle={
-                        equipo.tareas.vencidas
-                          ? `de ${entero(equipo.tareas.activas)} tareas, en ${contar(equipo.tareas.personasConVencidas, "persona", "personas")}`
-                          : `de ${entero(equipo.tareas.activas)} tareas`
+                        equipo.tareas.vencidas ? (
+                          <>
+                            de {entero(equipo.tareas.activas)} tareas, en{" "}
+                            {contar(equipo.tareas.personasConVencidas, "persona", "personas")}.{" "}
+                            {vencidasCompletas && (
+                              <Link
+                                className={tabla.cellLink}
+                                href={`${base}?${PARAM_TAREAS_EQUIPO}=VENCIDA`}
+                                scroll={false}
+                              >
+                                Ver cuáles
+                              </Link>
+                            )}
+                          </>
+                        ) : (
+                          `de ${entero(equipo.tareas.activas)} tareas`
+                        )
                       }
                     />
                   )}
@@ -305,8 +321,13 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
       </Section>
 
       {equipo?.activo && semana && (
-        <Section titulo="Tareas del equipo">
-          <TareasEquipo key={semana} teamId={teamId} periodStart={semana} />
+        <Section id={ANCLA_TAREAS_EQUIPO} titulo="Tareas del equipo" tabIndex={-1}>
+          <TareasEquipo
+            key={semana}
+            teamId={teamId}
+            periodStart={semana}
+            vencidas={vencidasCompletas ? (equipo.tareas?.vencidas ?? undefined) : undefined}
+          />
         </Section>
       )}
     </div>

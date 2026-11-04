@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useConsulta } from "@/client/use-consulta";
 import {
   ESTADOS_TAREA,
@@ -35,6 +36,10 @@ import st from "./tabla-tareas.module.css";
 /** A team's list is a scan for what to act on: a short page, overdue first. */
 const POR_PAGINA = 25;
 
+/** The URL key that opens the team's list: an estado, or «todas» for the whole list. */
+export const PARAM_TAREAS_EQUIPO = "tareas";
+export const ANCLA_TAREAS_EQUIPO = "tareas-del-equipo";
+
 const plural = (n: number, una: string, varias: string) =>
   `${entero(n)} ${n === 1 ? una : varias}`;
 
@@ -48,14 +53,41 @@ function resumenEnPalabras(d: TareasEquipoDTO) {
 
 /**
  * Answers «¿qué tareas tiene el equipo esta semana?» in one list, overdue first, each row naming whose
- * it is and linking to that person's week. The rows load on request (each read is recorded per person);
- * the filter and page are the section's own state, like the rest of the team page.
+ * it is and linking to that person's week. The rows load on request (each read is recorded per person).
+ * Whether the list is open and its estado live in the URL (`?tareas=VENCIDA`), so the team's overdue
+ * figure and a shared link land on the same list; the page is the section's own state.
+ * `vencidas` is the team's overdue count, when the list will show all of them (not to Gerencia).
  */
-export function TareasEquipo({ teamId, periodStart }: { teamId: string; periodStart: string }) {
+export function TareasEquipo({
+  teamId,
+  periodStart,
+  vencidas,
+}: {
+  teamId: string;
+  periodStart: string;
+  vencidas?: number;
+}) {
   const { usuario } = useSesion();
-  const [abierta, setAbierta] = useState(false);
-  const [estado, setEstado] = useState<EstadoTarea>();
-  const [page, setPage] = useState(1);
+  const params = useSearchParams();
+  const router = useRouter();
+  const ruta = usePathname();
+  const valor = params.get(PARAM_TAREAS_EQUIPO);
+  const abierta = valor !== null;
+  const estado = estadoDe(valor);
+  // A new estado, from the select or from a link, starts again at the first page.
+  const [pagina, setPagina] = useState({ estado, page: 1 });
+  const page = pagina.estado === estado ? pagina.page : 1;
+  const setPage = (n: number) => setPagina({ estado, page: n });
+  const ir = (siguiente: EstadoTarea | undefined) => {
+    const q = new URLSearchParams(params);
+    q.set(PARAM_TAREAS_EQUIPO, siguiente ?? "todas");
+    router.replace(`${ruta}?${q}`, { scroll: false });
+  };
+  // Opening the list from elsewhere on the page (or arriving with it open) brings it into view.
+  useEffect(() => {
+    if (valor !== null)
+      document.getElementById(ANCLA_TAREAS_EQUIPO)?.scrollIntoView({ block: "nearest" });
+  }, [valor]);
   const filas = useRef<HTMLTableSectionElement>(null);
   const consulta = useConsulta(
     (signal) => tareasApi.equipo({ teamId, periodStart, estado, page, pageSize: POR_PAGINA }, signal),
@@ -71,7 +103,17 @@ export function TareasEquipo({ teamId, periodStart }: { teamId: string; periodSt
     return (
       <Empty
         titulo="Las tareas de cada integrante, en una sola lista"
-        accion={<Button onClick={() => setAbierta(true)}>Ver las tareas del equipo</Button>}
+        accion={
+          vencidas ? (
+            <Button onClick={() => ir("VENCIDA")}>
+              {vencidas === 1
+                ? "Ver la tarea vencida del equipo"
+                : `Ver las ${entero(vencidas)} tareas vencidas del equipo`}
+            </Button>
+          ) : (
+            <Button onClick={() => ir(undefined)}>Ver las tareas del equipo</Button>
+          )
+        }
       >
         Primero las vencidas al cierre. Cada consulta queda registrada en la auditoría.
       </Empty>
@@ -89,10 +131,7 @@ export function TareasEquipo({ teamId, periodStart }: { teamId: string; periodSt
             <SelectField
               etiqueta="Estado"
               value={estado ?? ""}
-              onChange={(e) => {
-                setEstado(estadoDe(e.target.value));
-                setPage(1);
-              }}
+              onChange={(e) => ir(estadoDe(e.target.value))}
             >
               <option value="">Todas ({entero(datos.resumen.total)})</option>
               {ESTADOS_TAREA.map((e) => (
@@ -133,12 +172,7 @@ export function TareasEquipo({ teamId, periodStart }: { teamId: string; periodSt
           <Empty
             titulo="Ninguna tarea coincide con el estado seleccionado"
             accion={
-              <Button
-                onClick={() => {
-                  setEstado(undefined);
-                  setPage(1);
-                }}
-              >
+              <Button onClick={() => ir(undefined)}>
                 Quitar filtros
               </Button>
             }

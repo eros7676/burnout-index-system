@@ -23,7 +23,7 @@ const sinTildes = (t: string) =>
   t.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("es");
 
 /** Weeks of the dataset, newest first. */
-const SEMANAS = [
+export const SEMANAS = [
   ...new Set(PERSONAS.flatMap((p) => p.semanas.map((w) => w.periodStart))),
 ].sort((a, b) => (a < b ? 1 : -1));
 
