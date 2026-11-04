@@ -247,6 +247,9 @@ export async function demo(page: Page, inicial: UsuarioDemo | null) {
       return route.fulfill({ json: cuerposExitoMock.listarAlertas });
     if (ruta === "/api/mis-datos")
       return route.fulfill({ json: cuerposExitoMock.consultarMisDatos });
+    // The person page opens with its newest week's tasks.
+    if (ruta === "/api/tareas")
+      return route.fulfill({ json: cuerposExitoMock.listarTareasSemana });
     // Counts per week; the person page reads the newest one for its oldest overdue task.
     if (ruta === "/api/tareas/semanas")
       return route.fulfill({ json: cuerposExitoMock.listarSemanasConTareas });

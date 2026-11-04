@@ -63,8 +63,9 @@ function Cifras({ resumen }: { resumen: ResumenTareasDTO }) {
 export const ANCLA_TAREAS = "tareas";
 
 /**
- * The person page's task section. With no week chosen it offers the newest one, so opening the page
- * reads no task rows (RRHH reads them on demand, and each read is recorded).
+ * The person page's task section. The page passes the chosen week, or the newest one, so the tasks are
+ * on screen when it opens; each read is recorded per person on the server. `vista` is null only when
+ * the person has no weeks.
  */
 export function TareasDeSemana({
   vista,
@@ -76,25 +77,13 @@ export function TareasDeSemana({
   /** The weeks the person page shows, newest first, for the week selector. */
   semanas: Periodo[];
 }) {
-  const [reciente] = semanas;
   return (
     <>
       <Section id={ANCLA_TAREAS} titulo="Tareas de la semana" tabIndex={-1} className={s.section}>
         {vista ? (
           <Semana key={`${vista.periodStart}:${vista.recordId ?? ""}`} vista={vista} ir={ir} semanas={semanas} />
-        ) : !reciente ? (
-          <Empty titulo="Todavía no tiene semanas cargadas" />
         ) : (
-          <Empty
-            titulo="Elija una semana para ver sus tareas"
-            accion={
-              <Button onClick={() => ir({ periodStart: reciente.periodStart, page: 1 })}>
-                Ver las tareas de {textoSemana(reciente.periodStart, reciente.periodEnd)}
-              </Button>
-            }
-          >
-            También puede abrirlas desde «Ver tareas» en cada semana de la tabla.
-          </Empty>
+          <Empty titulo="Todavía no tiene semanas cargadas" />
         )}
       </Section>
       {vista?.tarea && (
