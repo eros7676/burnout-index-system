@@ -3,11 +3,13 @@ import {
   consultarHistorialTarea,
   consultarMisTareas,
   consultarSemanasConTareas,
+  consultarTareasEquipo,
   consultarTareasSemana,
   ErrorSinPermisoTareas,
   type SesionTareas,
 } from "../services/tareas-consulta";
 import {
+  filtrosEquipo,
   filtrosHistorial,
   filtrosMisTareas,
   filtrosSemana,
@@ -49,6 +51,8 @@ export function crearHttpTareas(db: PrismaClient) {
       responder(() =>
         consultarSemanasConTareas(db, filtrosSemanas(request), sesion),
       ),
+    equipo: (request: Request, sesion: SesionTareas) =>
+      responder(() => consultarTareasEquipo(db, filtrosEquipo(request), sesion)),
     historial: (request: Request, sesion: SesionTareas) =>
       responder(() =>
         consultarHistorialTarea(db, filtrosHistorial(request), sesion),

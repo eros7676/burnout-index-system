@@ -63,3 +63,11 @@
     grid-column: 1 / -1;
   }
 }
+
+/* The week whose tasks are open below: an accent rule on its first cell, a soft fill on the row. */
+.weeks tr.elegida > * {
+  background: var(--accent-soft);
+}
+.weeks tr.elegida > th {
+  box-shadow: inset 3px 0 0 var(--accent);
+}

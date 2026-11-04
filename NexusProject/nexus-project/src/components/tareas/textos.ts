@@ -2,11 +2,7 @@
 // Register: formal neutral (D1). Never a judgement of the person: «vencida» describes a task at the week's
 // close, not a failing (research/task-evidence-scale.md §4, §5 wording rules).
 import { diaCorto, entero } from "../../shared/formato";
-import type {
-  CierreTareaDTO,
-  EstadoTarea,
-  SemanaTareasDTO,
-} from "../../shared/contratos/tareas";
+import type { CierreTareaDTO, EstadoTarea } from "../../shared/contratos/tareas";
 
 /** One task's status in a table row. */
 export const ETIQUETA_ESTADO: Record<EstadoTarea, string> = {
@@ -36,25 +32,6 @@ export function fechaTarea(fecha: string | null, referencia: string) {
   return fecha.slice(0, 4) === referencia.slice(0, 4)
     ? diaCorto(fecha)
     : `${diaCorto(fecha)} ${fecha.slice(0, 4)}`;
-}
-
-export type Verificacion =
-  "SIN_DETALLE" | "SIN_TAREAS" | "COINCIDE" | "NO_COINCIDE";
-
-/** Whether the task rows corroborate one week's counts. */
-export function verificacionDetalle(semana: SemanaTareasDTO): Verificacion {
-  if (semana.detalle === "SIN_DETALLE") return "SIN_DETALLE";
-  if (semana.indicadores.tareasActivas === 0) return "SIN_TAREAS";
-  return semana.coincide ? "COINCIDE" : "NO_COINCIDE";
-}
-
-/** True when every week agrees with its detail (or has no tasks): the table says it once instead of per row. */
-export function detalleCoincideEnTodas(semanas: SemanaTareasDTO[]) {
-  const estados = semanas.map(verificacionDetalle);
-  return (
-    estados.includes("COINCIDE") &&
-    estados.every((e) => e === "COINCIDE" || e === "SIN_TAREAS")
-  );
 }
 
 const DIA = 86400000;
@@ -93,7 +70,8 @@ export function textoHistorial(cierres: CierreTareaDTO[]) {
   return `Abierta en ${n} ${n === 1 ? "cierre" : "cierres seguidos"}, ${vence}.`;
 }
 
-type Vista = {
+/** One person-week of tasks as the person page's URL holds it. */
+export type VistaTareas = {
   employeeId: string;
   periodStart: string;
   recordId?: string;
@@ -102,13 +80,15 @@ type Vista = {
   tarea?: string;
 };
 
-/** The week detail page. Page 1 and defaults stay out of the URL so the link is the shortest that means the same. */
-export function hrefTareasSemana(v: Vista) {
-  const query = new URLSearchParams();
+/**
+ * A week's tasks: the person page with that week chosen (`?semana=`). Page 1 and defaults stay out of
+ * the URL so the link is the shortest that means the same.
+ */
+export function hrefTareasSemana(v: VistaTareas) {
+  const query = new URLSearchParams({ semana: v.periodStart });
   if (v.recordId) query.set("recordId", v.recordId);
   if (v.estado) query.set("estado", v.estado);
   if (v.page && v.page > 1) query.set("page", String(v.page));
   if (v.tarea) query.set("tarea", v.tarea);
-  const base = `/employees/${encodeURIComponent(v.employeeId)}/weeks/${v.periodStart}`;
-  return query.size ? `${base}?${query}` : base;
+  return `/employees/${encodeURIComponent(v.employeeId)}?${query}`;
 }

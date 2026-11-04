@@ -221,13 +221,12 @@ and edit are dedicated pages (R41–R43), never inline panels.
 | Ingreso | `/` | anyone | `GET /api/demo/sesion` |
 | Resumen | `/home` | reading | `/api/personas`, `/api/resumen`, `/api/alertas` |
 | Personas | `/employees` | reading | `/api/personas/directorio` (server-paged), `/api/equipos` (filter) |
-| Persona (ficha) | `/employees/[employeeId]` | reading | `/api/personas/{id}`, `/api/reglas`, tasks section |
-| Semana de una persona | `/employees/[employeeId]/weeks/[periodStart]` | reading | `/api/tareas`, `/api/tareas/historial` |
+| Persona (ficha) | `/employees/[employeeId]`, a week's tasks at `?semana=` (the old `/weeks/[periodStart]` redirects here) | reading (task rows: RR. HH., the team's lead; Gerencia only Team Leads) | `/api/personas/{id}`, `/api/reglas`, `/api/tareas`, `/api/tareas/historial` |
 | Nueva persona | `/employees/new` | RR. HH. | `POST /api/personas`, `/api/personas/opciones` |
 | Editar, cambiar equipo o puesto, dar de baja | `/employees/[employeeId]/edit`, `/move`, `/deactivate` | RR. HH. | `PATCH /api/personas/{id}`, `/asignaciones`, `/baja` |
 | Importar personas | `/employees/import` | RR. HH. | `/api/personas/importacion/validar`, `/confirmar` (`personas-v1`) |
 | Equipos | `/teams` | RR. HH., Gerencia | `/api/equipos` |
-| Equipo | `/teams/[teamId]` | RR. HH., Gerencia; Team Lead only their own («Mi equipo» in the sidebar) | `/api/equipos/{teamId}` |
+| Equipo | `/teams/[teamId]` | RR. HH., Gerencia; Team Lead only their own («Mi equipo» in the sidebar) | `/api/equipos/{teamId}`, `/api/personas/directorio`, `/api/tareas/equipo` |
 | Nuevo equipo, editar, cambiar líder, desactivar | `/teams/new`, `/teams/[teamId]/edit`, `/lead`, `/deactivate` | RR. HH. | `/api/equipos`, `/api/equipos/opciones` |
 | Alertas | `/alerts` | reading | `/api/alertas`, CSV `/api/exportaciones/alertas` |
 | Alerta | `/alerts/[alertId]` | reading (mail: RR. HH.) | `/api/alertas/{id}`, `/seguimiento`, notifications (T12) |
@@ -262,6 +261,7 @@ formula guard.
 - 2026-11-04 — Better charts, not more charts: every existing chart has axes where it plots a quantity, a readout on every mark (hover, arrow keys, tap) and keeps its text alternative; no chart library (D12). (held by src/shared/ui/plot.tsx, tip.tsx and the e2e chart checks)
 - 2026-11-04 — A tooltip only adds what the screen does not say (a rule, a definition, a full date) and never holds essential information (NN/g); it follows WCAG 2.2 SC 1.4.13 (D12). (held by src/shared/ui/tip.tsx)
 - 2026-11-04 — A chart answers one question and its finding is written above it («7 personas en Alto, igual que la semana anterior»); a fact is drawn once per screen. Evolución is the Alto count as a line, team history a heat strip like the person strip, tasks are words, Mis datos plots extra hours (work/graficos/investigacion-librerias.md). (held by owner, 2026-11-04)
+- 2026-11-04 — Tasks live where the person and the team live: a week's tasks open inside the person page (`?semana=`, from «Ver tareas» on each week or «Ver las N tareas vencidas»), a team's tasks in one list on its page, overdue first; there is no separate week page and no second weekly table. Rows load on request, never on opening a page, and each read is recorded per person. A role that cannot read a person's rows is not offered the way in (work/ia/auditoria.md). (held by e2e/tareas.spec.ts, tests/tareas.mysql.test.ts)
 - 2026-11-04 — Every create and edit form, the rules draft included, takes one annotated layout (R47): group title and note on the left, controls and actions on the right; a form label is body size in ink so it reads before its help. (held by shared/ui field.module.css and form.tsx)
 - 2026-11-02 — Danger, success and notice have hues of their own and an icon; the four level hues appear only on level encodings. (held by globals.css)
 - 2026-11-02 — The accent appears only on interactive or selected elements. (held by owner)

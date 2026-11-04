@@ -92,6 +92,28 @@ export function filtrosSemana(request: Request): FiltroSemana {
   return filtro;
 }
 
+/** A team's week. The team is asked for: `proteger` checks a Team Lead's against their own. */
+export type FiltroEquipo = {
+  teamId: string;
+  periodStart: FechaISO;
+  estado?: EstadoTarea;
+  page: number;
+  pageSize: number;
+};
+
+export function filtrosEquipo(request: Request): FiltroEquipo {
+  const params = leer(request, ["teamId", "periodStart", "estado", "page", "pageSize"]);
+  const filtro: FiltroEquipo = {
+    teamId: identificador(requerido(params.get("teamId") ?? undefined, "teamId")),
+    periodStart: requerido(lunes(params, "periodStart"), "periodStart"),
+    page: entero(params, "page", API_DEFAULTS.page, Number.MAX_SAFE_INTEGER),
+    pageSize: entero(params, "pageSize", API_DEFAULTS.pageSize, API_DEFAULTS.maxPageSize),
+  };
+  const e = estado(params);
+  if (e) filtro.estado = e;
+  return filtro;
+}
+
 export type FiltroSemanas = { employeeId: string; teamId?: string; semanas: number };
 
 export function filtrosSemanas(request: Request): FiltroSemanas {

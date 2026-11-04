@@ -1,7 +1,3 @@
-.page {
-  display: grid;
-  gap: var(--space-5);
-}
 /* Sits on the controls' line, not the labels'. */
 .count {
   margin-left: auto;
@@ -15,4 +11,13 @@
 }
 .pager {
   margin-top: var(--space-4);
+}
+.section:focus {
+  outline: none;
+}
+/* One track that never grows past the section: the table scrolls inside its own region. */
+.cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
 }

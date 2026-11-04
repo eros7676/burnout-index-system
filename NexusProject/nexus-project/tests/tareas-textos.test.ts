@@ -1,9 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type {
-  CierreTareaDTO,
-  SemanaTareasDTO,
-} from "../src/shared/contratos/tareas";
+import type { CierreTareaDTO } from "../src/shared/contratos/tareas";
 import {
   diasAtrasoTexto,
   ETIQUETA_ESTADO,
@@ -11,8 +8,6 @@ import {
   GRUPO_ESTADO,
   textoHistorial,
   hrefTareasSemana,
-  detalleCoincideEnTodas,
-  verificacionDetalle,
 } from "../src/components/tareas/textos";
 
 const cierre = (
@@ -108,10 +103,10 @@ test("el historial distingue la tarea completada y los cierres que no son consec
   assert.equal(textoHistorial([]), "Sin cierres registrados.");
 });
 
-test("el enlace a las tareas de una semana conserva solo lo que cambia la vista", () => {
+test("el enlace a las tareas de una semana abre la ficha con esa semana y conserva solo lo que cambia la vista", () => {
   assert.equal(
     hrefTareasSemana({ employeeId: "EMP-001", periodStart: "2026-10-12" }),
-    "/employees/EMP-001/weeks/2026-10-12",
+    "/employees/EMP-001?semana=2026-10-12",
   );
   assert.equal(
     hrefTareasSemana({
@@ -122,7 +117,7 @@ test("el enlace a las tareas de una semana conserva solo lo que cambia la vista"
       page: 1,
       tarea: "PRJ/a:1",
     }),
-    "/employees/EMP-001/weeks/2026-10-12?recordId=mock-record-2&estado=VENCIDA&tarea=PRJ%2Fa%3A1",
+    "/employees/EMP-001?semana=2026-10-12&recordId=mock-record-2&estado=VENCIDA&tarea=PRJ%2Fa%3A1",
   );
   assert.equal(
     hrefTareasSemana({
@@ -130,58 +125,6 @@ test("el enlace a las tareas de una semana conserva solo lo que cambia la vista"
       periodStart: "2026-10-12",
       page: 3,
     }),
-    "/employees/EMP-001/weeks/2026-10-12?page=3",
+    "/employees/EMP-001?semana=2026-10-12&page=3",
   );
-});
-
-const semanaConTareas = (
-  detalle: SemanaTareasDTO["detalle"],
-  activas: number,
-  coincide: boolean | null,
-) =>
-  ({
-    detalle,
-    coincide,
-    indicadores: {
-      tareasActivas: activas,
-      tareasPendientes: 0,
-      tareasVencidas: 0,
-    },
-  }) as SemanaTareasDTO;
-
-test("la verificación del detalle distingue cuatro casos", () => {
-  assert.equal(
-    verificacionDetalle(semanaConTareas("SIN_DETALLE", 3, null)),
-    "SIN_DETALLE",
-  );
-  assert.equal(
-    verificacionDetalle(semanaConTareas("CON_DETALLE", 0, true)),
-    "SIN_TAREAS",
-  );
-  assert.equal(
-    verificacionDetalle(semanaConTareas("CON_DETALLE", 3, true)),
-    "COINCIDE",
-  );
-  assert.equal(
-    verificacionDetalle(semanaConTareas("CON_DETALLE", 3, false)),
-    "NO_COINCIDE",
-  );
-});
-
-test("la coincidencia se dice una vez solo si ninguna semana difiere ni falta", () => {
-  const ok = semanaConTareas("CON_DETALLE", 3, true);
-  assert.equal(detalleCoincideEnTodas([ok, ok]), true);
-  assert.equal(
-    detalleCoincideEnTodas([ok, semanaConTareas("CON_DETALLE", 0, true)]),
-    true,
-  );
-  assert.equal(
-    detalleCoincideEnTodas([ok, semanaConTareas("CON_DETALLE", 3, false)]),
-    false,
-  );
-  assert.equal(
-    detalleCoincideEnTodas([ok, semanaConTareas("SIN_DETALLE", 3, null)]),
-    false,
-  );
-  assert.equal(detalleCoincideEnTodas([]), false);
 });

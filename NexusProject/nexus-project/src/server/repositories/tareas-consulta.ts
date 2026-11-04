@@ -247,3 +247,83 @@ export async function leerCierresTarea(tx: Tx, employeeId: string, taskId: strin
       : null,
   };
 }
+
+/**
+ * The covered people of a team (current catalogue, as every team read) with their current record of one
+ * week. `soloLideres` keeps the Team Leads alone. People without the week loaded are left out.
+ */
+export async function leerSemanaDeEquipo(
+  tx: Tx,
+  filtro: { teamId: string; periodStart: FechaISO; soloLideres: boolean },
+) {
+  const periodos = await tx.periodoEmpleado.findMany({
+    where: {
+      periodStart: fechaParaDb(filtro.periodStart),
+      registroVigente: { importacion: { status: "CONFIRMADA" } },
+      empleado: {
+        teamId: filtro.teamId,
+        activo: true,
+        enCobertura: true,
+        tipo: filtro.soloLideres ? "TEAM_LEAD" : { in: ["TECNICO", "TEAM_LEAD"] },
+      },
+    },
+    orderBy: { employeeId: "asc" },
+    select: {
+      employeeId: true,
+      periodEnd: true,
+      empleado: { select: { nombre: true } },
+      registroVigente: {
+        select: {
+          recordId: true,
+          huellaTareas: true,
+          tareasActivas: true,
+          tareasPendientes: true,
+          tareasVencidas: true,
+        },
+      },
+    },
+  });
+  return periodos.flatMap((p) =>
+    p.registroVigente
+      ? [
+          {
+            employeeId: p.employeeId,
+            nombre: p.empleado.nombre,
+            periodEnd: fechaDesdeDb(p.periodEnd),
+            registro: p.registroVigente,
+          },
+        ]
+      : [],
+  );
+}
+
+/** One page of several records' tasks, in the week's order with the person as the last tiebreaker before the key. */
+export async function paginaTareasDeRegistros(
+  tx: Tx,
+  filtro: { recordIds: string[]; estado?: EstadoTarea; page: number; pageSize: number },
+) {
+  if (!filtro.recordIds.length) return { items: [], total: 0 };
+  const where: Prisma.TareaSemanaWhereInput = {
+    recordId: { in: filtro.recordIds },
+    ...(filtro.estado ? { estadoCierre: filtro.estado } : {}),
+  };
+  const [filas, total] = await Promise.all([
+    tx.tareaSemana.findMany({
+      where,
+      orderBy: [
+        { estadoCierre: "desc" },
+        { diasAtraso: { sort: "desc", nulls: "last" } },
+        { venceEl: { sort: "asc", nulls: "last" } },
+        { employeeId: "asc" },
+        { taskId: "asc" },
+      ],
+      skip: (filtro.page - 1) * filtro.pageSize,
+      take: filtro.pageSize,
+    }),
+    tx.tareaSemana.count({ where }),
+  ]);
+  return {
+    items: filas.map((f) => ({ ...aTarea(f), employeeId: f.employeeId })),
+    total,
+  };
+}

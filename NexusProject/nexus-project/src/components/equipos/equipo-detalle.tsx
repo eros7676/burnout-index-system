@@ -24,9 +24,12 @@ import {
   tabla,
   Tip,
 } from "@/shared/ui";
-import { DEFINICION } from "../definiciones";
+import { DEFINICION, DEFINICION_FACTOR } from "../definiciones";
 import { Pagination } from "@/shared/ui/pagination";
 import { StatusTag } from "@/shared/ui/status-tag";
+import { TextoTareas } from "@/shared/ui/tareas";
+import { TareasEquipo } from "../tareas";
+import { hrefTareasSemana } from "../tareas/textos";
 import { organizacionApi } from "../organizacion/api";
 import { SelectorSemanas, finDeSemana } from "../organizacion/piezas";
 import { rutaHistorial, rutaMiEquipo } from "../organizacion/rutas";
@@ -76,6 +79,8 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
   const miEquipo = usuario ? rutaMiEquipo(usuario.rol, usuario.teamId) : null;
   const volver = miEquipo ? undefined : { href: "/teams", texto: "Equipos" };
   const semana = equipo?.periodStart ?? undefined;
+  // Gerencia reads a technician's counts, not their task rows (the server decides; this hides the way in).
+  const verTareasDe = (tipo: string) => !(usuario?.rol === "GERENCIA" && tipo === "TECNICO");
 
   if (consulta.estado === "error" && !equipo)
     return (
@@ -132,7 +137,17 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
             { termino: "Personas activas", valor: entero(equipo.personasActivas) },
             {
               termino: "Alertas activas",
-              valor: equipo.alertasActivas === null ? "No disponible" : entero(equipo.alertasActivas),
+              valor:
+                equipo.alertasActivas === null ? (
+                  "No disponible"
+                ) : equipo.alertasActivas > 0 ? (
+                  <Link className={s.link} href={`/alerts?equipo=${encodeURIComponent(teamId)}`}>
+                    {entero(equipo.alertasActivas)}
+                    <span className="sr-only"> (ver las alertas del equipo)</span>
+                  </Link>
+                ) : (
+                  entero(0)
+                ),
             },
             {
               termino: "Estado",
@@ -226,6 +241,9 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                   <th scope="col" className={tabla.num}>
                     <Tip contenido={DEFINICION.indice}>Índice</Tip>
                   </th>
+                  <th scope="col">
+                    <Tip contenido={DEFINICION_FACTOR.CT}>Tareas</Tip>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -249,6 +267,21 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
                         )}
                       </td>
                       <td className={tabla.num}>{decimal(w?.actualizado ? w.indice : null)}</td>
+                      <td>
+                        {!w ? (
+                          <span className={tabla.muted}>Sin datos</span>
+                        ) : w.tareasActivas > 0 && verTareasDe(p.tipo) ? (
+                          <Link
+                            className={tabla.cellLink}
+                            href={hrefTareasSemana({ employeeId: p.employeeId, periodStart: w.periodStart })}
+                          >
+                            <TextoTareas activas={w.tareasActivas} pendientes={w.tareasPendientes} vencidas={w.tareasVencidas} />
+                            <span className="sr-only"> (ver las tareas de {p.nombre})</span>
+                          </Link>
+                        ) : (
+                          <TextoTareas activas={w.tareasActivas} pendientes={w.tareasPendientes} vencidas={w.tareasVencidas} />
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -264,6 +297,12 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
           </>
         )}
       </Section>
+
+      {equipo?.activo && semana && (
+        <Section titulo="Tareas del equipo">
+          <TareasEquipo key={semana} teamId={teamId} periodStart={semana} />
+        </Section>
+      )}
     </div>
   );
 }

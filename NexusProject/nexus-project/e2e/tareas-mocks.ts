@@ -7,6 +7,7 @@ import type {
   MisTareasDTO,
   SemanaTareasDTO,
   TareaDTO,
+  TareasEquipoDTO,
   TareasSemanaDTO,
 } from "../src/shared/contratos/tareas";
 import { resumirGrupos } from "../src/server/services/tareas-consulta-resumen";
@@ -320,6 +321,33 @@ export function misTareas(url: URL): MisTareasDTO {
   };
 }
 
+/** EMP-001's week and one overdue task of EMP-003, as a team's list: overdue first, the longest delay first. */
+export function tareasEquipo(estado: string | null, page = 1): TareasEquipoDTO {
+  const otra = tarea({
+    taskId: "OPS-1500",
+    titulo: "Revisar el plan de guardias",
+    estado: "VENCIDA",
+    venceEl: "2026-10-10",
+    diasAtraso: 8,
+  });
+  const filas = [
+    ...TAREAS.map((t) => ({ ...t, employeeId: PERSONA.employeeId, nombre: PERSONA.nombre })),
+    { ...otra, employeeId: "EMP-003", nombre: "Persona ficticia 003" },
+  ];
+  const orden = { VENCIDA: 0, PENDIENTE: 1, COMPLETADA: 2 };
+  filas.sort((a, b) => orden[a.estado] - orden[b.estado] || (b.diasAtraso ?? -1) - (a.diasAtraso ?? -1));
+  const filtradas = estado ? filas.filter((t) => t.estado === estado) : filas;
+  return {
+    equipo: { teamId: "EQ-01", nombre: "Célula ficticia 1" },
+    semana: { periodStart: SEMANA_CON_DETALLE.desde, periodEnd: SEMANA_CON_DETALLE.hasta },
+    alcance: "EQUIPO",
+    personas: 2,
+    sinDetalle: 0,
+    resumen: resumirGrupos(grupos(filas)),
+    tareas: { items: filtradas.slice((page - 1) * 25, page * 25), total: filtradas.length, page, pageSize: 25 },
+  };
+}
+
 /** The task routes, with the requests they received so a spec can assert what the screen asked for. */
 export async function tareasMocks(page: Page, perfil: Perfil = "completo") {
   const pedidos: URL[] = [];
@@ -354,9 +382,12 @@ export async function tareasMocks(page: Page, perfil: Perfil = "completo") {
       ),
     });
   });
-  await page.route(api("/api/tareas/semanas"), (route) => {
-    pedidos.push(new URL(route.request().url()));
-    return route.fulfill({ json: { persona: PERSONA, semanas: LIBRO } });
+  await page.route(api("/api/tareas/equipo"), (route) => {
+    const url = new URL(route.request().url());
+    pedidos.push(url);
+    return route.fulfill({
+      json: tareasEquipo(url.searchParams.get("estado"), Number(url.searchParams.get("page") ?? 1)),
+    });
   });
   await page.route(api("/api/tareas/historial"), (route) => {
     const url = new URL(route.request().url());

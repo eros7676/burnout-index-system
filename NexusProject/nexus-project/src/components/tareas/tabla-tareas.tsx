@@ -7,12 +7,11 @@ import { FechaTarea } from "../fecha-tarea";
 import { diasAtrasoTexto } from "./textos";
 import s from "./tabla-tareas.module.css";
 
-/** Only a reference the server already checked as https is ever linked, and only when every row has one. */
 /**
- * The task id, a link to the source system when the row carries a reference. A row without one keeps
- * the same weight and never wraps, so the column reads as one list of ids.
+ * The task id, a link to the source system when the row carries a reference (only an https one the
+ * server already checked). A row without one keeps the same weight and never wraps.
  */
-function Identificador({ tarea }: { tarea: TareaDTO }) {
+export function Identificador({ tarea }: { tarea: TareaDTO }) {
   if (!tarea.origenRef) return <span className={s.id}>{tarea.taskId}</span>;
   return (
     <a

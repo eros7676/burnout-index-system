@@ -9,6 +9,7 @@ import {
   resumirGrupos,
 } from "../src/server/services/tareas-consulta-resumen";
 import {
+  filtrosEquipo,
   filtrosHistorial,
   filtrosMisTareas,
   filtrosSemana,
@@ -257,6 +258,31 @@ test("los filtros de semanas, historial y mis tareas acotan cada consulta", () =
   // The person is the session's, never a parameter.
   for (const query of ["employeeId=EMP-002", "teamId=EQ-01", "recordId=abc"])
     rechaza(() => filtrosMisTareas(pedido(query)));
+});
+
+test("los filtros de un equipo exigen equipo y lunes, y no admiten una persona", () => {
+  assert.deepEqual(filtrosEquipo(pedido("teamId=EQ-01&periodStart=2026-10-12")), {
+    teamId: "EQ-01",
+    periodStart: "2026-10-12",
+    page: 1,
+    pageSize: 50,
+  });
+  assert.deepEqual(
+    filtrosEquipo(pedido("teamId=EQ-01&periodStart=2026-10-12&estado=VENCIDA&page=2&pageSize=100")),
+    { teamId: "EQ-01", periodStart: "2026-10-12", estado: "VENCIDA", page: 2, pageSize: 100 },
+  );
+  for (const query of [
+    "",
+    "teamId=EQ-01",
+    "periodStart=2026-10-12",
+    "teamId=EQ-01&periodStart=2026-10-13",
+    "teamId=EQ-01&teamId=EQ-02&periodStart=2026-10-12",
+    "teamId=EQ-01&periodStart=2026-10-12&employeeId=EMP-001",
+    "teamId=EQ-01&periodStart=2026-10-12&estado=ABIERTA",
+    "teamId=EQ-01&periodStart=2026-10-12&pageSize=101",
+    "teamId=EQ%2001&periodStart=2026-10-12",
+  ])
+    rechaza(() => filtrosEquipo(pedido(query)));
 });
 
 test("los mocks del contrato de tareas son coherentes con su resumen", () => {

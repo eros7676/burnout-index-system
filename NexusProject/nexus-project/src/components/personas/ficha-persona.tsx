@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef } from "react";
 import { tableroApi } from "@/client/tablero-api";
 import { useConsulta } from "@/client/use-consulta";
 import type { SemanaPersona } from "@/shared/contracts";
@@ -37,7 +38,13 @@ import {
 import { DEFINICION, DEFINICION_FACTOR } from "../definiciones";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { TextoTareas } from "@/shared/ui/tareas";
-import { SeccionTareas } from "@/components/tareas";
+import {
+  ANCLA_TAREAS,
+  TareasDeSemana,
+  estadoDe,
+  paginaDe,
+} from "@/components/tareas";
+import { hrefTareasSemana, type VistaTareas } from "../tareas/textos";
 import { organizacionApi } from "../organizacion/api";
 import { rutaHistorial } from "../organizacion/rutas";
 import { MOTIVO, PUESTO, fechaCorta } from "../organizacion/textos";
@@ -70,6 +77,24 @@ function rachaEnAlto(recientes: SemanaPersona[]) {
 /** Answers "¿Qué le pasa a esta persona semana a semana?". */
 export function FichaPersona({ employeeId }: { employeeId: string }) {
   const { usuario } = useSesion();
+  const router = useRouter();
+  const buscar = useSearchParams();
+  const elegida = buscar.get("semana");
+  const vistaTareas: VistaTareas | null = elegida
+    ? {
+        employeeId,
+        periodStart: elegida,
+        recordId: buscar.get("recordId") ?? undefined,
+        estado: estadoDe(buscar.get("estado")),
+        page: paginaDe(buscar.get("page")),
+        tarea: buscar.get("tarea") ?? undefined,
+      }
+    : null;
+  const irATareas = (cambio: Partial<VistaTareas>) =>
+    router.replace(
+      hrefTareasSemana({ employeeId, periodStart: elegida ?? "", ...vistaTareas, ...cambio }),
+      { scroll: false },
+    );
   const pagina = useRef<HTMLDivElement>(null);
   const caja = useRef<HTMLDivElement>(null);
   const filas = useRef<HTMLTableSectionElement>(null);
@@ -110,7 +135,15 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
     };
   }, [respuesta]);
   useRowsEnter(filas, vista?.recientes);
+  // Arriving with a week chosen, or choosing one in the table, brings its tasks into view.
+  const conDatos = respuesta !== null;
+  useEffect(() => {
+    if (!elegida || !conDatos) return;
+    document.getElementById(ANCLA_TAREAS)?.scrollIntoView({ block: "nearest" });
+  }, [elegida, conDatos]);
 
+  // Gerencia reads a technician's counts, not their task rows (the server decides; this only hides the way in).
+  const verTareas = !!persona && !(usuario?.rol === "GERENCIA" && persona.tipo === "TECNICO");
   const volver = { href: "/employees", texto: "Personas" };
   const base = `/employees/${encodeURIComponent(employeeId)}`;
 
@@ -273,6 +306,21 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                 {vista.actual.alertId && vista.actual.actualizado && (
                   <Notice>Esta semana generó una alerta.</Notice>
                 )}
+                {verTareas && vista.actual.tareasVencidas > 0 && (
+                  <Link
+                    className={s.link}
+                    scroll={false}
+                    href={hrefTareasSemana({
+                      employeeId,
+                      periodStart: vista.actual.periodStart,
+                      estado: "VENCIDA",
+                    })}
+                  >
+                    {vista.actual.tareasVencidas === 1
+                      ? "Ver la tarea vencida al cierre"
+                      : `Ver las ${entero(vista.actual.tareasVencidas)} tareas vencidas al cierre`}
+                  </Link>
+                )}
                 {vista.actual.evaluationId && (
                   <ButtonLink
                     className={s.report}
@@ -351,13 +399,22 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                   <th scope="col" className={tabla.centro}>
                     <span className="sr-only">Informe</span>
                   </th>
+                  {verTareas && (
+                    <th scope="col" className={tabla.centro}>
+                      <span className="sr-only">Tareas</span>
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody ref={filas}>
                 {vista.recientes.map((w) => {
                   const periodo = textoSemana(w.periodStart, w.periodEnd);
                   return (
-                    <tr key={w.periodStart}>
+                    <tr
+                      key={w.periodStart}
+                      aria-current={w.periodStart === elegida ? "true" : undefined}
+                      className={w.periodStart === elegida ? s.elegida : undefined}
+                    >
                       <th scope="row">{periodo}</th>
                       <td className={tabla.centro}>
                         <LevelTag nivel={w.nivel} actualizado={w.actualizado} />
@@ -397,6 +454,22 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                           <span className={tabla.muted}>Sin informe</span>
                         )}
                       </td>
+                      {verTareas && (
+                        <td className={tabla.centro}>
+                          {w.tareasActivas > 0 ? (
+                            <Link
+                              className={tabla.cellLink}
+                              scroll={false}
+                              href={hrefTareasSemana({ employeeId, periodStart: w.periodStart })}
+                            >
+                              Ver tareas
+                              <span className="sr-only"> de {periodo}</span>
+                            </Link>
+                          ) : (
+                            <span className={tabla.muted}>Sin tareas</span>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -405,6 +478,14 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
           </div>
         )}
       </Section>
+
+      {verTareas && vista && (
+        <TareasDeSemana
+          vista={vistaTareas}
+          ir={irATareas}
+          semanas={vista.recientes}
+        />
+      )}
 
       <Section titulo="Historial de asignaciones">
         {!respuesta ? (
@@ -446,7 +527,6 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
         )}
       </Section>
 
-      <SeccionTareas employeeId={employeeId} />
     </div>
   );
 }

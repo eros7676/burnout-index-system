@@ -1,6 +1,6 @@
 # Libro de vistas
 
-Capturas de cada pantalla por rol, generadas con `node scripts/libro-vistas.mjs` contra http://127.0.0.1:3000 en el commit `14e4a57`. Movimiento reducido activo; página completa.
+Capturas de cada pantalla por rol, generadas con `node scripts/libro-vistas.mjs` contra http://127.0.0.1:3000 en el commit `3009fbb`. Movimiento reducido activo; página completa.
 
 ## 00-ingreso
 
@@ -56,11 +56,11 @@ RR. HH., `/employees/EMP-011/deactivate`, 1440 px
 
 ![03c-persona-baja-rrhh.png](03c-persona-baja-rrhh.png)
 
-## 03d-semana-tareas-rrhh
+## 03d-ficha-tareas-semana-rrhh
 
-RR. HH., `/employees/EMP-011/weeks/2026-10-19`, 1440 px
+RR. HH., `/employees/EMP-011?semana=2026-10-19` (redirige a `/employees/EMP-011`), 1440 px
 
-![03d-semana-tareas-rrhh.png](03d-semana-tareas-rrhh.png)
+![03d-ficha-tareas-semana-rrhh.png](03d-ficha-tareas-semana-rrhh.png)
 
 ## 04-equipos-rrhh
 
