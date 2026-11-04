@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 import { useConsulta } from "@/client/use-consulta";
 import {
   ENTIDADES_AUDITORIA,
@@ -86,11 +86,18 @@ export function Auditoria() {
   const filas = useRef<HTMLTableSectionElement>(null);
   const { readyFor } = usePageEnter(pagina);
 
-  const filtros = useMemo(() => filtrosDeUrl(parametros), [parametros]);
-  const clave = rutaLista(filtros);
-  const invertido = rangoInvertido(filtros);
+  const filtrosUrl = useMemo(() => filtrosDeUrl(parametros), [parametros]);
+  // The controls show a choice at once; the URL (and the query) catch up with the transition.
+  const [filtros, elegir] = useOptimistic(filtrosUrl);
+  const [, transicion] = useTransition();
+  const clave = rutaLista(filtrosUrl);
+  const invertido = rangoInvertido(filtrosUrl);
   const aplicar = (cambio: Partial<FiltrosUi>) =>
-    router.replace(rutaLista(conCambio(filtros, cambio)), { scroll: false });
+    transicion(() => {
+      const siguiente = conCambio(filtros, cambio);
+      elegir(siguiente);
+      router.replace(rutaLista(siguiente), { scroll: false });
+    });
 
   // The pages go one after the other: each cursor is the position the previous page ended at.
   // The stack belongs to one set of filters and is discarded when they change.
@@ -104,7 +111,7 @@ export function Auditoria() {
   const consulta = useConsulta(
     (signal) =>
       auditoriaApi.listar(
-        { ...filtrosParaApi(filtros, new Date()), cursor },
+        { ...filtrosParaApi(filtrosUrl, new Date()), cursor },
         signal,
       ),
     usuario && !invertido ? `auditoria:${clave}:${cursor ?? ""}` : null,
@@ -135,7 +142,7 @@ export function Auditoria() {
     setAviso(null);
     try {
       const resultado = await auditoriaApi.exportar(
-        filtrosParaApi(filtros, new Date()),
+        filtrosParaApi(filtrosUrl, new Date()),
         formato,
       );
       setAviso({ tipo: "exportado", resultado });
