@@ -18,6 +18,7 @@ import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import { nivelVigente } from "@/shared/semanas";
 import {
   ButtonLink,
+  Columns,
   DataTable,
   Empty,
   ErrorBox,
@@ -34,7 +35,9 @@ import {
 } from "@/shared/ui";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { TaskBar, TaskLegend } from "@/shared/ui/task-bar";
+import { SeccionTareas } from "@/components/tareas";
 import { organizacionApi } from "../organizacion/api";
+import { rutaHistorial } from "../organizacion/rutas";
 import { MOTIVO, PUESTO, fechaCorta } from "../organizacion/textos";
 import { useSesion } from "../shell/sesion";
 import s from "./ficha-persona.module.css";
@@ -81,6 +84,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
   );
   const persona = respuesta?.persona;
   const puedeAdministrar = !!usuario && tienePermiso(usuario.rol, "ADMINISTRAR_PERSONAS");
+  const historial = usuario ? rutaHistorial(usuario.rol, { sujetoId: employeeId }) : null;
 
   const vista = useMemo(() => {
     if (!respuesta) return null;
@@ -130,13 +134,18 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
           )
         }
         acciones={
-          persona && puedeAdministrar ? (
+          persona && (puedeAdministrar || historial) ? (
             <>
-              <ButtonLink href={`${base}/edit`}>Editar datos</ButtonLink>
-              {persona.activo && (
+              {historial && <ButtonLink href={historial}>Historial</ButtonLink>}
+              {puedeAdministrar && (
                 <>
-                  <ButtonLink href={`${base}/move`}>Cambiar equipo o puesto</ButtonLink>
-                  <ButtonLink href={`${base}/deactivate`}>Dar de baja</ButtonLink>
+                  <ButtonLink href={`${base}/edit`}>Editar datos</ButtonLink>
+                  {persona.activo && (
+                    <>
+                      <ButtonLink href={`${base}/move`}>Cambiar equipo o puesto</ButtonLink>
+                      <ButtonLink href={`${base}/deactivate`}>Dar de baja</ButtonLink>
+                    </>
+                  )}
                 </>
               )}
             </>
@@ -197,7 +206,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
         />
       )}
 
-      <div className={s.top}>
+      <Columns division="4-8">
         <Section
           titulo="Última semana"
           aside={
@@ -300,7 +309,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
             />
           )}
         </Section>
-      </div>
+      </Columns>
 
       <Section
         titulo="Semana a semana"
@@ -370,7 +379,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                       <td className={tabla.num}>
                         {w.evaluationId ? (
                           <Link
-                            className={s.link}
+                            className={tabla.cellLink}
                             href={`/reports/${w.evaluationId}`}
                           >
                             Ver informe
@@ -429,11 +438,7 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
         )}
       </Section>
 
-      {/*
-        Slot for the task evidence (B4). When B4's branch is merged, render here:
-          <SeccionTareas employeeId={employeeId} />
-        imported from "@/components/tareas". It reads counts only and links to each week's tasks.
-      */}
+      <SeccionTareas employeeId={employeeId} />
     </div>
   );
 }
