@@ -4,7 +4,7 @@
 //  - useLectura gives a chart one tab stop and a readout per mark (hover, arrow keys, tap).
 // Behaviour follows WCAG 2.2 SC 1.4.13 (dismissible with Escape, hoverable, persistent) and the
 // WAI-ARIA tooltip pattern. The bubble is visual only: the same text reaches assistive technology
-// through aria-describedby (Tip) or a polite live region (charts), so nothing is announced twice.
+// through aria-description (Tip) or a polite live region (charts), so nothing is announced twice.
 import {
   type FocusEvent,
   type KeyboardEvent,
@@ -12,7 +12,6 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
-  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -69,6 +68,7 @@ function Burbuja({
     <div
       ref={ref}
       className={s.burbuja}
+      data-burbuja
       aria-hidden="true"
       style={pos ? { left: pos.left, top: pos.top } : { left: -9999, top: 0 }}
       data-visible={pos ? true : undefined}
@@ -136,12 +136,12 @@ export function Tip({
   enfocable = true,
   className,
 }: {
-  contenido: ReactNode;
+  /** Plain text: it is both the bubble and the trigger's accessible description. */
+  contenido: string;
   children: ReactNode;
   enfocable?: boolean;
   className?: string;
 }) {
-  const id = useId();
   const ref = useRef<HTMLSpanElement>(null);
   const [ancla, setAncla] = useState<Rect | null>(null);
   const { despues, limpiar } = useApertura();
@@ -174,7 +174,9 @@ export function Tip({
       ref={ref}
       className={`${s.ancla} ${className ?? ""}`}
       tabIndex={enfocable ? 0 : undefined}
-      aria-describedby={id}
+      // A plain-text description (ARIA 1.3): no DOM text, so the cell or header around the
+      // trigger keeps its own name and text content.
+      aria-description={contenido}
       onPointerEnter={(e) => {
         if (e.pointerType !== "touch") despues(DEMORA_ABRIR, abrir);
       }}
@@ -194,9 +196,6 @@ export function Tip({
       }}
     >
       {children}
-      <span id={id} className="sr-only">
-        {contenido}
-      </span>
       {ancla && (
         <Burbuja
           ancla={ancla}
