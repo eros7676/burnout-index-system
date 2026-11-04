@@ -286,3 +286,7 @@ formula guard.
 - 2026-11-03 — Lists that grow with headcount × weeks page on the server (50 by default, 100 at most) (D10). (held by tests/rutas-api.test.ts and the repositories' tests)
 - 2026-11-04 — Fields in a Toolbar or FilterBar share a six-column track (two columns at tablet width, one on a phone), so a second row of filters starts under the first. (held by shared/ui field.module.css, work/enterprise/audit/rules.mjs R11)
 - 2026-11-04 — A StatusTag draws the one icon of its tone; callers pass only the word. (held by shared/ui status-tag.tsx)
+- 2026-11-04 — A filter that changes several sections (Resumen's week) sits in the FilterBar above the content; a filter of one list sits in that section's Toolbar. (held by owner)
+- 2026-11-04 — Deactivating is «Dar de baja» and its state «De baja»; the entry button is `dangerSecondary`, the confirming submit `danger`, and a condition that blocks it disables the submit and says why. (held by tests/organizacion*.test.ts, shared/ui button.tsx)
+- 2026-11-04 — Every timestamp shown carries its year («4 nov 2026, 03:22») through formato.ts momentoConAnio. (held by tests/formato.test.ts)
+- 2026-11-04 — Key facts sit in one row up to six; more balance over rows with no orphan item. (held by tests/columnas.test.ts)
