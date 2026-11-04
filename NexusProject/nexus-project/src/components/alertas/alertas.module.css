@@ -27,19 +27,25 @@
   color: var(--notice);
   font-size: var(--text-xs);
 }
-/* The factors are the reason for the alert: they read at body size. */
+/* Every cell of a row starts on the row's top line, so a person, a week and a follow-up
+   read across as one line (R18, R19). */
+.rows > tr > th,
+.rows > tr > td {
+  vertical-align: top;
+}
+/* The factors are the reason for the alert: they read at body size, in a measure that
+   leaves the follow-up column its width. */
 .factors {
   min-width: 220px;
+  max-width: 40ch;
 }
-/* A long name may wrap on narrow screens; the delivery state never does. */
+.followUp {
+  min-width: 200px;
+}
+/* The name and the delivery state stay on one line each; the table scrolls on narrow screens. */
 .recipient {
   display: grid;
   justify-items: start;
   gap: var(--space-1);
-}
-.recipient > :first-child {
-  text-wrap: balance;
-}
-.recipient > :last-child {
   white-space: nowrap;
 }

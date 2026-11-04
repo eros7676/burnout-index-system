@@ -22,7 +22,7 @@ import s from "./parametros-reglas.module.css";
 
 const CIEN = "100 %";
 const NOTAS = {
-  pesos: `Cada peso indica cuánto aporta un factor al índice. Los cuatro pesos deben sumar ${CIEN}.`,
+  pesos: `Cada peso, en porcentaje, indica cuánto aporta un factor al índice. Los cuatro pesos deben sumar ${CIEN}.`,
   umbrales:
     "El umbral es el valor desde el cual un factor se considera superado. Al alcanzarlo, el factor suma 50 puntos; al duplicarlo, 100.",
   niveles:
@@ -32,19 +32,12 @@ const NOTAS = {
   motivo:
     "El motivo se conserva junto a la versión y en la auditoría. Indique qué cambia y por qué.",
 } as const;
-const UNIDAD: Record<"weights" | "thresholds", Record<Factor, string>> = {
-  weights: {
-    HE: "Porcentaje",
-    DS: "Porcentaje",
-    CT: "Porcentaje",
-    VP: "Porcentaje",
-  },
-  thresholds: {
-    HE: "Horas por semana",
-    DS: "Días",
-    CT: "Proporción de 0 a 1",
-    VP: "Días",
-  },
+// The unit of the weights is said once, by the group's title; thresholds differ per factor.
+const UNIDAD: Record<Factor, string> = {
+  HE: "Horas por semana",
+  DS: "Días",
+  CT: "Proporción de 0 a 1",
+  VP: "Días",
 };
 
 /** One row of the annotated layout (R47): the note takes 4 columns and the controls 8. */
@@ -115,7 +108,6 @@ export function ParametrosEditables({
               <TextField
                 key={f}
                 etiqueta={FACTOR[f]}
-                ayuda={UNIDAD.weights[f]}
                 ancho="corto"
                 inputMode="decimal"
                 autoComplete="off"
@@ -139,7 +131,7 @@ export function ParametrosEditables({
               <TextField
                 key={f}
                 etiqueta={FACTOR[f]}
-                ayuda={UNIDAD.thresholds[f]}
+                ayuda={UNIDAD[f]}
                 ancho="corto"
                 inputMode="decimal"
                 autoComplete="off"

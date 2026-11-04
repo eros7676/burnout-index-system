@@ -16,13 +16,12 @@ import { useSesion } from "../shell/sesion";
 import { auditoriaApi } from "./cliente";
 import {
   cantidadEventos,
+  complementoActor,
   elemento,
   etiquetaAccion,
   etiquetaMotivo,
-  etiquetaOrigen,
   fechaHora,
   nombreActor,
-  rolActor,
 } from "./eventos";
 import { EtiquetaResultado } from "./resultado";
 import s from "./operacion.module.css";
@@ -77,7 +76,6 @@ export function OperacionCompleta({ correlacionId }: { correlacionId: string }) 
               <ol className={s.linea} aria-label="Eventos de la operación">
                 {datos.eventos.map((evento) => {
                   const recurso = elemento(evento);
-                  const rol = rolActor(evento, usuarios);
                   return (
                     <li key={evento.eventoId} className={s.paso}>
                       <time className={s.cuando} dateTime={evento.createdAt}>
@@ -95,7 +93,7 @@ export function OperacionCompleta({ correlacionId }: { correlacionId: string }) 
                         </Link>
                         <span className={tabla.sub}>
                           {nombreActor(evento, usuarios)},{" "}
-                          {rol ?? etiquetaOrigen(evento.origen)}
+                          {complementoActor(evento, usuarios)}
                         </span>
                         <span className={tabla.sub}>
                           {recurso.tipo}

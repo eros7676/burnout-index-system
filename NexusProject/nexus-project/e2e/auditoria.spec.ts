@@ -346,7 +346,7 @@ test("Auditoría: el período usa días de Buenos Aires y un rango invertido no 
   await expect(
     page.getByText("La fecha desde es posterior a la fecha hasta."),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Exportar CSV" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Exportar a CSV" })).toBeDisabled();
   expect(pedidos.length).toBe(consultas);
 
   await page.getByLabel("Período", { exact: true }).selectOption("todo");
@@ -437,8 +437,7 @@ test("Auditoría: del listado se abre el evento con sus cambios y se vuelve con 
   await expect(hecho(page, "Origen")).toHaveText("Aplicación web");
   await expect(hecho(page, "Resultado")).toHaveText("Exitoso");
   await expect(hecho(page, "Motivo")).toHaveText("No aplica");
-  await expect(hecho(page, "Solicitud")).toHaveText(SOLICITUD);
-  await expect(hecho(page, "Instante (UTC)")).toHaveText("2026-10-18T23:30:00.000Z");
+  await expect(hecho(page, "Código de la solicitud")).toHaveText(SOLICITUD);
 
   const cambios = page.getByRole("region", { name: "Cambios del evento" });
   await expect(cambios.getByRole("columnheader")).toHaveText([
@@ -527,7 +526,7 @@ test("Auditoría: exportar descarga el archivo con los filtros vigentes y dice c
   await expect(tablaDeEventos(page)).toBeVisible();
 
   const descarga = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Exportar CSV" }).click();
+  await page.getByRole("button", { name: "Exportar a CSV" }).click();
   const archivo = await descarga;
   expect(archivo.suggestedFilename()).toBe("auditoria_inicio_20261019T150000Z.csv");
   await expect(
@@ -544,7 +543,7 @@ test("Auditoría: exportar descarga el archivo con los filtros vigentes y dice c
   expect(pedido.searchParams.has("cursor")).toBe(false);
 
   const json = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Exportar JSON" }).click();
+  await page.getByRole("button", { name: "Exportar a JSON" }).click();
   await json;
   expect(
     pedidos.filter((u) => u.pathname === "/api/auditoria/exportacion").at(-1)!
@@ -558,7 +557,7 @@ test("Auditoría: un archivo recortado por el tope avisa que hay que acotar el p
   await demo(page, "demo-rrhh");
   await servir(page, { exportacion: EXPORTACION(10000, true) });
   await page.goto("/audit");
-  await page.getByRole("button", { name: "Exportar CSV" }).click();
+  await page.getByRole("button", { name: "Exportar a CSV" }).click();
   await expect(
     page
       .getByRole("main")

@@ -13,7 +13,7 @@ import type {
   ResultadoAuditoria,
   UsuarioDemoDTO,
 } from "../../shared/contracts";
-import { ROL, entero } from "../../shared/formato";
+import { ROL, entero, momentoConAnio } from "../../shared/formato";
 import { humanizar } from "../importaciones/textos";
 import { etiquetaCampo, posicionCampo, textoDato } from "./cambios";
 import type { FiltrosUi } from "./filtros-url";
@@ -39,24 +39,8 @@ export const etiquetaMotivo = (motivo: string | null) =>
       ? MOTIVOS_AUDITORIA[motivo as keyof typeof MOTIVOS_AUDITORIA]
       : humanizar(motivo);
 
-const ZONA = new Intl.DateTimeFormat("es-AR", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hourCycle: "h23",
-  timeZone: "America/Argentina/Buenos_Aires",
-});
-
 /** "2 nov 2026, 14:05:09": the instant in the product's zone, with year and seconds. */
-export function fechaHora(iso: string) {
-  const p = Object.fromEntries(
-    ZONA.formatToParts(new Date(iso)).map((parte) => [parte.type, parte.value]),
-  );
-  return `${p.day} ${p.month.replace(".", "")} ${p.year}, ${p.hour}:${p.minute}:${p.second}`;
-}
+export const fechaHora = (iso: string) => momentoConAnio(iso, true);
 
 type Directorio = readonly Pick<UsuarioDemoDTO, "userId" | "nombre" | "rol">[];
 const enDirectorio = (evento: EventoAuditoria, usuarios: Directorio) =>
@@ -123,6 +107,17 @@ export function detalles(evento: EventoAuditoria) {
             : textoDato(clave, dato),
     }));
 }
+
+/**
+ * The line under an actor's name: their role, or, when the name already is the role ("RR. HH."),
+ * where the event came from, so the same words never show twice.
+ */
+export const complementoActor = (evento: EventoAuditoria, usuarios: Directorio) => {
+  const rol = rolActor(evento, usuarios);
+  return rol && rol !== nombreActor(evento, usuarios)
+    ? rol
+    : etiquetaOrigen(evento.origen);
+};
 
 /** The person the event is about, by name; "no disponible" when the record no longer resolves. */
 export const nombrePersona = (evento: EventoAuditoria) =>

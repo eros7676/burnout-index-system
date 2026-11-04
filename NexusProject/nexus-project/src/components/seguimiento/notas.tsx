@@ -6,7 +6,7 @@ import {
   type CasoSeguimientoDTO,
   type SeguimientoAlertaDTO,
 } from "@/shared/contratos/seguimiento";
-import { entero, momento } from "@/shared/formato";
+import { entero, momentoConAnio } from "@/shared/formato";
 import { Button, Form, FormActions, TextAreaField } from "@/shared/ui";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { contar } from "./textos";
@@ -98,7 +98,7 @@ export function Notas({
                       {n.autor.nombre}
                       {n.autor.userId === usuarioId ? " (usted)" : ""}
                     </strong>
-                    <time dateTime={n.createdAt}>{momento(n.createdAt)}</time>
+                    <time dateTime={n.createdAt}>{momentoConAnio(n.createdAt)}</time>
                     {n.esCierre && <StatusTag>Cierre</StatusTag>}
                   </span>
                   <p className={s.notaTexto}>{n.texto}</p>

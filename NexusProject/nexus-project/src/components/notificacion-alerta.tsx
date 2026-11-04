@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { notificacionesApi as api } from "@/client/notificaciones-api";
 import type {
   Alerta,
@@ -7,8 +7,8 @@ import type {
   ResultadoSimulado,
   SolicitudNotificacion,
 } from "@/shared/contracts";
-import { momento } from "@/shared/formato";
-import { Button, Icon } from "@/shared/ui";
+import { momentoConAnio } from "@/shared/formato";
+import { Button } from "@/shared/ui";
 import { StatusTag } from "@/shared/ui/status-tag";
 import s from "./notificacion-alerta.module.css";
 
@@ -27,8 +27,7 @@ const RESULTADO: Record<Estado, string> = {
   ENVIADO: "Envío registrado como enviado (simulado).",
   FALLIDO:
     "Envío registrado como fallido (simulado). Se puede volver a simularlo.",
-  SIN_DESTINATARIO:
-    "No hay destinatario: falta el responsable en el catálogo.",
+  SIN_DESTINATARIO: "No hay destinatario: falta el responsable en el catálogo.",
 };
 const mensajeDe = (e: unknown) =>
   e instanceof Error
@@ -36,7 +35,9 @@ const mensajeDe = (e: unknown) =>
     : "No se pudo completar la simulación. Inténtelo nuevamente.";
 
 /**
- * The simulated email of one alert (T12): no message ever leaves the app.
+ * The simulated email of one alert (T12): no message ever leaves the app. It is plain
+ * content for a titled Section ("Correo simulado") on both the alert and the report, so
+ * nothing is boxed twice.
  * Each simulation prepares an attempt and processes it; a pending attempt left
  * behind (a reload, a lost answer) can be processed later, and every attempt
  * stays in the history.
@@ -45,16 +46,12 @@ export function NotificacionAlerta({
   alerta,
   alCambiar,
   destinatario,
-  sinMarco = false,
 }: {
   alerta: Alerta;
   alCambiar: (intento: IntentoNotificacion) => void;
   /** The recipient's name for an attempt's employeeId snapshot. */
   destinatario: (destinatarioId: string) => string;
-  /** Inside a titled Section: no box and no title of its own, so nothing is boxed twice. */
-  sinMarco?: boolean;
 }) {
-  const titulo = useId();
   const [intentos, setIntentos] = useState<IntentoNotificacion[]>();
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState("");
@@ -130,25 +127,13 @@ export function NotificacionAlerta({
   const enviado =
     alerta.estadoEnvio === "ENVIADO" || ultimo?.estado === "ENVIADO";
   const activa = alerta.vigencia === "ACTIVA";
-  // Framed, the panel is its own region; inside a titled Section that Section is the region.
-  const Raiz = sinMarco ? "div" : "section";
 
   return (
-    <Raiz
-      className={s.panel}
-      data-sin-marco={sinMarco || undefined}
-      aria-labelledby={sinMarco ? undefined : titulo}
-      aria-busy={ocupado !== null}
-    >
+    <div className={s.panel} aria-busy={ocupado !== null}>
       <div className={s.head}>
-        {!sinMarco && (
-          <h3 id={titulo} className={s.title}>
-            <Icon nombre="correo" size={16} />
-            Correo simulado
-          </h3>
-        )}
         <Button
           variante="quiet"
+          alinearTexto
           disabled={ocupado !== null}
           onClick={listar}
         >
@@ -201,7 +186,7 @@ export function NotificacionAlerta({
                 <span className={s.number}>Intento {i.numero}</span>
                 <StatusTag tono={estado.tono}>{estado.texto}</StatusTag>
                 <time className={s.when} dateTime={cuando}>
-                  {momento(cuando)}
+                  {momentoConAnio(cuando)}
                 </time>
                 {i.destinatarioId && (
                   <span className={s.to}>
@@ -220,6 +205,6 @@ export function NotificacionAlerta({
       ) : (
         <p className={s.note}>Sin intentos registrados.</p>
       )}
-    </Raiz>
+    </div>
   );
 }

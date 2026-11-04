@@ -2,7 +2,7 @@ import type {
   CambioParametroDTO,
   EventoBorradorDTO,
 } from "@/shared/contratos/reglas";
-import { ROL, momento } from "@/shared/formato";
+import { ROL, momentoConAnio } from "@/shared/formato";
 import { DataTable, tabla } from "@/shared/ui";
 import { etiquetaCampo, valorCampo } from "./parametros";
 import s from "./historial.module.css";
@@ -57,9 +57,11 @@ export function Historial({
             <strong>{e.etiqueta}</strong>
             <span className={s.meta}>
               {e.actor.nombre}
-              {e.actor.rol ? ` (${ROL[e.actor.rol]})` : ""}
+              {e.actor.rol && ROL[e.actor.rol] !== e.actor.nombre
+                ? ` (${ROL[e.actor.rol]})`
+                : ""}
               {" · "}
-              <time dateTime={e.createdAt}>{momento(e.createdAt)}</time>
+              <time dateTime={e.createdAt}>{momentoConAnio(e.createdAt)}</time>
             </span>
           </p>
           {e.justificacion && (

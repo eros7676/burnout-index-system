@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { tableroApi } from "@/client/tablero-api";
 import { useConsulta } from "@/client/use-consulta";
 import type {
@@ -67,6 +67,21 @@ const MOTIVO: Record<Persistencia["motivo"], string> = {
   HISTORIAL_INSUFICIENTE:
     "No hay semana anterior para confirmar si la carga se sostiene.",
 };
+
+/** The alert's facts and, for RR. HH., the simulated mail beside them; without the mail the facts take the width. */
+function ConCorreo({
+  activo,
+  children,
+}: {
+  activo: boolean;
+  children: ReactNode;
+}) {
+  return activo ? (
+    <Columns division="8-4">{children}</Columns>
+  ) : (
+    <>{children}</>
+  );
+}
 
 /** Answers why one stored weekly result got its level. */
 export function Informe({ evaluationId }: { evaluationId: string }) {
@@ -331,7 +346,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                 )}
               </Section>
 
-              <Section titulo="Recomendaciones">
+              <Section titulo="Sugerencias de revisión">
                 {!informe ? (
                   <SkeletonRows filas={3} />
                 ) : (
@@ -345,13 +360,17 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
             </Stack>
           </Columns>
 
-          <Section titulo="Alerta">
-            {!informe ? (
+          {!informe ? (
+            <Section titulo="Alerta">
               <SkeletonRows filas={2} />
-            ) : !alerta ? (
+            </Section>
+          ) : !alerta ? (
+            <Section titulo="Alerta">
               <p className={s.muted}>Esta semana no generó una alerta.</p>
-            ) : (
-              <Columns division="8-4">
+            </Section>
+          ) : (
+            <ConCorreo activo={usuario?.rol === "RRHH"}>
+              <Section titulo="Alerta">
                 <dl className={s.facts}>
                   <div>
                     <dt>Destinatario</dt>
@@ -398,20 +417,20 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                     <dd>{causasEnPalabras(alerta.causas)}</dd>
                   </div>
                 </dl>
-                {usuario?.rol === "RRHH" && (
-                  <div className={s.controles}>
-                    <NotificacionAlerta
-                      alerta={alerta}
-                      destinatario={(id) =>
-                        nombreDestinatario(id, datos!.personas)
-                      }
-                      alCambiar={(intento) => setCambio(trasIntento(intento))}
-                    />
-                  </div>
-                )}
-              </Columns>
-            )}
-          </Section>
+              </Section>
+              {usuario?.rol === "RRHH" && (
+                <Section titulo="Correo simulado" className={s.controles}>
+                  <NotificacionAlerta
+                    alerta={alerta}
+                    destinatario={(id) =>
+                      nombreDestinatario(id, datos!.personas)
+                    }
+                    alCambiar={(intento) => setCambio(trasIntento(intento))}
+                  />
+                </Section>
+              )}
+            </ConCorreo>
+          )}
           <p className={s.soloImpresion}>
             Informe de demostración con datos ficticios. El índice señala
             posible sobrecarga de trabajo: no es un diagnóstico ni mide el

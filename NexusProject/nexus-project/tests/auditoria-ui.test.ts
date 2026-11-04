@@ -18,6 +18,7 @@ import {
   enlaceRecurso,
   etiquetaAccion,
   etiquetaMotivo,
+  complementoActor,
   etiquetaOrigen,
   fechaHora,
   gruposDeAcciones,
@@ -85,6 +86,15 @@ test("B6: el usuario sale del registro del evento y, si falta, del directorio", 
   assert.equal(nombreActor(sistema, usuarios), "Sistema");
   assert.equal(rolActor(sistema, usuarios), null);
   assert.equal(rolActor(evento(), usuarios), ROL.RRHH);
+});
+
+test("B6: el rol se muestra aparte solo si agrega algo al nombre del actor", () => {
+  assert.equal(complementoActor(evento(), usuarios), ROL.RRHH);
+  // The actor is named after its role: the second line says where it acted from, not the same words twice.
+  const rolComoNombre = evento({ actorNombre: ROL.RRHH });
+  assert.equal(complementoActor(rolComoNombre, usuarios), "Aplicación web");
+  const sistema = evento({ actorId: "rules-publish", actorNombre: null, actorRol: null });
+  assert.equal(complementoActor(sistema, usuarios), "Aplicación web");
 });
 
 test("B6: origen y motivo se muestran con palabras, sin códigos", () => {

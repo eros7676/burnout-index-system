@@ -17,6 +17,7 @@ export function Confirmacion({
   ocupado,
   error,
   bloqueada = false,
+  peligrosa = false,
   onConfirmar,
   onCancelar,
   children,
@@ -30,6 +31,8 @@ export function Confirmacion({
   error?: string | null;
   /** Keeps the confirm button disabled (a required field is incomplete). */
   bloqueada?: boolean;
+  /** The confirm button is the destructive one (danger, not primary). */
+  peligrosa?: boolean;
   onConfirmar: () => void;
   onCancelar: () => void;
   children: ReactNode;
@@ -77,7 +80,7 @@ export function Confirmacion({
           <div className={s.acciones}>
             <Button
               type="submit"
-              variante="primary"
+              variante={peligrosa ? "danger" : "primary"}
               disabled={bloqueada || ocupado}
             >
               {ocupado ? enCurso : confirmar}

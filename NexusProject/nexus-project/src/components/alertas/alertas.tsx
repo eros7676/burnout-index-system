@@ -235,7 +235,9 @@ export function Alertas() {
                     <th scope="col">Semana</th>
                     <th scope="col">Factores</th>
                     <th scope="col">Destinatario</th>
-                    <th scope="col">Seguimiento</th>
+                    <th scope="col" className={s.followUp}>
+                      Seguimiento
+                    </th>
                   </tr>
                 </thead>
                 <tbody ref={cuerpo} className={s.rows}>
