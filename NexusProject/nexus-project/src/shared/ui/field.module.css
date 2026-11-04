@@ -18,6 +18,26 @@
   gap: var(--space-1);
   min-width: 180px;
 }
+/* Filters sit on one six-column track (two at tablet width, one on a phone), so every field has
+   the same width and a second row starts under the first instead of wrapping at random widths.
+   Buttons and counts keep their own width and can still be pushed to the end. */
+.toolbar .field,
+.filterBar .field {
+  flex: 0 0 calc((100% - 5 * var(--space-3)) / 6);
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .toolbar .field,
+  .filterBar .field {
+    flex-basis: calc((100% - var(--space-3)) / 2);
+  }
+}
+@media (max-width: 600px) {
+  .toolbar .field,
+  .filterBar .field {
+    flex-basis: 100%;
+  }
+}
 .label {
   color: var(--ink-2);
   font-size: var(--text-xs);
@@ -48,7 +68,8 @@
 }
 .search .control {
   padding-left: calc(var(--space-3) + var(--icon-sm) + var(--space-2));
-  min-width: 240px;
+  width: 100%;
+  min-width: 0;
 }
 
 /* Forms (form.tsx): dedicated pages use 24 px between fields, 32 px before the actions (R42). */
