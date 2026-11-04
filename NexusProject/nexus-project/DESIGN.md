@@ -213,22 +213,39 @@ alternative.
 
 ## Module map
 
+Roles: RR. HH. = RRHH; reading = RRHH, Gerencia and Team Lead (a Team Lead is
+narrowed to their own team by the server). Lists link to detail pages; create
+and edit are dedicated pages (R41–R43), never inline panels.
+
 | Module | Route | Roles | Data |
 |---|---|---|---|
 | Ingreso | `/` | anyone | `GET /api/demo/sesion` |
-| Resumen | `/home` | RRHH, Gerencia, Team Lead | `/api/personas`, `/api/resumen`, `/api/alertas` |
-| Personas | `/employees`, `/employees/[employeeId]` | RRHH, Gerencia, Team Lead | `/api/personas` |
-| Equipos | `/teams` | RRHH, Gerencia | `/api/personas` |
-| Alertas | `/alerts` | RRHH, Gerencia, Team Lead | `/api/alertas`, notifications (T12) |
-| Informe | `/reports/[evaluationId]` | RRHH, Gerencia, Team Lead | `/api/evaluaciones/[id]` |
-| Importación | `/importaciones` | RRHH | T04 routes, `/api/procesamientos` |
-| Reglas | `/rules-config` | RRHH, Gerencia, Team Lead | `/api/reglas` |
-| Auditoría | `/audit` | RRHH, Gerencia | `/api/auditoria` |
-| Mis datos | `/my-data` | Empleado, Team Lead | `/api/mis-datos` |
+| Resumen | `/home` | reading | `/api/personas`, `/api/resumen`, `/api/alertas` |
+| Personas | `/employees` | reading | `/api/personas/directorio` (server-paged), `/api/equipos` (filter) |
+| Persona (ficha) | `/employees/[employeeId]` | reading | `/api/personas/{id}`, `/api/reglas`, tasks section |
+| Semana de una persona | `/employees/[employeeId]/weeks/[periodStart]` | reading | `/api/tareas`, `/api/tareas/historial` |
+| Nueva persona | `/employees/new` | RR. HH. | `POST /api/personas`, `/api/personas/opciones` |
+| Editar, cambiar equipo o puesto, dar de baja | `/employees/[employeeId]/edit`, `/move`, `/deactivate` | RR. HH. | `PATCH /api/personas/{id}`, `/asignaciones`, `/baja` |
+| Importar personas | `/employees/import` | RR. HH. | `/api/personas/importacion/validar`, `/confirmar` (`personas-v1`) |
+| Equipos | `/teams` | RR. HH., Gerencia | `/api/equipos` |
+| Equipo | `/teams/[teamId]` | RR. HH., Gerencia; Team Lead only their own («Mi equipo» in the sidebar) | `/api/equipos/{teamId}` |
+| Nuevo equipo, editar, cambiar líder, desactivar | `/teams/new`, `/teams/[teamId]/edit`, `/lead`, `/deactivate` | RR. HH. | `/api/equipos`, `/api/equipos/opciones` |
+| Alertas | `/alerts` | reading | `/api/alertas`, CSV `/api/exportaciones/alertas` |
+| Alerta | `/alerts/[alertId]` | reading (mail: RR. HH.) | `/api/alertas/{id}`, `/seguimiento`, notifications (T12) |
+| Informe | `/reports/[evaluationId]` | reading | `/api/evaluaciones/[id]` |
+| Importación | `/importaciones` | RR. HH. | T04 routes, `/api/importaciones/tareas/validar` (`tareas-v1`), `/api/procesamientos` |
+| Reglas | `/rules-config` | reading (edit: RR. HH.) | `/api/reglas`, `/api/reglas/versiones` |
+| Borrador de reglas | `/rules-config/drafts/[borradorId]` | reading (edit: RR. HH.; approve: Gerencia) | `/api/reglas/borradores/{id}` and its simulate, submit, approve, reject, publish, discard actions |
+| Auditoría | `/audit` | RR. HH., Gerencia | `/api/auditoria` (keyset-paged), `/api/auditoria/exportacion` (CSV, JSON) |
+| Evento de auditoría | `/audit/[eventoId]` | RR. HH., Gerencia | `/api/auditoria/{eventoId}` |
+| Operación de auditoría | `/audit/operations/[correlacionId]` | RR. HH., Gerencia | `/api/auditoria/operaciones/{correlacionId}` |
+| Mis datos | `/my-data` | Empleado, Team Lead | `/api/mis-datos`, `/api/mis-datos/tareas` |
 
 The sidebar shows only what the role may open (`src/components/shell/sesion.tsx`);
 the server enforces the same scope (`proteger`). Aggregates smaller than five
-people are not shown (`GRUPO_MINIMO`).
+people are not shown (`GRUPO_MINIMO`). CSV exports share one format
+(`FORMATO_CSV`: semicolon, BOM, CRLF), and the audit export adds its own
+formula guard.
 
 ## Decisions
 
@@ -260,3 +277,4 @@ people are not shown (`GRUPO_MINIMO`).
 - 2026-11-02 — [provisional] Tasks are shown as the week's counts (activas, pendientes, vencidas), never as task items. (held by owner)
 - 2026-11-02 — [provisional] An action's or record's state uses StatusTag; a level only ever uses LevelTag. (held by owner)
 - 2026-11-02 — [provisional] The report page is the one detail of a week's result; lists link to it instead of opening inline panels. (held by owner)
+- 2026-11-03 — Every CSV export uses `FORMATO_CSV` (semicolon, BOM, CRLF; cells with the separator are quoted), the audit export included. (held by tests/auditoria-exportacion.test.ts)
