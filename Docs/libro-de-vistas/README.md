@@ -1,6 +1,6 @@
 # Libro de vistas
 
-Capturas de cada pantalla por rol, generadas con `node scripts/libro-vistas.mjs` contra http://localhost:3000 en el commit `ec58f90`. Movimiento reducido activo; página completa.
+Capturas de cada pantalla por rol, generadas con `node scripts/libro-vistas.mjs` contra http://127.0.0.1:3000 en el commit `2f1d05f`. Movimiento reducido activo; página completa.
 
 ## 00-ingreso
 
