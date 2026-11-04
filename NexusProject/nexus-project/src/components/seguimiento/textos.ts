@@ -1,21 +1,13 @@
 // Words for the follow-up case: dates with their year and the tone of each status.
-import { entero } from "@/shared/formato";
+import { diaCompleto, entero } from "@/shared/formato";
 import {
   ESTADO_SEGUIMIENTO,
   type EstadoSeguimiento,
   type ResumenSeguimiento,
 } from "@/shared/contratos/seguimiento";
 
-const FECHA = new Intl.DateTimeFormat("es-AR", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "UTC",
-});
-
 /** "20 nov 2026" from a YYYY-MM-DD date, never through the browser's time zone. */
-export const fecha = (iso: string) =>
-  FECHA.format(new Date(`${iso}T00:00:00.000Z`)).replace(/\./g, "");
+export const fecha = diaCompleto;
 
 export type Tono = "neutro" | "aviso" | "exito" | "incidencia";
 
