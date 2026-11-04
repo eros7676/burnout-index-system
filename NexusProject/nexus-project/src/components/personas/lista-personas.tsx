@@ -31,6 +31,7 @@ import {
 } from "@/shared/ui";
 import { Pagination } from "@/shared/ui/pagination";
 import { StatusTag } from "@/shared/ui/status-tag";
+import { BotonExportar } from "../exportaciones/boton-exportar";
 import { organizacionApi } from "../organizacion/api";
 import { SelectorSemanas, finDeSemana } from "../organizacion/piezas";
 import { contar } from "../organizacion/textos";
@@ -135,14 +136,20 @@ export function ListaPersonas() {
         titulo="Personas"
         contexto={contexto}
         acciones={
-          puedeAdministrar ? (
-            <>
-              <ButtonLink href="/employees/import">Importar personas</ButtonLink>
-              <ButtonLink variante="primary" href="/employees/new">
-                Nueva persona
-              </ButtonLink>
-            </>
-          ) : undefined
+          <>
+            <BotonExportar
+              tipo="personas"
+              filtros={{ teamId: equipoActivo || undefined, periodStart: semana }}
+            />
+            {puedeAdministrar && (
+              <>
+                <ButtonLink href="/employees/import">Importar personas</ButtonLink>
+                <ButtonLink variante="primary" href="/employees/new">
+                  Nueva persona
+                </ButtonLink>
+              </>
+            )}
+          </>
         }
       />
 

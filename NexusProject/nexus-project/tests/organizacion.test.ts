@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { puedeAbrirOrganizacion } from "../src/components/organizacion/rutas";
+import {
+  puedeAbrirOrganizacion,
+  rutaHistorial,
+  rutaMiEquipo,
+} from "../src/components/organizacion/rutas";
 import { COLUMNAS_PERSONAS } from "../src/shared/contratos/organizacion";
 import {
   claveNombre,
@@ -605,4 +609,20 @@ test("rutas: solo RR. HH. abre las pantallas que escriben y el Team Lead solo la
   // Everything else is left to the sidebar map.
   for (const ruta of ["/teams", "/employees", "/employees/EMP-001", "/employees/EMP-001/weeks/2026-10-12", "/teams/EQ-01"])
     assert.equal(puedeAbrirOrganizacion("GERENCIA", ruta), null, ruta);
+});
+
+test("rutas: «Mi equipo» solo existe para un Team Lead con equipo y apunta a una página que puede abrir", () => {
+  assert.equal(rutaMiEquipo("TEAM_LEAD", "EQ-01"), "/teams/EQ-01");
+  assert.equal(rutaMiEquipo("TEAM_LEAD", "EQ 1/x"), "/teams/EQ%201%2Fx");
+  assert.equal(rutaMiEquipo("TEAM_LEAD", null), null);
+  for (const rol of ["RRHH", "GERENCIA", "EMPLEADO"] as const)
+    assert.equal(rutaMiEquipo(rol, "EQ-01"), null, rol);
+  assert.equal(puedeAbrirOrganizacion("TEAM_LEAD", rutaMiEquipo("TEAM_LEAD", "EQ-01")!, "EQ-01"), true);
+});
+
+test("rutas: el historial de auditoría solo se ofrece a quien tiene el permiso AUDITORIA", () => {
+  assert.equal(rutaHistorial("RRHH", { sujetoId: "EMP-001" }), "/audit?sujetoId=EMP-001");
+  assert.equal(rutaHistorial("GERENCIA", { equipoId: "EQ-01" }), "/audit?entidad=EQUIPO&recursoId=EQ-01");
+  for (const rol of ["TEAM_LEAD", "EMPLEADO"] as const)
+    assert.equal(rutaHistorial(rol, { sujetoId: "EMP-001" }), null, rol);
 });

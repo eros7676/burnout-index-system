@@ -89,7 +89,7 @@
 }
 .archivo span {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .archivo input {
   max-width: 100%;

@@ -13,6 +13,7 @@ import {
   leerSesion,
   puedeAbrir,
 } from "./sesion";
+import { rutaMiEquipo } from "../organizacion/rutas";
 import s from "./app-shell.module.css";
 
 /**
@@ -27,12 +28,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [errorCambio, setErrorCambio] = useState<string>();
   const usuario = sesion.estado === "listo" ? sesion.datos.usuario : undefined;
   const fuera =
-    sesion.estado === "listo" && (!usuario || !puedeAbrir(usuario.rol, ruta));
+    sesion.estado === "listo" && (!usuario || !puedeAbrir(usuario.rol, ruta, usuario.teamId));
 
   useEffect(() => {
     if (sesion.estado !== "listo") return;
     if (!usuario) router.replace("/");
-    else if (!puedeAbrir(usuario.rol, ruta))
+    else if (!puedeAbrir(usuario.rol, ruta, usuario.teamId))
       router.replace(inicioDe(usuario.rol));
   }, [sesion.estado, usuario, ruta, router]);
 
@@ -103,6 +104,15 @@ export function AppShell({ children }: { children: ReactNode }) {
               const items = visible
                 ? grupo.items.filter((i) => i.roles.includes(visible.rol))
                 : [];
+              const miEquipo = visible
+                ? rutaMiEquipo(visible.rol, visible.teamId)
+                : null;
+              if (miEquipo && grupo.grupo === "Seguimiento")
+                items.splice(
+                  items.findIndex((i) => i.href === "/alerts"),
+                  0,
+                  { href: miEquipo, texto: "Mi equipo", icono: "equipos", roles: [visible!.rol] },
+                );
               if (!items.length) return null;
               return (
                 <div key={grupo.grupo} className={s.group}>

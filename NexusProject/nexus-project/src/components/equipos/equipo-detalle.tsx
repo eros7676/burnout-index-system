@@ -27,6 +27,7 @@ import { Pagination } from "@/shared/ui/pagination";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { organizacionApi } from "../organizacion/api";
 import { SelectorSemanas, finDeSemana } from "../organizacion/piezas";
+import { rutaHistorial } from "../organizacion/rutas";
 import { PUESTO, contar } from "../organizacion/textos";
 import { useSesion } from "../shell/sesion";
 import { MOTIVO_SUPRESION, TendenciaAlto } from "./equipos";
@@ -66,6 +67,7 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
   );
 
   const puedeAdministrar = !!usuario && tienePermiso(usuario.rol, "ADMINISTRAR_PERSONAS");
+  const historial = usuario ? rutaHistorial(usuario.rol, { equipoId: teamId }) : null;
   const base = `/teams/${encodeURIComponent(teamId)}`;
   const volver = { href: "/teams", texto: "Equipos" };
   const semana = equipo?.periodStart ?? undefined;
@@ -91,9 +93,10 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
             : undefined
         }
         acciones={
-          equipo && puedeAdministrar ? (
+          equipo && (puedeAdministrar || historial) ? (
             <>
-              {equipo.activo && (
+              {historial && <ButtonLink href={historial}>Historial</ButtonLink>}
+              {puedeAdministrar && equipo.activo && (
                 <>
                   <ButtonLink href={`${base}/edit`}>Editar equipo</ButtonLink>
                   <ButtonLink href={`${base}/lead`}>Cambiar líder</ButtonLink>
