@@ -287,6 +287,7 @@ export const intentoNotificacionMock = {
   numero: 1,
   destinatarioId: "TL-01",
   resultado: "EXITO",
+  canal: "SIMULADO",
   estado: "PENDIENTE",
   detalle: null,
   createdAt,
@@ -324,7 +325,7 @@ export const personaMock = {
   ],
 } satisfies import("./contracts").PersonaDTO;
 export const cuerposExitoMock = {
-  consultarSesionDemo: { usuario: null, usuarios: [] },
+  consultarSesionDemo: { usuario: null, usuarios: [], correo: "SIMULADO" },
   seleccionarUsuarioDemo: {
     usuario: {
       userId: "demo-rrhh",

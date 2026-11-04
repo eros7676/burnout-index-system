@@ -44,7 +44,7 @@ import {
   sinDestinatario,
   trasIntento,
 } from "../alertas/aviso";
-import { NotificacionAlerta } from "../notificacion-alerta";
+import { NotificacionAlerta, tituloCorreo } from "../notificacion-alerta";
 import { useSesion } from "../shell/sesion";
 import { hrefTareasSemana } from "../tareas/textos";
 import { explicacionEnPalabras } from "./explicacion";
@@ -88,7 +88,7 @@ function ConCorreo({
 
 /** Answers why one stored weekly result got its level. */
 export function Informe({ evaluationId }: { evaluationId: string }) {
-  const { usuario } = useSesion();
+  const { usuario, correo } = useSesion();
   const pagina = useRef<HTMLDivElement>(null);
   const caja = useRef<HTMLDivElement>(null);
   const filas = useRef<HTMLTableSectionElement>(null);
@@ -431,7 +431,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                 </dl>
               </Section>
               {usuario?.rol === "RRHH" && (
-                <Section titulo="Correo simulado" className={s.controles}>
+                <Section titulo={tituloCorreo(correo)} className={s.controles}>
                   <NotificacionAlerta
                     alerta={alerta}
                     destinatario={(id) =>

@@ -26,7 +26,7 @@ const datosDeLaAlerta = (page: Page) =>
  * attempt and moves the alert to the simulated channel; processing finishes
  * the attempt as its requested result. `perder` drops the processing request.
  */
-async function servidorCorreo(page: Page) {
+async function servidorCorreo(page: Page, canal: IntentoNotificacion["canal"] = "SIMULADO") {
   const estado = {
     alerta: { ...alertaMock } as Alerta,
     intentos: [] as IntentoNotificacion[],
@@ -63,7 +63,9 @@ async function servidorCorreo(page: Page) {
         intento.detalle =
           intento.estado === "FALLIDO"
             ? "Fallo simulado."
-            : "Enviado (simulado).";
+            : canal === "CORREO"
+              ? "Enviado por correo a la casilla de demostración."
+              : "Enviado (simulado).";
         intento.completedAt = "2026-10-19T12:05:00.000Z";
         estado.alerta.estadoEnvio = intento.estado;
         return route.fulfill({ json: intento });
@@ -76,9 +78,10 @@ async function servidorCorreo(page: Page) {
           ...solicitud,
           intentoId: `intento-${estado.intentos.length + 1}`,
           numero: estado.intentos.length + 1,
+          canal,
         };
         estado.intentos.unshift(intento);
-        estado.alerta.canal = "SIMULADO";
+        estado.alerta.canal = canal;
         estado.alerta.estadoEnvio = "PENDIENTE";
         return route.fulfill({ json: intento });
       }
@@ -237,6 +240,28 @@ test("T12: el correo simulado del informe actualiza el envío como simulado", as
   await expect(historial(page).getByRole("listitem")).toHaveText([
     /Intento 1.*Enviado \(simulado\).*Para Team Lead ficticio 1/,
   ]);
+});
+
+test("Correo real: con SMTP configurado, la alerta ofrece un solo envío y lo rotula como correo", async ({
+  page,
+}) => {
+  await demo(page, "demo-rrhh", { correo: "REAL" });
+  const servidor = await servidorCorreo(page, "CORREO");
+  await page.goto(RUTA_ALERTA);
+  const aviso = page.getByRole("region", { name: "Aviso por correo" });
+  await expect(aviso).toContainText("Sin intentos registrados.");
+  await expect(page.getByRole("region", { name: "Correo simulado" })).toHaveCount(0);
+  // No simulated outcomes to pick: the server's answer decides.
+  await expect(aviso.getByRole("button", { name: /^Simular/ })).toHaveCount(0);
+  await aviso.getByRole("button", { name: "Enviar aviso por correo" }).click();
+  await expect(aviso.getByRole("status")).toHaveText("Aviso enviado por correo.");
+  expect(servidor.solicitudes.map((s) => s.resultado)).toEqual(["EXITO"]);
+  await expect(aviso.getByRole("list", { name: "Historial de envíos" }).getByRole("listitem")).toHaveText([
+    /Intento 1.*Enviado por correo.*Para Team Lead ficticio 1/,
+  ]);
+  await expect(datosDeLaAlerta(page)).toContainText("Enviado por correo");
+  // Once delivered, nothing offers to send it again.
+  await expect(aviso.getByRole("button", { name: "Enviar aviso por correo" })).toHaveCount(0);
 });
 
 for (const [usuario, destinatario] of [

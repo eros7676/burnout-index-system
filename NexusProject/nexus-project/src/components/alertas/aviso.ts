@@ -6,7 +6,7 @@ import type {
   IntentoNotificacion,
   PersonaDTO,
 } from "@/shared/contracts";
-import { ESTADO_ENVIO, FACTOR } from "@/shared/formato";
+import { ESTADO_ENVIO, FACTOR, textoEnvio } from "@/shared/formato";
 
 /**
  * A technician's alert goes to their Team Lead, a person in the catalog; a Team
@@ -30,7 +30,7 @@ export const sinDestinatario = (alerta: Alerta) =>
 
 /** The alert as the server leaves it after a simulated attempt (T12), without reloading it. */
 export const trasIntento = (intento: IntentoNotificacion): Partial<Alerta> => ({
-  canal: "SIMULADO",
+  canal: intento.canal,
   estadoEnvio: intento.estado,
   destinatarioId: intento.destinatarioId,
   motivoDestinatario: intento.destinatarioId ? "OK" : "SIN_DESTINATARIO",
@@ -50,7 +50,7 @@ export function envio(alerta: Alerta): { texto: string; tono: Tono } {
         tono: "aviso",
       };
     case "ENVIADO":
-      return { texto: ESTADO_ENVIO.ENVIADO, tono: "exito" };
+      return { texto: textoEnvio(alerta), tono: "exito" };
     case "FALLIDO":
       return {
         texto: simulado ? "Envío simulado fallido" : ESTADO_ENVIO.FALLIDO,

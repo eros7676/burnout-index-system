@@ -5,7 +5,7 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import type { UsuarioDemoDTO } from "../../shared/contracts";
 import {
-  ESTADO_ENVIO,
+  textoEnvio,
   FACTOR,
   NIVEL,
   TIPO,
@@ -131,7 +131,7 @@ async function tablaAlertas(
       a.semana?.actualizado ? a.semana.indice : null,
       a.causas.map((f) => FACTOR[f]).join(", "),
       a.destinatario ?? "Sin destinatario",
-      ESTADO_ENVIO[a.estadoEnvio],
+      textoEnvio(a),
       a.vigencia === "ACTIVA" ? "Activa" : "Superada",
       a.seguimiento ? ESTADO_SEGUIMIENTO[a.seguimiento.estado] : "Sin seguimiento",
       a.seguimiento?.asignadoA.nombre,

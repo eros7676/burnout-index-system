@@ -16,6 +16,21 @@ import {
   ErrorNotificacion,
 } from "../src/server/services/notificaciones";
 import { crearHttpNotificaciones } from "../src/server/http/notificaciones";
+import type { ConfigCorreo, MensajeCorreo } from "../src/server/correo";
+
+// The services read SMTP settings from the environment: none here, so no test sends real mail
+// unless it passes its own fake sender.
+for (const v of ["SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "MAIL_FROM", "MAIL_DESTINO_DEMO"]) delete process.env[v];
+
+const CONFIG: ConfigCorreo = {
+  host: "smtp.invalid",
+  port: 465,
+  usuario: "nexo@example.test",
+  clave: "no-se-usa",
+  remitente: "Nexo Laboral <nexo@example.test>",
+  destinoDemo: "demo@example.test",
+  appUrl: "http://127.0.0.1:3000",
+};
 
 const solicitud = (resultado: "EXITO" | "FALLO" = "EXITO") => ({
   requestId: randomUUID(),
@@ -299,6 +314,63 @@ test("T12 MySQL: intentos, recuperación, concurrencia y alerta única", async (
             "no-store",
           );
         }),
+    );
+    await t.test("correo real: envía el aviso a la casilla de demostración y lo registra como correo", () =>
+      escenario(db, async (alertId, employeeId) => {
+        const enviados: MensajeCorreo[] = [];
+        const correo = { config: CONFIG, enviar: async (m: MensajeCorreo) => void enviados.push(m) };
+        // A real channel has no simulated failure to ask for.
+        await assert.rejects(
+          prepararNotificacion(db, alertId, solicitud("FALLO"), undefined, correo),
+          (e: unknown) => e instanceof ErrorNotificacion && e.status === 409,
+        );
+        const preparado = await prepararNotificacion(db, alertId, solicitud(), undefined, correo);
+        assert.equal(preparado.canal, "CORREO");
+        const final = await procesarNotificacion(db, alertId, preparado.intentoId, undefined, correo);
+        assert.equal(final.estado, "ENVIADO");
+        assert.equal(final.canal, "CORREO");
+        assert.equal(final.detalle, "Enviado por correo a la casilla de demostración.");
+        assert.equal(enviados.length, 1);
+        const [mensaje] = enviados;
+        assert.equal(mensaje.para, "demo@example.test");
+        assert.equal(mensaje.asunto, "Alerta de posible sobrecarga: Persona ficticia T12, semana 12–18 oct 2026");
+        assert.match(mensaje.texto, /^Para: Team Lead ficticio 1 \(Team Lead\)\n/);
+        assert.match(mensaje.texto, /quedó en nivel Alto la semana 12–18 oct 2026, con un índice de 91,21\./);
+        assert.match(mensaje.texto, /\n- Horas extra: 16 h extra en la semana/);
+        assert.match(mensaje.texto, new RegExp(`/alerts/${alertId}\\n`));
+        assert.doesNotMatch(mensaje.texto, /no-se-usa/);
+        const alerta = await db.alerta.findUniqueOrThrow({ where: { alertId } });
+        assert.deepEqual([alerta.canal, alerta.estadoEnvio], ["CORREO", "ENVIADO"]);
+        const evento = await db.eventoAuditoria.findFirstOrThrow({
+          where: { accion: "NOTIFICACION_PROCESADA", recursoId: final.intentoId },
+        });
+        assert.equal((evento.detalles as { canal: string }).canal, "CORREO");
+        // Delivered: processing again or asking again sends nothing more.
+        await procesarNotificacion(db, alertId, preparado.intentoId, undefined, correo);
+        assert.equal((await prepararNotificacion(db, alertId, solicitud(), undefined, correo)).intentoId, final.intentoId);
+        assert.equal(enviados.length, 1);
+        assert.ok(employeeId);
+      }),
+    );
+    await t.test("correo real: un servidor que rechaza deja el intento fallido con su código y permite reintentar", () =>
+      escenario(db, async (alertId) => {
+        const rechazo = Object.assign(new Error("Invalid login: 535 no-se-usa"), { code: "EAUTH", responseCode: 535 });
+        const caido = { config: CONFIG, enviar: async () => Promise.reject(rechazo) };
+        const primero = await prepararNotificacion(db, alertId, solicitud(), undefined, caido);
+        const fallido = await procesarNotificacion(db, alertId, primero.intentoId, undefined, caido);
+        assert.equal(fallido.estado, "FALLIDO");
+        assert.equal(fallido.detalle, "No se pudo enviar el correo (EAUTH, SMTP 535).");
+        const evento = await db.eventoAuditoria.findFirstOrThrow({
+          where: { accion: "NOTIFICACION_PROCESADA", recursoId: fallido.intentoId },
+        });
+        assert.deepEqual([evento.resultado, evento.motivo], ["FALLO", "ERROR_TECNICO"]);
+        const enviados: MensajeCorreo[] = [];
+        const sano = { config: CONFIG, enviar: async (m: MensajeCorreo) => void enviados.push(m) };
+        const segundo = await prepararNotificacion(db, alertId, solicitud(), undefined, sano);
+        assert.equal(segundo.numero, 2);
+        assert.equal((await procesarNotificacion(db, alertId, segundo.intentoId, undefined, sano)).estado, "ENVIADO");
+        assert.equal(enviados.length, 1);
+      }),
     );
   } finally {
     await db.$disconnect();

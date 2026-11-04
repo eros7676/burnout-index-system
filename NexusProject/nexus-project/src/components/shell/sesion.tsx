@@ -79,6 +79,7 @@ export async function elegirUsuario(usuario: UsuarioDemoDTO) {
 const Sesion = createContext<{
   usuario: UsuarioDemoDTO | null;
   usuarios: readonly UsuarioDemoDTO[];
+  correo: SesionDemoDTO["correo"];
 } | null>(null);
 export const SesionProvider = Sesion.Provider;
 

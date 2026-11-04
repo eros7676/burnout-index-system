@@ -23,7 +23,7 @@ import {
 } from "@/shared/ui";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { DEFINICION } from "../definiciones";
-import { NotificacionAlerta } from "../notificacion-alerta";
+import { NotificacionAlerta, tituloCorreo } from "../notificacion-alerta";
 import { SeguimientoAlerta } from "../seguimiento/seguimiento-alerta";
 import { useSesion } from "../shell/sesion";
 import { Sugerencias } from "../informe/sugerencias";
@@ -35,7 +35,7 @@ import s from "./detalle-alerta.module.css";
  * the simulated mail. Lists link here instead of opening panels inline.
  */
 export function DetalleAlerta({ alertId }: { alertId: string }) {
-  const { usuario } = useSesion();
+  const { usuario, correo } = useSesion();
   const pagina = useRef<HTMLDivElement>(null);
   const caja = useRef<HTMLDivElement>(null);
   const { readyFor } = usePageEnter(pagina);
@@ -200,7 +200,7 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
                 className={notifica ? s.principal : s.completa}
               />
               {notifica && (
-                <Section titulo="Correo simulado" className={s.apoyo}>
+                <Section titulo={tituloCorreo(correo)} className={s.apoyo}>
                   <NotificacionAlerta
                     alerta={alerta}
                     destinatario={(id) =>

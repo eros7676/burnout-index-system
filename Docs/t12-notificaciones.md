@@ -1,5 +1,7 @@
 # T12 · Correo simulado e historial de intentos
 
+> Actualización 2026-11-04: con SMTP configurado el aviso sale por correo real. Ver «Correo real» al final.
+
 Implementado localmente en `t12-feature`, desde `main` (`f142172`). Extiende T11 como funcionalidad P1. La importación y T11 siguen creando la alerta `INTERNO / NO_APLICA`; la simulación se solicita expresamente desde el tablero o la API. No hay transporte SMTP ni correo real.
 
 ## Demostración
@@ -74,3 +76,14 @@ Evidencia local del 01/11/2026, en Windows con Node 24.20.0 y MySQL 8 sobre la b
 El resumen reproducido desde las salidas del runner se conserva en `test-results/t12-verificacion.json`. Playwright limpia su directorio de salida al iniciar cada suite; los informes completos de aceptación anteriores fueron reemplazados por la comprobación posterior de Firefox. Los resultados y la medición fallida también quedan registrados arriba para no depender de esos archivos temporales.
 
 La revisión humana y la integración remota se registran por separado. Esta evidencia automatizada no sustituye la prueba de usabilidad con operador de T16.
+
+## Correo real (SMTP)
+
+Con todas las variables `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` y `MAIL_DESTINO_DEMO` (ver `.env.example`; `SMTP_PORT` vale 465 por defecto) el canal pasa a `CORREO`:
+
+- RR. HH. ve **Enviar aviso por correo** en lugar de los botones de simulación; no se pueden pedir fallos simulados (409).
+- El intento se procesa igual que en T12 (preparar, procesar, historial, recuperación de un pendiente), pero procesar envía el aviso con `nodemailer` dentro de la transacción del intento, con timeouts de 10–15 s.
+- Todo aviso llega a `MAIL_DESTINO_DEMO`: las personas de la demo son ficticias. El texto nombra a quién iba dirigido (Team Lead o Gerencia), la persona, la semana, el índice, los factores, las sugerencias de revisión y el enlace a la alerta (`APP_URL`).
+- Un servidor que rechaza o no responde deja el intento `FALLIDO` con el código SMTP (nunca el mensaje del servidor, que puede repetir credenciales) y la auditoría `ERROR_TECNICO`; un intento nuevo lo reintenta.
+- Cada intento guarda su canal (`IntentoNotificacion.canal`), así el historial distingue «Enviado (simulado)» de «Enviado por correo». La migración `20261104000000_correo_real` agrega `CORREO` y amplía `alerta_canal_chk`.
+- Sin la configuración completa, todo sigue como en T12. La sesión informa el modo (`correo: "REAL" | "SIMULADO"`) para que la pantalla muestre los controles correctos.
