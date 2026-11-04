@@ -7,7 +7,7 @@
 .consultas {
   display: flex;
   align-items: center;
-  min-height: 36px;
+  min-height: var(--control-h);
 }
 
 /* Filters that arrive by link and have no control in the bar: visible, removable one by one. */
@@ -23,12 +23,11 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  min-height: 24px;
   padding: 0 var(--space-1) 0 var(--space-2);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-xs);
   background: var(--surface-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .quitar {
   display: grid;
@@ -67,7 +66,7 @@
   max-width: 72ch;
   margin: 0;
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .paginas {
   display: flex;

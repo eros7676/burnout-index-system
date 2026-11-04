@@ -32,11 +32,11 @@
 }
 .ayuda {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .confirmacion {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 /* Empty, the status region stays in the accessibility tree but takes no row. */
 .confirmacion:empty {
@@ -44,7 +44,7 @@
 }
 .error {
   color: var(--danger);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .acciones {
   display: flex;
@@ -76,7 +76,7 @@
   align-items: center;
   gap: var(--space-1) var(--space-3);
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .notaTexto {
   white-space: pre-wrap;

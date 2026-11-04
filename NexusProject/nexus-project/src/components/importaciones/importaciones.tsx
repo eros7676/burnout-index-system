@@ -273,7 +273,7 @@ export function Importaciones() {
 
       <div ref={pasosRef} className={s.pasos}>
         {paso === 1 && (
-          <Section className={s.elegir} titulo="Datos a importar">
+          <Section titulo="Datos a importar">
             <form
               className={s.formArchivo}
               onSubmit={(e) => {

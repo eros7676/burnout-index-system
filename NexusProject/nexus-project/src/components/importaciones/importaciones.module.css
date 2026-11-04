@@ -14,7 +14,7 @@
 }
 .meta {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .id {
   padding: 1px var(--space-1);
@@ -31,26 +31,21 @@
 }
 .ocupado {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .hecho {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--success-soft);
   color: var(--success);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .error {
   display: grid;
   gap: var(--space-3);
 }
 
-/* Step 1: one file, a drop zone that is also the picker; its messages share its width. */
-.elegir,
-.page[data-paso="1"] .estadoVivo,
-.page[data-paso="1"] .error {
-  max-width: 760px;
-}
+/* Step 1: one file, a drop zone that is also the picker; it fills the section like every other step. */
 .formArchivo {
   display: grid;
   gap: var(--space-3);
@@ -120,7 +115,7 @@
   flex: none;
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
+  min-height: var(--control-h);
   padding: 0 var(--space-4);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -129,7 +124,7 @@
 }
 .ayuda {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 
 /* The dataset to import: plain rows (no boxes inside the section), each with its template. */
@@ -186,13 +181,13 @@
 }
 .opcionDetalle {
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .plantilla {
   flex: none;
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
+  min-height: var(--control-h);
   color: var(--accent);
   font-weight: var(--weight-strong);
 }
@@ -231,7 +226,6 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 24px;
   color: var(--accent);
   font-weight: var(--weight-strong);
   cursor: pointer;
@@ -269,10 +263,10 @@
   gap: var(--space-1);
   flex: 1 1 280px;
   max-width: 420px;
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .campoTexto input {
-  min-height: 32px;
+  min-height: var(--control-h);
   padding: 0 var(--space-3);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -333,7 +327,7 @@
 .esperado {
   display: block;
   color: var(--danger);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-regular);
 }
 .titulo {
