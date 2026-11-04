@@ -6,7 +6,13 @@ import type { ReactNode } from "react";
 import s from "./plot.module.css";
 import { type Lectura, useLectura } from "./tip";
 
-export type Banda = { desde: number; hasta: number; tono: "bajo" | "medio" | "alto" };
+export type Banda = {
+  desde: number;
+  hasta: number;
+  tono: "bajo" | "medio" | "alto";
+  /** Named inside the band, at its top right, so the limits read without a caption. */
+  rotulo?: string;
+};
 
 export function Plot({
   nombre,
@@ -61,7 +67,9 @@ export function Plot({
             className={s.banda}
             data-tono={b.tono}
             style={{ bottom: alto(b.desde), height: `calc(${alto(b.hasta)} - ${alto(b.desde)})` }}
-          />
+          >
+            {b.rotulo && <span className={s.rotuloBanda}>{b.rotulo}</span>}
+          </span>
         ))}
         {ticks.map((t) => (
           <span

@@ -46,7 +46,6 @@ Code, comments and this file are English.
 | `--level-medio` (+ `-ink`) | #bf7f0c (#8a5a00) | Medio |
 | `--level-alto` (+ `-ink`) | #a3192b | Alto (the only urgent color) |
 | `--level-incompleto` | #5c6875, hatched | Incompleto: a gap in history, not a severity |
-| `--chart-quiet` | #aab3bc | the part of a chart that is not the point (completed tasks, regular hours, past weeks of a trend); its value is always in words or in the readout |
 | `--danger` / `--success` / `--notice` (+ `-soft`) | #a3174f / #0b6a62 / #5b3d9e | states: request errors (berry), completed actions (teal), simulated or pending (violet). Hues of their own, apart from the level scale and the accent, and always with an icon |
 | `--strip` family | #18212b | the dark demo strip of the shell |
 
@@ -148,16 +147,15 @@ key lines (the table bleeds one cell padding past them). Column rules are
 | `Figure` | a number with its label above and meaning below; peers share width, top and gap |
 | `LevelTag`, `LevelMark` | level as word + color + shape; `actualizado=false` reads "Desactualizado"; the mark alone for legends |
 | `WeekStrip` | eight weeks, oldest → newest; consecutive Alto weeks join into one bar |
-| `Plot` | the frame of every weekly chart: y axis with round ticks (`escalaLinda`), hairline grid, optional quiet level bands, one slot per week as the hit target, week labels below |
-| `DistributionBar`, `WeekColumns`, `IndexChart`, `FactorBullet` | dependency-free charts (the index line is the only inline SVG), each with a hidden data table or accessible name and a readout on every mark; bars ≤ 24 px with 2 px surface gaps; one direct label at most; a missing week is a gap, never zero |
+| `Plot` | the frame of every weekly chart: y axis with round ticks (`escalaLinda`), hairline grid, optional level bands named inside them, one slot per week as the hit target, week labels below |
+| `DistributionBar`, `TrendLine`, `IndexChart`, `FactorBullet` | dependency-free charts, each with a hidden data table or accessible name and a readout on every mark; `TrendLine` is one weekly quantity (people in Alto, extra hours) with its finding written above it; one direct label at most; a missing week is a gap, never zero |
 | `Tip`, `useLectura` | one tooltip bubble for the app. `Tip` on one trigger, only for what the screen does not say (a rule, a definition, a full date); `useLectura` gives a chart one tab stop, arrow keys between marks and a readout that leads with the value. Hover after 200 ms, focus at once, tap on touch, Escape dismisses, hoverable, persistent (WCAG 1.4.13) |
 | `DataTable` | scrollable region with a label; numbers right-aligned with their header; first and last columns on the Section's key lines; `tabla.rowLink` names a row (ink), `tabla.cellLink` is the one action or value that opens a detail (accent) |
 | `Button`, `ButtonLink` | one height (`--control-h`); primary filled, secondary outlined, quiet text-only; `alinearTexto` offsets a quiet button's padding so its text continues the column |
 | `SkeletonRows`, `Empty`, `ErrorBox`, `Notice` | loading inside the datum's box; empty says what would appear and the next step, left-aligned; errors say what failed and offer retry; each state carries an icon |
 | `SelectField`, `SearchField`, `DateField`, `Pagination` | visible labels; selects carry names, values carry ids — nobody types an ID |
 | `TextField`, `TextAreaField`, `SelectFormField`, `CheckboxField`, `Form`, `FormGroup`, `FormActions`, `KeyFacts` | create and edit pages: annotated layout from 760 px of form width (group title and note on the left third; fields, notices, error summary and actions on the right), one column below it; labels above in body size, short fields on one row, buttons under the fields |
-| `TaskBar`, `TaskLegend`, `textoTareas` | a week's tasks as one bar (vencidas, pendientes, completadas) with the same counts in words; the legend once per block |
-| `HoursColumns` | hours per week with extra hours stacked; neutral, never a level |
+| `TextoTareas`, `textoTareas` | a week's tasks in words, «7 pendientes de 10, **5 vencidas**»; no bar (three counts read better as words) |
 | `WeekDataTable` | loaded weekly data as loaded (7,5 h stays 7,5 h), no index or level |
 | `StatusTag` | the state of an action or record (neutro, aviso, éxito, incidencia): outlined, with an icon; never a level |
 | `Icon` | 16 or 20 px only (other sizes snap), one rendered stroke |
@@ -263,6 +261,7 @@ formula guard.
 - 2026-11-04 — Level fills re-stepped to pass the palette validator (Medio and Alto were ΔE 2.6 for deuteranopia); tags take the `-ink` text steps (D12). (held by globals.css and the dataviz validator run in work/graficos/inventario.md)
 - 2026-11-04 — Better charts, not more charts: every existing chart has axes where it plots a quantity, a readout on every mark (hover, arrow keys, tap) and keeps its text alternative; no chart library (D12). (held by src/shared/ui/plot.tsx, tip.tsx and the e2e chart checks)
 - 2026-11-04 — A tooltip only adds what the screen does not say (a rule, a definition, a full date) and never holds essential information (NN/g); it follows WCAG 2.2 SC 1.4.13 (D12). (held by src/shared/ui/tip.tsx)
+- 2026-11-04 — A chart answers one question and its finding is written above it («7 personas en Alto, igual que la semana anterior»); a fact is drawn once per screen. Evolución is the Alto count as a line, team history a heat strip like the person strip, tasks are words, Mis datos plots extra hours (work/graficos/investigacion-librerias.md). (held by owner, 2026-11-04)
 - 2026-11-04 — Every create and edit form, the rules draft included, takes one annotated layout (R47): group title and note on the left, controls and actions on the right; a form label is body size in ink so it reads before its help. (held by shared/ui field.module.css and form.tsx)
 - 2026-11-02 — Danger, success and notice have hues of their own and an icon; the four level hues appear only on level encodings. (held by globals.css)
 - 2026-11-02 — The accent appears only on interactive or selected elements. (held by owner)

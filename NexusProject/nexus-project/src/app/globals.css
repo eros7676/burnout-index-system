@@ -40,7 +40,6 @@
   --level-incompleto-soft: #eceef1;
   /* The quiet neutral of a chart: the part that is not the point (completed tasks, regular
      hours). Its value is always in words beside it or in the readout. */
-  --chart-quiet: #aab3bc;
   /* Secondary text inside a tooltip bubble (on --ink): 4.5:1 or more. */
   --tip-ink-2: #c3cad3;
 

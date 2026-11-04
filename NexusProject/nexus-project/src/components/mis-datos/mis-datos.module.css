@@ -2,3 +2,13 @@
   display: grid;
   gap: var(--space-5);
 }
+.horas {
+  display: grid;
+  gap: var(--space-4);
+}
+/* The finding reads before the chart (work/graficos/investigacion-librerias.md). */
+.hallazgo {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--ink);
+}

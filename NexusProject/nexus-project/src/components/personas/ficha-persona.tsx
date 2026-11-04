@@ -36,7 +36,7 @@ import {
 } from "@/shared/ui";
 import { DEFINICION, DEFINICION_FACTOR } from "../definiciones";
 import { StatusTag } from "@/shared/ui/status-tag";
-import { TaskBar, TaskLegend } from "@/shared/ui/task-bar";
+import { TextoTareas } from "@/shared/ui/tareas";
 import { SeccionTareas } from "@/components/tareas";
 import { organizacionApi } from "../organizacion/api";
 import { rutaHistorial } from "../organizacion/rutas";
@@ -107,7 +107,6 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
         indice === null ? null : variacion(indice, indiceVigente(serie.at(-2))),
       enAlto,
       desde: enAlto ? serie[serie.length - enAlto].periodStart : null,
-      escala: Math.max(...serie.map((w) => w.tareasActivas)),
     };
   }, [respuesta]);
   useRowsEnter(filas, vista?.recientes);
@@ -290,13 +289,16 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
         <Section
           titulo="Índice por semana"
           aside={
-            reglas.estado === "listo" ? (
+            reglas.estado === "listo" &&
+            vista?.serie.some(
+              (w) =>
+                w.actualizado &&
+                w.nivel === "MEDIO" &&
+                (w.indice ?? 0) >= reglas.datos.vigente.highLimit,
+            ) ? (
               <span>
-                Bandas en {entero(reglas.datos.vigente.mediumLimit)} y{" "}
-                {entero(reglas.datos.vigente.highLimit)}: límites de Medio y
-                Alto. Un punto hueco superó el límite de Alto sin repetirlo la
-                semana anterior, por eso queda en Medio. Pase el cursor, toque
-                o use las flechas para ver cada semana.
+                Un punto hueco superó {entero(reglas.datos.vigente.highLimit)} sin
+                repetirlo la semana anterior: queda en Medio.
               </span>
             ) : undefined
           }
@@ -319,7 +321,6 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
 
       <Section
         titulo="Semana a semana"
-        aside={vista?.recientes.length ? <TaskLegend /> : undefined}
       >
         {!vista ? (
           <SkeletonRows filas={6} />
@@ -374,11 +375,10 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                         {valorFactor("DS", w.diasConsecutivosSinDescanso)}
                       </td>
                       <td>
-                        <TaskBar
+                        <TextoTareas
                           activas={w.tareasActivas}
                           pendientes={w.tareasPendientes}
                           vencidas={w.tareasVencidas}
-                          escala={vista.escala}
                         />
                       </td>
                       <td className={tabla.num}>
