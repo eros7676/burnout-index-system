@@ -8,6 +8,7 @@ import {
   neutralizar,
   recortar,
 } from "../src/server/services/auditoria-consulta-exportacion";
+import { FORMATO_CSV } from "../src/shared/contratos/exportaciones";
 import type { EventoExportado } from "../src/shared/contratos/auditoria";
 
 const evento = (cambios: Partial<EventoExportado> = {}): EventoExportado => ({
@@ -32,7 +33,7 @@ const evento = (cambios: Partial<EventoExportado> = {}): EventoExportado => ({
   ...cambios,
 });
 
-/** A minimal RFC 4180 reader: quoted fields, doubled quotes, CRLF records. */
+/** A minimal RFC 4180 reader (semicolon separator): quoted fields, doubled quotes, CRLF records. */
 function leerCsv(texto: string): string[][] {
   const filas: string[][] = [];
   let fila: string[] = [];
@@ -47,7 +48,7 @@ function leerCsv(texto: string): string[][] {
       } else if (c === '"') entrecomillado = false;
       else campo += c;
     } else if (c === '"') entrecomillado = true;
-    else if (c === ",") {
+    else if (c === FORMATO_CSV.separador) {
       fila.push(campo);
       campo = "";
     } else if (c === "\r" && texto[i + 1] === "\n") {
@@ -140,6 +141,21 @@ test("B6: ninguna celda del archivo empieza con un carácter de fórmula, venga 
   assert.equal(datos[COLUMNAS_CSV.indexOf("usuario_nombre")], `'${hostil}`);
   // Inside the JSON columns the text stays what it is: the cell starts with "[".
   assert.ok(datos[COLUMNAS_CSV.indexOf("cambios")].startsWith("["));
+});
+
+test("I3: el archivo usa el separador y el BOM de FORMATO_CSV y entrecomilla las celdas con punto y coma", () => {
+  const csv = aCsv([evento({ justificacion: "uno; dos" })]);
+  assert.ok(csv.startsWith(FORMATO_CSV.bom));
+  assert.equal(csv.split(FORMATO_CSV.finDeLinea).length, 3);
+  const encabezado = csv.slice(1).split("\r\n")[0];
+  assert.equal(
+    encabezado,
+    COLUMNAS_CSV.map((c) => `"${c}"`).join(FORMATO_CSV.separador),
+  );
+  assert.ok(csv.includes('"uno; dos"'), "la celda con el separador va entre comillas");
+  const filas = leerCsv(csv.slice(1));
+  assert.ok(filas.every((f) => f.length === COLUMNAS_CSV.length));
+  assert.equal(filas[1][COLUMNAS_CSV.indexOf("justificacion")], "uno; dos");
 });
 
 test("B6: comas, comillas y saltos de línea en los datos no rompen los registros", () => {

@@ -251,6 +251,19 @@ export async function demo(page: Page, inicial: UsuarioDemo | null) {
       return route.fulfill({ json: cuerposExitoMock.consultarReglas });
     if (ruta === "/api/auditoria")
       return route.fulfill({ json: cuerposExitoMock.listarAuditoria });
+    // An alert's page and its follow-up case (shapes of the contract mocks, keyed by the path's id).
+    const alertaDe = /^\/api\/alertas\/([^/]+)(\/seguimiento)?$/.exec(ruta);
+    if (alertaDe && route.request().method() === "GET") {
+      const alertId = decodeURIComponent(alertaDe[1]);
+      return route.fulfill({
+        json: {
+          ...(alertaDe[2]
+            ? cuerposExitoMock.obtenerSeguimiento
+            : cuerposExitoMock.obtenerAlerta),
+          alertId,
+        },
+      });
+    }
     if (ruta.endsWith("/notificaciones")) return route.fulfill({ json: [] });
     if (ruta.startsWith("/api/evaluaciones/"))
       return route.fulfill({

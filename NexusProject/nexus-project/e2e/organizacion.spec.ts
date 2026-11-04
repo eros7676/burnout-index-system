@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { demo, PERSONAS } from "./demo";
+import { demo, menu, PERSONAS } from "./demo";
 import {
   LUNES_ACTUAL,
   organizacion,
@@ -479,13 +479,17 @@ test("Permisos: Gerencia y Team Lead no abren las pantallas que escriben ni otro
   await expect(page).toHaveURL(/\/home$/);
 });
 
-test.fixme(
-  "Permisos: el Team Lead abre la página de su equipo (requiere que el shell pase usuario.teamId a puedeAbrir)",
-  async ({ page }) => {
-    await demo(page, "demo-tl-01");
-    await organizacion(page);
-    await page.goto("/teams/EQ-01");
-    await expect(page.getByRole("heading", { level: 1, name: "Célula ficticia 1" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Cambiar líder" })).toHaveCount(0);
-  },
-);
+test("Permisos: el Team Lead abre la página de su equipo desde «Mi equipo»", async ({ page }) => {
+  await demo(page, "demo-tl-01");
+  await organizacion(page);
+  await page.goto("/home");
+  const enlace = menu(page).getByRole("link", { name: "Mi equipo", exact: true });
+  await expect(enlace).toHaveAttribute("href", "/teams/EQ-01");
+  await enlace.click();
+  await expect(page).toHaveURL(/\/teams\/EQ-01$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Célula ficticia 1" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Cambiar líder" })).toHaveCount(0);
+  // Another team's page stays closed to them.
+  await page.goto("/teams/EQ-02");
+  await expect(page).toHaveURL(/\/home$/);
+});
