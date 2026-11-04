@@ -95,12 +95,14 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
         acciones={
           equipo && (puedeAdministrar || historial) ? (
             <>
-              {historial && <ButtonLink href={historial}>Historial</ButtonLink>}
+              {historial && <ButtonLink href={historial}>Ver historial</ButtonLink>}
               {puedeAdministrar && equipo.activo && (
                 <>
                   <ButtonLink href={`${base}/edit`}>Editar equipo</ButtonLink>
                   <ButtonLink href={`${base}/lead`}>Cambiar líder</ButtonLink>
-                  <ButtonLink href={`${base}/deactivate`}>Desactivar equipo</ButtonLink>
+                  <ButtonLink variante="dangerSecondary" href={`${base}/deactivate`}>
+                    Dar de baja
+                  </ButtonLink>
                 </>
               )}
             </>
@@ -157,7 +159,7 @@ export function EquipoDetalle({ teamId }: { teamId: string }) {
             {!equipo ? (
               <SkeletonRows filas={3} />
             ) : equipo.suprimido ? (
-              <Notice tono="aviso">
+              <Notice>
                 {MOTIVO_SUPRESION[equipo.suprimido]} Los datos de cada persona están en la lista
                 de integrantes.
               </Notice>

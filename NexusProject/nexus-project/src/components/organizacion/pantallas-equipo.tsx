@@ -128,8 +128,8 @@ export function DesactivarEquipoPantalla({ teamId }: { teamId: string }) {
   return (
     <PantallaDeEquipo
       teamId={teamId}
-      titulo="Desactivar equipo"
-      contexto="desactivación con justificación"
+      titulo="Dar de baja"
+      contexto="baja con justificación"
     >
       {(equipo) => <FormularioDesactivarEquipo equipo={equipo} />}
     </PantallaDeEquipo>

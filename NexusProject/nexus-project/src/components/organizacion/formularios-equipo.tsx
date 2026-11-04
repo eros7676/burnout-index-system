@@ -15,6 +15,7 @@ import {
   TextField,
 } from "@/shared/ui";
 import { organizacionApi } from "./api";
+import { desactivacionEquipoBloqueada } from "./bloqueos";
 import { ResumenErrores } from "./resumen-errores";
 import { contar } from "./textos";
 import { useEnvio } from "./use-envio";
@@ -263,6 +264,7 @@ export function FormularioDesactivarEquipo({ equipo }: { equipo: EquipoDTO }) {
   const { enviando, error, enviar, errorDe } = useEnvio();
   const [justificacion, setJustificacion] = useState("");
   const otras = equipo.personasActivas - (equipo.lider ? 1 : 0);
+  const bloqueada = desactivacionEquipoBloqueada(equipo);
   const guardar = (e: FormEvent) => {
     e.preventDefault();
     void enviar(
@@ -274,12 +276,12 @@ export function FormularioDesactivarEquipo({ equipo }: { equipo: EquipoDTO }) {
     );
   };
   return (
-    <Form onSubmit={guardar} aria-label="Desactivación del equipo">
+    <Form onSubmit={guardar} aria-label="Baja del equipo">
       <ResumenErrores error={error} />
       {otras > 0 ? (
         <Notice tono="aviso">
           El equipo tiene {contar(otras, "persona activa", "personas activas")}. Para
-          desactivarlo, cambie primero de equipo a esas personas.
+          darlo de baja, cambie primero de equipo a esas personas.
         </Notice>
       ) : (
         <Notice>
@@ -287,7 +289,7 @@ export function FormularioDesactivarEquipo({ equipo }: { equipo: EquipoDTO }) {
           trazabilidad se conservan; no se elimina ningún dato.
         </Notice>
       )}
-      <FormGroup titulo="Desactivación">
+      <FormGroup titulo="Baja">
         <TextAreaField
           etiqueta="Justificación"
           name="justificacion"
@@ -299,8 +301,8 @@ export function FormularioDesactivarEquipo({ equipo }: { equipo: EquipoDTO }) {
         />
       </FormGroup>
       <FormActions>
-        <Button variante="primary" type="submit" disabled={enviando}>
-          Desactivar equipo
+        <Button variante="danger" type="submit" disabled={enviando || bloqueada}>
+          Dar de baja el equipo
         </Button>
         <ButtonLink variante="quiet" href={enElEquipo(equipo.teamId)}>
           Cancelar

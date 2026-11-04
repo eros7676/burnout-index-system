@@ -289,7 +289,7 @@ test("Baja: pide fecha y justificación, las envía y vuelve a la ficha", async 
   await expect(page.getByText("No se elimina ningún dato.")).toBeVisible();
   await page.getByLabel("Fecha de baja").fill("2026-11-02");
   await page.getByLabel("Justificación").fill("Renuncia");
-  await page.getByRole("button", { name: "Dar de baja" }).click();
+  await page.getByRole("button", { name: "Dar de baja a la persona" }).click();
   await expect(page).toHaveURL(/\/employees\/EMP-001$/);
   expect(enviado(pedidos, "/api/personas/EMP-001/baja")).toEqual({
     fechaBaja: "2026-11-02",
@@ -332,7 +332,7 @@ test("Equipos: cada fila abre su equipo y los grupos pequeños no muestran agreg
   for (const [nombre, destino] of [
     ["Editar equipo", "edit"],
     ["Cambiar líder", "lead"],
-    ["Desactivar equipo", "deactivate"],
+    ["Dar de baja", "deactivate"],
   ])
     await expect(page.getByRole("link", { name: nombre })).toHaveAttribute(
       "href",
@@ -383,20 +383,12 @@ test("Equipos: nuevo equipo, cambio de líder y desactivación envían lo elegid
   await expect(page).toHaveURL(/\/teams\/EQ-01$/);
   expect(enviado(pedidos, "/api/equipos/EQ-01/lider")).toEqual({ liderId: "TL-02" });
 
-  // A team with people cannot be deactivated: the page warns before and the server answers after.
+  // A team with people cannot be deactivated: the page says why and disables the submit.
   await page.goto("/teams/EQ-02/deactivate");
   await expect(page.getByText("El equipo tiene 3 personas activas.")).toBeVisible();
   await page.getByLabel("Justificación").fill("Reorganización");
-  await page.getByRole("button", { name: "Desactivar equipo" }).click();
-  await expect(
-    resumenDeErrores(page).getByRole("link", {
-      name: "El equipo todavía tiene personas activas.",
-    }),
-  ).toBeVisible();
-  expect(enviado(pedidos, "/api/equipos/EQ-02/baja")).toEqual({
-    justificacion: "Reorganización",
-  });
-  await expect(page).toHaveURL(/\/teams\/EQ-02\/deactivate$/);
+  await expect(page.getByRole("button", { name: "Dar de baja el equipo" })).toBeDisabled();
+  expect(enviado(pedidos, "/api/equipos/EQ-02/baja")).toBeUndefined();
 });
 
 test("Importar personas: plantilla, vista previa, confirmación y archivo rechazado", async ({

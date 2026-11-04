@@ -22,6 +22,7 @@ import {
   TextField,
 } from "@/shared/ui";
 import { organizacionApi } from "./api";
+import { movimientoBloqueado } from "./bloqueos";
 import s from "./organizacion.module.css";
 import { hoyLocal } from "./piezas";
 import { ResumenErrores } from "./resumen-errores";
@@ -287,6 +288,7 @@ export function FormularioMovimiento({
   const [desde, setDesde] = useState(opciones.lunesActual);
   const [comentario, setComentario] = useState("");
   const correccion = motivo === "CORRECCION";
+  const bloqueado = movimientoBloqueado(persona, v);
 
   const guardar = (e: FormEvent) => {
     e.preventDefault();
@@ -367,8 +369,8 @@ export function FormularioMovimiento({
         />
       </FormGroup>
       <FormActions>
-        <Button variante="primary" type="submit" disabled={enviando}>
-          Guardar cambio
+        <Button variante="primary" type="submit" disabled={enviando || bloqueado}>
+          Guardar cambios
         </Button>
         <ButtonLink variante="quiet" href={enLaPersona(persona.employeeId)}>
           Cancelar
@@ -432,8 +434,12 @@ export function FormularioBaja({ ficha }: { ficha: FichaPersonaDTO }) {
         />
       </FormGroup>
       <FormActions>
-        <Button variante="primary" type="submit" disabled={enviando}>
-          Dar de baja
+        <Button
+          variante="danger"
+          type="submit"
+          disabled={enviando || !!persona.lidera}
+        >
+          Dar de baja a la persona
         </Button>
         <ButtonLink variante="quiet" href={enLaPersona(persona.employeeId)}>
           Cancelar
