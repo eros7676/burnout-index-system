@@ -39,7 +39,9 @@ import {
   WeekColumns,
   WeekStrip,
   tabla,
+  Tip,
 } from "@/shared/ui";
+import { DEFINICION } from "../definiciones";
 import { BotonExportar } from "../exportaciones/boton-exportar";
 import { useSesion } from "../shell/sesion";
 import s from "./resumen.module.css";
@@ -248,7 +250,7 @@ export function Resumen() {
                         </th>
                         <th scope="col">Causas</th>
                         <th scope="col" className={tabla.num}>
-                          Índice
+                          <Tip contenido={DEFINICION.indice}>Índice</Tip>
                         </th>
                       </tr>
                     </thead>
@@ -311,7 +313,7 @@ export function Resumen() {
                         detalle={`de ${entero(datos!.personas.length)} personas`}
                       />
                       <Figure
-                        etiqueta="Nuevas en Alto"
+                        etiqueta={<Tip contenido={DEFINICION.nuevasEnAlto}>Nuevas en Alto</Tip>}
                         valor={entero(vista.nuevas)}
                         detalle="respecto de la semana anterior"
                       />
@@ -406,7 +408,7 @@ export function Resumen() {
               <div className={s.trend}>
                 <p className={s.note}>
                   Personas por nivel, semana a semana; la semana elegida lleva
-                  su cantidad en Alto. Pase el cursor o use las flechas para ver
+                  su cantidad en Alto. Pase el cursor, toque o use las flechas para ver
                   cada semana.
                 </p>
                 <WeekColumns semanas={vista.evolucion} actual={semana} />

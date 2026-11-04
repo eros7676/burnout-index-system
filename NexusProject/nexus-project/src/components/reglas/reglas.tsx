@@ -23,7 +23,9 @@ import {
   SkeletonRows,
   Toolbar,
   tabla,
+  Tip,
 } from "@/shared/ui";
+import { DEFINICION } from "../definiciones";
 import { Pagination } from "@/shared/ui/pagination";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { useSesion } from "../shell/sesion";
@@ -137,7 +139,7 @@ export function Reglas() {
                     <tr>
                       <th scope="col">Factor</th>
                       <th scope="col" className={tabla.num}>
-                        Umbral
+                        <Tip contenido={DEFINICION.umbral}>Umbral</Tip>
                       </th>
                       <th scope="col">Peso en el índice</th>
                     </tr>

@@ -3,7 +3,8 @@ import type { Ref } from "react";
 import type { TareaDTO } from "@/shared/contratos/tareas";
 import { DataTable, tabla } from "@/shared/ui";
 import { EstadoTareaTag } from "./estado-tarea";
-import { diasAtrasoTexto, fechaTarea } from "./textos";
+import { FechaTarea } from "../fecha-tarea";
+import { diasAtrasoTexto } from "./textos";
 import s from "./tabla-tareas.module.css";
 
 /** Only a reference the server already checked as https is ever linked, and only when every row has one. */
@@ -74,10 +75,17 @@ export function TablaTareas({
             </th>
             <td className={s.title}>{t.titulo}</td>
             <td>{t.origen}</td>
-            <td className={s.date}>{fechaTarea(t.asignadaEl, semanaInicio)}</td>
-            <td className={s.date}>{fechaTarea(t.venceEl, semanaInicio)}</td>
             <td className={s.date}>
-              {fechaTarea(t.completadaEl, semanaInicio)}
+              <FechaTarea fecha={t.asignadaEl} referencia={semanaInicio} />
+            </td>
+            <td className={s.date}>
+              <FechaTarea fecha={t.venceEl} referencia={semanaInicio} />
+            </td>
+            <td className={s.date}>
+              <FechaTarea
+                fecha={t.completadaEl}
+                referencia={semanaInicio}
+              />
             </td>
             <td className={tabla.centro}>
               <EstadoTareaTag estado={t.estado} />

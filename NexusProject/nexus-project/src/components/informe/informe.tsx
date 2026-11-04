@@ -32,7 +32,9 @@ import {
   SkeletonRows,
   WeekStrip,
   tabla,
+  Tip,
 } from "@/shared/ui";
+import { DEFINICION } from "../definiciones";
 import { StatusTag } from "@/shared/ui/status-tag";
 import {
   causasEnPalabras,
@@ -188,7 +190,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
               )}
               <div className={s.figures}>
                 <Figure
-                  etiqueta="Índice"
+                  etiqueta={<Tip contenido={DEFINICION.indice}>Índice</Tip>}
                   valor={decimal(evaluacion.indice)}
                   detalle="de 100"
                 />
@@ -240,14 +242,14 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                         Valor
                       </th>
                       <th scope="col" className={tabla.num}>
-                        Umbral
+                        <Tip contenido={DEFINICION.umbral}>Umbral</Tip>
                       </th>
-                      <th scope="col">Frente al umbral</th>
+                      <th scope="col"><Tip contenido={DEFINICION.frenteAlUmbral}>Frente al umbral</Tip></th>
                       <th scope="col" className={tabla.num}>
-                        Puntaje
+                        <Tip contenido={DEFINICION.puntaje}>Puntaje</Tip>
                       </th>
                       <th scope="col" className={tabla.num}>
-                        Aporte
+                        <Tip contenido={DEFINICION.aporte}>Aporte</Tip>
                       </th>
                     </tr>
                   </thead>
@@ -404,7 +406,9 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                     </dd>
                   </div>
                   <div>
-                    <dt>Vigencia</dt>
+                    <dt>
+                      <Tip contenido={DEFINICION.vigenciaAlerta}>Vigencia</Tip>
+                    </dt>
                     <dd>
                       {alerta.vigencia === "SUPERADA" ? (
                         <StatusTag tono="aviso">Superada</StatusTag>

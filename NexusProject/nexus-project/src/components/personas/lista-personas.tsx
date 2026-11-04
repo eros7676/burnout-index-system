@@ -28,7 +28,9 @@ import {
   Toolbar,
   WeekStrip,
   tabla,
+  Tip,
 } from "@/shared/ui";
+import { DEFINICION, DEFINICION_FACTOR } from "../definiciones";
 import { Pagination } from "@/shared/ui/pagination";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { BotonExportar } from "../exportaciones/boton-exportar";
@@ -246,20 +248,20 @@ export function ListaPersonas() {
                       Últimas 8 semanas
                     </th>
                     <th scope="col" className={tabla.centro}>
-                      Nivel
+                      <Tip contenido={DEFINICION.nivel}>Nivel</Tip>
                     </th>
                     <th scope="col" className={tabla.num}>
-                      Índice
+                      <Tip contenido={DEFINICION.indice}>Índice</Tip>
                     </th>
                     <th scope="col" className={tabla.num}>
-                      Horas extra
+                      <Tip contenido={DEFINICION_FACTOR.HE}>Horas extra</Tip>
                     </th>
                     <th scope="col" className={`${tabla.num} ${s.wrap}`}>
-                      Días consecutivos sin descanso
+                      <Tip contenido={DEFINICION_FACTOR.DS}>Días consecutivos sin descanso</Tip>
                     </th>
-                    <th scope="col">Tareas</th>
+                    <th scope="col"><Tip contenido={DEFINICION_FACTOR.CT}>Tareas</Tip></th>
                     <th scope="col" className={`${tabla.num} ${s.wrap}`}>
-                      Vacaciones pendientes
+                      <Tip contenido={DEFINICION_FACTOR.VP}>Vacaciones pendientes</Tip>
                     </th>
                   </tr>
                 </thead>

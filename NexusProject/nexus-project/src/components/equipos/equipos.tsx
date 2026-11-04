@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { type Lectura, useLectura } from "@/shared/ui/tip";
+import { type Lectura, useLectura, Tip } from "@/shared/ui/tip";
+import { DEFINICION } from "../definiciones";
 import { useRef, useState } from "react";
 import { useConsulta } from "@/client/use-consulta";
 import type { Nivel } from "@/shared/contracts";
@@ -203,10 +204,10 @@ export function Equipos() {
                       <>
                         <th scope="col">Niveles</th>
                         <th scope="col" className={tabla.centro}>
-                          En Alto
+                          <Tip contenido={DEFINICION.enAltoEquipo}>En Alto</Tip>
                         </th>
                         <th scope="col" className={`${tabla.num} ${s.wrap}`}>
-                          Índice promedio
+                          <Tip contenido={DEFINICION.promedio}>Índice promedio</Tip>
                         </th>
                       </>
                     ) : (
