@@ -58,8 +58,11 @@
 .table tbody tr:hover {
   background: var(--surface-2);
 }
+/* A metric column (hours, days, an index with two decimals: short values of one width in
+   tabular figures) centers its header and values, so the space the table gives the column
+   sits evenly on both sides instead of piling up on one (owner, 2026-11-04). */
 .num {
-  text-align: right !important;
+  text-align: center !important;
   white-space: nowrap;
 }
 .muted {
