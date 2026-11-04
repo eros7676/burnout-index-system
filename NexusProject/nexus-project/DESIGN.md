@@ -70,7 +70,6 @@ line height is part of the step:
 | Token | Size/line | Use |
 |---|---|---|
 | `--text-xs` | 12/16 | column headers, labels above controls, secondary lines under a value, asides, tags, axis labels |
-| `--text-sm` | 12/16 | the same step; modules written against the earlier 13 px scale still resolve. New code uses `--text-xs` |
 | `--text-md` | 14/20 | body, table cells, controls |
 | `--text-lg` | 16/24 | section titles |
 | `--text-xl` | 20/28 | sub-headlines |
@@ -274,7 +273,16 @@ formula guard.
 - 2026-11-02 — Wherever a person appears with history, the eight-week strip shows it. (held by owner)
 - 2026-11-02 — Filters are selects with names; no screen asks to type an ID. (held by owner)
 - 2026-11-02 — App code animates only through src/shared/motion; reduced motion is decided there. (held by the motion git-grep check)
-- 2026-11-02 — [provisional] Tasks are shown as the week's counts (activas, pendientes, vencidas), never as task items. (held by owner)
+- 2026-11-03 — Lists show a week's task counts (activas, pendientes, vencidas); the task items live on the week page and the task history, which back those counts (D5). (held by e2e/tareas.spec.ts)
 - 2026-11-02 — [provisional] An action's or record's state uses StatusTag; a level only ever uses LevelTag. (held by owner)
 - 2026-11-02 — [provisional] The report page is the one detail of a week's result; lists link to it instead of opening inline panels. (held by owner)
 - 2026-11-03 — Every CSV export uses `FORMATO_CSV` (semicolon, BOM, CRLF; cells with the separator are quoted), the audit export included. (held by tests/auditoria-exportacion.test.ts)
+- 2026-11-03 — An alert opens on its own page with the follow-up case and the simulated mail; lists never expand inline (D4). (held by e2e/seguimiento.spec.ts)
+- 2026-11-03 — Weekly tasks are imported as `tareas-v1` snapshots whose counts must match the week's totals, or the batch is rejected (D5). (held by tests/importacion-tareas*.test.ts)
+- 2026-11-03 — Team membership is effective-dated; people and teams are deactivated, never deleted (D6). (held by tests/organizacion*.test.ts)
+- 2026-11-03 — Rules change through a draft that is simulated before it is published; a retroactive change needs a second user from Gerencia (D7). (held by tests/reglas-borradores*.test.ts)
+- 2026-11-03 — A person has at most one open follow-up case; notes are append-only and closing needs a reason (D8). (held by tests/seguimiento*.test.ts)
+- 2026-11-03 — Every write, denial and sensitive read records a catalog event with actor, subject and outcome in the same transaction (D9). (held by tests/auditoria*.test.ts)
+- 2026-11-03 — Lists that grow with headcount × weeks page on the server (50 by default, 100 at most) (D10). (held by tests/rutas-api.test.ts and the repositories' tests)
+- 2026-11-04 — Fields in a Toolbar or FilterBar share a six-column track (two columns at tablet width, one on a phone), so a second row of filters starts under the first. (held by shared/ui field.module.css, work/enterprise/audit/rules.mjs R11)
+- 2026-11-04 — A StatusTag draws the one icon of its tone; callers pass only the word. (held by shared/ui status-tag.tsx)

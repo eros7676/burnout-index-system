@@ -50,7 +50,6 @@
   /* Carbon "productive" steps (R31): 12/16, 14/20, 16/24, 20/28, 28/36, 32/40. The
      line height is part of the step: --leading resolves each size to its pair. */
   --text-xs: 0.75rem; /* 12/16: column headers, labels, secondary lines, tags, axis labels */
-  --text-sm: var(--text-xs); /* 12/16: same step; kept so existing modules resolve */
   --text-md: 0.875rem; /* 14/20: body, table cells, controls */
   --text-lg: 1rem; /* 16/24: section titles */
   --text-xl: 1.25rem; /* 20/28: sub-headlines, legend figures */
