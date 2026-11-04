@@ -50,6 +50,8 @@ model EventoAuditoria {
   @@index([sujetoId, createdAt])
   @@index([correlacionId, createdAt])
   @@index([resultado, createdAt])
+  @@index([solicitudId])
+  @@index([recursoId, createdAt])
 }
 
 datasource db {
