@@ -26,3 +26,25 @@ export function puedeAbrirOrganizacion(
     return !!teamId && ruta === `/teams/${teamId}`;
   return null;
 }
+
+/** The sidebar's «Mi equipo» target: the page of the Team Lead's own team, `null` for anyone else. */
+export function rutaMiEquipo(rol: Rol, teamId?: string | null): string | null {
+  return rol === "TEAM_LEAD" && teamId ? `/teams/${encodeURIComponent(teamId)}` : null;
+}
+
+/**
+ * The audit screen filtered to a person (`sujetoId`) or a team (`equipoId`), `null` when the role
+ * cannot read the audit trail so the link is not offered.
+ */
+export function rutaHistorial(
+  rol: Rol,
+  alcance: { sujetoId: string } | { equipoId: string },
+): string | null {
+  if (!tienePermiso(rol, "AUDITORIA")) return null;
+  const params = new URLSearchParams(
+    "sujetoId" in alcance
+      ? { sujetoId: alcance.sujetoId }
+      : { entidad: "EQUIPO", recursoId: alcance.equipoId },
+  );
+  return `/audit?${params}`;
+}
