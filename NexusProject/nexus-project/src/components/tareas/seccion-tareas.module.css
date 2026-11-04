@@ -7,3 +7,6 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.quiet {
+  color: var(--ink-2);
+}

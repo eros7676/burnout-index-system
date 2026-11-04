@@ -1,14 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { CierreTareaDTO } from "../src/shared/contratos/tareas";
+import type {
+  CierreTareaDTO,
+  SemanaTareasDTO,
+  TareaDTO,
+} from "../src/shared/contratos/tareas";
 import {
   diasAtrasoTexto,
   ETIQUETA_ESTADO,
   fechaTarea,
   GRUPO_ESTADO,
   textoHistorial,
-  textoRecuento,
   hrefTareasSemana,
+  detalleCoincideEnTodas,
+  tareasEnlazables,
+  verificacionDetalle,
 } from "../src/components/tareas/textos";
 
 const cierre = (
@@ -40,42 +46,6 @@ test("las fechas de una tarea omiten el año de la semana y lo muestran fuera de
   assert.equal(fechaTarea(null, "2026-10-12"), "—");
   assert.equal(fechaTarea("2026-10-09", "2026-10-12"), "9 oct");
   assert.equal(fechaTarea("2025-12-30", "2026-01-05"), "30 dic 2025");
-});
-
-test("el recuento nombra los tres grupos con la redacción formal de la investigación", () => {
-  assert.equal(
-    textoRecuento({
-      total: 10,
-      completadas: 3,
-      pendientes: 2,
-      vencidas: 5,
-      diasAtrasoMax: 9,
-      diasAtrasoTotal: 21,
-    }),
-    "10 tareas: 3 completadas, 2 abiertas en plazo, 5 vencidas.",
-  );
-  assert.equal(
-    textoRecuento({
-      total: 1,
-      completadas: 0,
-      pendientes: 1,
-      vencidas: 0,
-      diasAtrasoMax: 0,
-      diasAtrasoTotal: 0,
-    }),
-    "1 tarea: 0 completadas, 1 abierta en plazo, 0 vencidas.",
-  );
-  assert.equal(
-    textoRecuento({
-      total: 0,
-      completadas: 0,
-      pendientes: 0,
-      vencidas: 0,
-      diasAtrasoMax: 0,
-      diasAtrasoTotal: 0,
-    }),
-    "Sin tareas registradas.",
-  );
 });
 
 test("estados y grupos usan palabras neutras, nunca un juicio sobre la persona", () => {
@@ -164,4 +134,77 @@ test("el enlace a las tareas de una semana conserva solo lo que cambia la vista"
     }),
     "/employees/EMP-001/weeks/2026-10-12?page=3",
   );
+});
+
+const tarea = (origenRef: string | null): TareaDTO => ({
+  taskId: "OPS-1",
+  titulo: "t",
+  origen: "o",
+  origenRef,
+  asignadaEl: "2026-10-01",
+  venceEl: null,
+  completadaEl: null,
+  estado: "PENDIENTE",
+  diasAtraso: null,
+});
+
+test("el identificador es un enlace solo si todas las filas pueden enlazar", () => {
+  assert.equal(tareasEnlazables([]), false);
+  assert.equal(
+    tareasEnlazables([tarea("https://x/1"), tarea("https://x/2")]),
+    true,
+  );
+  assert.equal(tareasEnlazables([tarea("https://x/1"), tarea(null)]), false);
+});
+
+const semanaConTareas = (
+  detalle: SemanaTareasDTO["detalle"],
+  activas: number,
+  coincide: boolean | null,
+) =>
+  ({
+    detalle,
+    coincide,
+    indicadores: {
+      tareasActivas: activas,
+      tareasPendientes: 0,
+      tareasVencidas: 0,
+    },
+  }) as SemanaTareasDTO;
+
+test("la verificación del detalle distingue cuatro casos", () => {
+  assert.equal(
+    verificacionDetalle(semanaConTareas("SIN_DETALLE", 3, null)),
+    "SIN_DETALLE",
+  );
+  assert.equal(
+    verificacionDetalle(semanaConTareas("CON_DETALLE", 0, true)),
+    "SIN_TAREAS",
+  );
+  assert.equal(
+    verificacionDetalle(semanaConTareas("CON_DETALLE", 3, true)),
+    "COINCIDE",
+  );
+  assert.equal(
+    verificacionDetalle(semanaConTareas("CON_DETALLE", 3, false)),
+    "NO_COINCIDE",
+  );
+});
+
+test("la coincidencia se dice una vez solo si ninguna semana difiere ni falta", () => {
+  const ok = semanaConTareas("CON_DETALLE", 3, true);
+  assert.equal(detalleCoincideEnTodas([ok, ok]), true);
+  assert.equal(
+    detalleCoincideEnTodas([ok, semanaConTareas("CON_DETALLE", 0, true)]),
+    true,
+  );
+  assert.equal(
+    detalleCoincideEnTodas([ok, semanaConTareas("CON_DETALLE", 3, false)]),
+    false,
+  );
+  assert.equal(
+    detalleCoincideEnTodas([ok, semanaConTareas("SIN_DETALLE", 3, null)]),
+    false,
+  );
+  assert.equal(detalleCoincideEnTodas([]), false);
 });

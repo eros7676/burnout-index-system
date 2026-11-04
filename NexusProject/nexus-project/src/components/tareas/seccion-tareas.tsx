@@ -14,20 +14,27 @@ import {
 import { StatusTag } from "@/shared/ui/status-tag";
 import { useSesion } from "../shell/sesion";
 import { tareasApi } from "./tareas-api";
-import { hrefTareasSemana } from "./textos";
+import {
+  detalleCoincideEnTodas,
+  hrefTareasSemana,
+  verificacionDetalle,
+} from "./textos";
 import s from "./seccion-tareas.module.css";
 
-/** Whether the task rows corroborate the week's counts, in one word. */
+/** The detail's verdict for a week that is not the expected one; a matching week is said once above the table. */
 function Verificacion({ semana }: { semana: SemanaTareasDTO }) {
-  if (semana.detalle === "SIN_DETALLE")
-    return <StatusTag>Sin detalle</StatusTag>;
-  if (semana.indicadores.tareasActivas === 0)
-    return <StatusTag>Sin tareas</StatusTag>;
-  return semana.coincide ? (
-    <StatusTag tono="exito">Coincide con el detalle</StatusTag>
-  ) : (
-    <StatusTag tono="incidencia">No coincide con el detalle</StatusTag>
-  );
+  switch (verificacionDetalle(semana)) {
+    case "SIN_DETALLE":
+      return <StatusTag>Sin detalle</StatusTag>;
+    case "SIN_TAREAS":
+      return <StatusTag>Sin tareas</StatusTag>;
+    case "NO_COINCIDE":
+      return (
+        <StatusTag tono="incidencia">No coincide con el detalle</StatusTag>
+      );
+    default:
+      return <span className={s.quiet}>Coincide</span>;
+  }
 }
 
 /**
@@ -42,13 +49,18 @@ export function SeccionTareas({ employeeId }: { employeeId: string }) {
     usuario ? `tareas-semanas:${employeeId}` : null,
   );
   const datos = consulta.estado === "listo" ? consulta.datos : null;
+  const coinciden = datos ? detalleCoincideEnTodas(datos.semanas) : false;
 
   return (
     <Section
       titulo="Tareas por semana"
       aside={
         datos?.semanas.length ? (
-          <span>Conteos del resumen y estado del detalle importado</span>
+          <span>
+            {coinciden
+              ? "Conteos del resumen; el detalle importado coincide en todas las semanas"
+              : "Conteos del resumen y estado del detalle importado"}
+          </span>
         ) : undefined
       }
     >
@@ -75,7 +87,7 @@ export function SeccionTareas({ employeeId }: { employeeId: string }) {
               <th scope="col" className={tabla.num}>
                 Vencidas
               </th>
-              <th scope="col">Detalle</th>
+              {!coinciden && <th scope="col">Detalle</th>}
               <th scope="col">
                 <span className="sr-only">Tareas de la semana</span>
               </th>
@@ -96,9 +108,11 @@ export function SeccionTareas({ employeeId }: { employeeId: string }) {
                   <td className={tabla.num}>
                     {entero(w.indicadores.tareasVencidas)}
                   </td>
-                  <td>
-                    <Verificacion semana={w} />
-                  </td>
+                  {!coinciden && (
+                    <td>
+                      <Verificacion semana={w} />
+                    </td>
+                  )}
                   <td>
                     <Link
                       className={s.link}
