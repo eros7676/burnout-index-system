@@ -92,14 +92,31 @@
    bar above still spans the card. */
 
 /* The week of one team: the mix, then the figures that read from it. */
+/* The week's mix: the bar across the block, then one row of four equal columns (legend, average,
+   people in Alto, coverage), so no column is left with a blank beside it. The legend and the
+   figures become items of this grid (display: contents). */
 .resumen {
   display: grid;
-  gap: var(--space-5);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5) var(--space-6);
 }
+.mezcla,
+.mezcla > div,
 .cifras {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-4);
+  display: contents;
+}
+.mezcla > div > :first-child {
+  grid-column: 1 / -1;
+}
+@media (max-width: 900px) {
+  .resumen {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .resumen {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Header actions: part of the header's own flex row on a wide screen; on a phone an even grid of

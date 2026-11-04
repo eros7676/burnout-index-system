@@ -28,9 +28,8 @@ export function ResumenSeguimientoCelda({
   resumen: ResumenSeguimiento | null;
   usuarioId?: string;
 }) {
-  if (!resumen) return (
-      <span className={`${tabla.sub} ${s.sinSeguimiento}`}>Sin seguimiento</span>
-    );
+  // The absence of a case is a state like the others: a neutral tag, same size and line.
+  if (!resumen) return <StatusTag>Sin seguimiento</StatusTag>;
   const responsable =
     resumen.asignadoA.userId === usuarioId
       ? `${resumen.asignadoA.nombre} (usted)`

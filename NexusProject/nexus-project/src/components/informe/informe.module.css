@@ -10,11 +10,13 @@
   display: grid;
   gap: var(--space-4);
 }
+/* The result's facts share the block's width in equal columns, like the key facts elsewhere,
+   instead of bunching on the left. */
 .figures {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-4) var(--space-10);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  align-items: start;
+  gap: var(--space-4) var(--space-6);
 }
 .fact {
   display: grid;
@@ -72,10 +74,16 @@
 .lead {
   font-weight: var(--weight-strong);
 }
+/* Three short facts across the card, the factors on a full row below. */
 .facts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--space-4) var(--space-5);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-6);
+}
+@media (max-width: 600px) {
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .facts dt {
   color: var(--ink-2);

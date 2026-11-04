@@ -183,7 +183,9 @@ export function Equipos() {
                     {activos ? (
                       <>
                         <th scope="col">Niveles</th>
-                        <th scope="col">En Alto</th>
+                        <th scope="col" className={tabla.centro}>
+                          En Alto
+                        </th>
                         <th scope="col" className={`${tabla.num} ${s.wrap}`}>
                           Índice promedio
                         </th>
@@ -231,7 +233,7 @@ export function Equipos() {
                                 .join(", ") || "Sin evaluaciones vigentes"}
                             </span>
                           </td>
-                          <td>
+                          <td className={tabla.centro}>
                             <span className={s.alto}>
                               <strong className="num" data-cero={e.conteo.ALTO === 0 || undefined}>
                                 {entero(e.conteo.ALTO)}

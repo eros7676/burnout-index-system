@@ -114,16 +114,17 @@ export function DetalleAlerta({ alertId }: { alertId: string }) {
                     ),
                   },
                   {
-                    termino: "Índice",
-                    valor: decimal(semana?.actualizado ? semana.indice : null),
-                  },
-                  {
-                    termino: "Nivel",
+                    // One result, one fact: the index with its level beside it, so the
+                    // strip holds six facts on one row.
+                    termino: "Índice y nivel",
                     valor: (
-                      <LevelTag
-                        nivel={semana?.nivel ?? null}
-                        actualizado={semana?.actualizado ?? true}
-                      />
+                      <span className={s.resultado}>
+                        {decimal(semana?.actualizado ? semana.indice : null)}
+                        <LevelTag
+                          nivel={semana?.nivel ?? null}
+                          actualizado={semana?.actualizado ?? true}
+                        />
+                      </span>
                     ),
                   },
                   {

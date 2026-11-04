@@ -41,10 +41,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Same type as every other chart key: small, secondary ink. */
 .legend {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-4);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
 }
 .key {
   display: inline-flex;

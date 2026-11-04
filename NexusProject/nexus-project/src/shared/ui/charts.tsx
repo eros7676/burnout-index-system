@@ -120,29 +120,31 @@ export function WeekColumns({
           </div>
         ))}
       </div>
-      <table className="sr-only">
-        <caption>Personas por nivel en cada semana</caption>
-        <thead>
-          <tr>
-            <th scope="col">Semana</th>
-            {ORDEN.map((n) => (
-              <th key={n} scope="col">
-                {NIVEL[n]}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {semanas.map((c) => (
-            <tr key={c.periodStart}>
-              <th scope="row">{textoSemana(c.periodStart, c.periodEnd)}</th>
+      <div className="sr-only">
+        <table>
+          <caption>Personas por nivel en cada semana</caption>
+          <thead>
+            <tr>
+              <th scope="col">Semana</th>
               {ORDEN.map((n) => (
-                <td key={n}>{c.conteo[n]}</td>
+                <th key={n} scope="col">
+                  {NIVEL[n]}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {semanas.map((c) => (
+              <tr key={c.periodStart}>
+                <th scope="row">{textoSemana(c.periodStart, c.periodEnd)}</th>
+                {ORDEN.map((n) => (
+                  <td key={n}>{c.conteo[n]}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }
@@ -199,25 +201,27 @@ export function IndexChart({
           );
         })}
       </div>
-      <table className="sr-only">
-        <caption>Índice por semana</caption>
-        <thead>
-          <tr>
-            <th scope="col">Semana</th>
-            <th scope="col">Índice</th>
-            <th scope="col">Nivel</th>
-          </tr>
-        </thead>
-        <tbody>
-          {puntos.map((p) => (
-            <tr key={p.periodStart}>
-              <th scope="row">{textoSemana(p.periodStart, p.periodEnd)}</th>
-              <td>{p.actualizado ? decimal(p.indice) : "Desactualizado"}</td>
-              <td>{p.actualizado && p.nivel ? NIVEL[p.nivel] : "—"}</td>
+      <div className="sr-only">
+        <table>
+          <caption>Índice por semana</caption>
+          <thead>
+            <tr>
+              <th scope="col">Semana</th>
+              <th scope="col">Índice</th>
+              <th scope="col">Nivel</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {puntos.map((p) => (
+              <tr key={p.periodStart}>
+                <th scope="row">{textoSemana(p.periodStart, p.periodEnd)}</th>
+                <td>{p.actualizado ? decimal(p.indice) : "Desactualizado"}</td>
+                <td>{p.actualizado && p.nivel ? NIVEL[p.nivel] : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }

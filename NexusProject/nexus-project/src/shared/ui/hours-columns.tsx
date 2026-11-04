@@ -54,25 +54,29 @@ export function HoursColumns({ semanas }: { semanas: SemanaHoras[] }) {
           );
         })}
       </div>
-      <table className="sr-only">
-        <caption>Horas por semana</caption>
-        <thead>
-          <tr>
-            <th scope="col">Semana</th>
-            <th scope="col">Horas trabajadas</th>
-            <th scope="col">Horas extra</th>
-          </tr>
-        </thead>
-        <tbody>
-          {semanas.map((w) => (
-            <tr key={w.periodStart}>
-              <th scope="row">{textoSemana(w.periodStart, w.periodEnd)}</th>
-              <td>{w.trabajadas === null ? "Sin dato" : horas(w.trabajadas)}</td>
-              <td>{horas(w.extra)}</td>
+      <div className="sr-only">
+        <table>
+          <caption>Horas por semana</caption>
+          <thead>
+            <tr>
+              <th scope="col">Semana</th>
+              <th scope="col">Horas trabajadas</th>
+              <th scope="col">Horas extra</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {semanas.map((w) => (
+              <tr key={w.periodStart}>
+                <th scope="row">{textoSemana(w.periodStart, w.periodEnd)}</th>
+                <td>
+                  {w.trabajadas === null ? "Sin dato" : horas(w.trabajadas)}
+                </td>
+                <td>{horas(w.extra)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }

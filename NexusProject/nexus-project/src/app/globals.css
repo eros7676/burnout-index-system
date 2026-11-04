@@ -180,6 +180,8 @@ textarea {
 }
 
 /* Visually hidden, still read by assistive technology. */
+/* A table is never 1 px tall, so a visually hidden table sits inside an .sr-only wrapper:
+   on the table itself its rows would still lengthen the page. */
 .sr-only {
   position: absolute;
   width: 1px;
