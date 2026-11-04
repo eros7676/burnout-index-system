@@ -251,7 +251,7 @@ export function ListaPersonas() {
                       Horas extra
                     </th>
                     <th scope="col" className={`${tabla.num} ${s.wrap}`}>
-                      Días seguidos sin descanso
+                      Días consecutivos sin descanso
                     </th>
                     <th scope="col">Tareas</th>
                     <th scope="col" className={`${tabla.num} ${s.wrap}`}>

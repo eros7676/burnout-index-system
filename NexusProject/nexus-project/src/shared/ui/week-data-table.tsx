@@ -57,7 +57,7 @@ export function WeekDataTable({
             Horas
           </th>
           <th scope="col" rowSpan={2} className={`${num} ${s.abajo}`}>
-            <Partido a="Días seguidos" b="sin descanso" />
+            <Partido a="Días consecutivos" b="sin descanso" />
           </th>
           <th scope="colgroup" colSpan={3} className={s.grupo}>
             Tareas
