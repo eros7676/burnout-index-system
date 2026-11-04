@@ -40,6 +40,7 @@
      own, never the level hues (R27), and always paired with an icon. */
   --danger: #a3174f;
   --danger-soft: #fbe8ef;
+  --danger-hover: #87123f;
   --success: #0b6a62;
   --success-soft: #dff2ef;
   --notice: #5b3d9e;

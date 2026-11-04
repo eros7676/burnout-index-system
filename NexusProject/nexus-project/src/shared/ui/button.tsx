@@ -2,7 +2,11 @@ import Link from "next/link";
 import type { ButtonHTMLAttributes, ComponentProps } from "react";
 import s from "./button.module.css";
 
-type Variante = "primary" | "secondary" | "quiet";
+/**
+ * `danger` confirms an action that removes or deactivates something (the submit of its own page);
+ * `dangerSecondary` is the entry point to such an action among other secondary buttons.
+ */
+type Variante = "primary" | "secondary" | "quiet" | "danger" | "dangerSecondary";
 const clase = (variante: Variante, extra?: string) =>
   [s.button, s[variante], extra].filter(Boolean).join(" ");
 

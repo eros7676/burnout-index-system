@@ -37,6 +37,22 @@
 .secondary:hover:not(:disabled) {
   border-color: var(--ink-3);
 }
+.danger {
+  background: var(--danger);
+  color: var(--on-accent);
+}
+.danger:hover:not(:disabled) {
+  background: var(--danger-hover);
+}
+.dangerSecondary {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--danger);
+}
+.dangerSecondary:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
 .quiet {
   background: transparent;
   color: var(--accent);
