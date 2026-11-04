@@ -42,13 +42,13 @@ import {
   envio,
   nombreDestinatario,
   sinDestinatario,
-  sugerencia,
   trasIntento,
 } from "../alertas/aviso";
 import { NotificacionAlerta } from "../notificacion-alerta";
 import { useSesion } from "../shell/sesion";
 import { hrefTareasSemana } from "../tareas/textos";
 import { explicacionEnPalabras } from "./explicacion";
+import { Sugerencias } from "./sugerencias";
 import s from "./informe.module.css";
 
 type Datos = { informe: InformeDTO; personas: PersonaDTO[] };
@@ -364,11 +364,7 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                 {!informe ? (
                   <SkeletonRows filas={3} />
                 ) : (
-                  <ul className={s.suggestions}>
-                    {informe.recomendaciones.map((texto) => (
-                      <li key={texto}>{sugerencia(texto)}</li>
-                    ))}
-                  </ul>
+                  <Sugerencias lineas={informe.recomendaciones} />
                 )}
               </Section>
             </Stack>
