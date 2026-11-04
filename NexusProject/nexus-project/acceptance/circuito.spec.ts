@@ -47,7 +47,7 @@ test("fallo técnico posterior al commit y recuperación desde la interfaz sin d
       data: { weights: {} },
     });
     await confirmar(page).click();
-    await expect(procesamiento(page)).toContainText("Falló el cálculo");
+    await expect(procesamiento(page)).toContainText("Con error");
     // The data is confirmed even though its calculation failed.
     await expect(
       page.getByRole("region", { name: "Importación confirmada" }),
@@ -68,11 +68,11 @@ test("fallo técnico posterior al commit y recuperación desde la interfaz sin d
   await page
     .getByRole("button", { name: "Consultar estado", exact: true })
     .click();
-  await expect(procesamiento(page)).toContainText("Falló el cálculo");
+  await expect(procesamiento(page)).toContainText("Con error");
   await page
     .getByRole("button", { name: "Reintentar procesamiento", exact: true })
     .click();
-  await expect(procesamiento(page)).toContainText("Terminado");
+  await expect(procesamiento(page)).toContainText("Completado");
   expect(await db.evaluacion.count()).toBe(2);
   expect(await db.alerta.count()).toBe(1);
   await expect(await semanaDe(page, "EMP-001", "12–18 oct 2026")).toContainText(
@@ -138,7 +138,10 @@ test("plantilla completa: rechazo atómico, cuatro niveles, ranking, resumen e i
   await expect(page.getByRole("combobox", { name: "Semana" })).toHaveValue(
     "2026-10-12",
   );
-  await expect(lista.getByRole("row")).toHaveCount(49 + 1);
+  // The list is the whole active staff, paged by 50: the 49 evaluable people plus those outside the coverage.
+  const activas = await db.empleado.count({ where: { activo: true } });
+  expect(activas).toBeGreaterThanOrEqual(49);
+  await expect(lista.getByRole("row")).toHaveCount(Math.min(activas, 50) + 1);
   for (const [nivel, etiqueta] of [
     ["BAJO", "Bajo"],
     ["MEDIO", "Medio"],
@@ -167,7 +170,7 @@ test("plantilla completa: rechazo atómico, cuatro niveles, ranking, resumen e i
   await expect(
     page.getByRole("region", { name: "Semana anterior" }),
   ).toContainText(
-    "No se sostiene una carga alta dos semanas seguidas con causas en común.",
+    "No se sostiene una carga alta dos semanas seguidas con factores en común.",
   );
   await expect(page.getByRole("region", { name: "Alerta" })).toContainText(
     "Esta semana no generó una alerta.",
@@ -186,7 +189,7 @@ test("plantilla completa: rechazo atómico, cuatro niveles, ranking, resumen e i
   await expect(
     page.getByRole("region", { name: "Semana anterior" }),
   ).toContainText(
-    "La carga alta se sostiene dos semanas seguidas, con causas en común.",
+    "La carga alta se sostiene dos semanas seguidas, con factores en común.",
   );
   await expect(page.getByRole("region", { name: "Alerta" })).toContainText(
     "Team Lead ficticio 1",
@@ -358,9 +361,15 @@ test("antecedente tardío y reglas por script preservan historial y superan aler
     .getByRole("navigation", { name: "Secciones" })
     .getByRole("link", { name: "Importar datos" })
     .click();
-  const campo = page.getByLabel("ID del procesamiento");
-  if (!(await campo.isVisible()))
-    await page.getByText("¿Se cortó un procesamiento?").click();
+  const campo = page.getByLabel("Código del procesamiento");
+  const resumenRecuperar = page.getByText("¿Se interrumpió un procesamiento?");
+  await expect(resumenRecuperar).toBeVisible();
+  // The screen opens this section by itself when a job id was stored (right after it mounts),
+  // so it is opened by hand only while it stays closed.
+  await expect(async () => {
+    if (!(await campo.isVisible())) await resumenRecuperar.click();
+    await expect(campo).toBeVisible({ timeout: 1000 });
+  }).toPass();
   await campo.fill(job.jobId);
   await page
     .getByRole("button", { name: "Consultar estado", exact: true })
@@ -368,7 +377,7 @@ test("antecedente tardío y reglas por script preservan historial y superan aler
   await page
     .getByRole("button", { name: "Reintentar procesamiento", exact: true })
     .click();
-  await expect(procesamiento(page)).toContainText("Terminado");
+  await expect(procesamiento(page)).toContainText("Completado");
   await expect(await semanaDe(page, "EMP-019", "12–18 oct 2026")).toContainText(
     "Medio",
   );

@@ -299,7 +299,7 @@ test("Reglas: un borrador a futuro se simula, se publica tras confirmar y muestr
   await expect(pagina(page).getByRole("status").filter({ hasText: "Se publicó la versión v2." })).toBeVisible();
   expect(servidor.de("POST borradores/:id/publicar")[0].cuerpo).toEqual({ huella: REGLAS.huella });
   const publicada = page.getByRole("region", { name: "Versión v2" });
-  await expect(publicada.getByText("Al día")).toBeVisible();
+  await expect(publicada.getByText("Completado")).toBeVisible();
   // A published draft offers no further step.
   await expect(boton(page, "Descartar borrador")).toHaveCount(0);
   await expect(page.getByRole("group", { name: "Pesos de los factores" })).toHaveCount(0);
@@ -421,7 +421,7 @@ test("Reglas: el Team Lead lee las reglas en palabras, sin borradores ni control
   const factores = page.getByRole("region", { name: "Factores del índice" });
   for (const [factor, umbral, peso] of [
     ["Horas extra", "8 h", "30 %"],
-    ["Días seguidos sin descanso", "6 días", "30 %"],
+    ["Días consecutivos sin descanso", "6 días", "30 %"],
     ["Carga de tareas", "0,35", "25 %"],
     ["Vacaciones pendientes", "10 días", "15 %"],
   ]) {

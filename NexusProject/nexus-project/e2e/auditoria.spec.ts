@@ -192,7 +192,9 @@ const hecho = (page: Page, termino: string) =>
   page
     .locator("dl > div")
     .filter({
-      has: page.getByRole("term").filter({ hasText: new RegExp(`^${termino}$`) }),
+      has: page.getByRole("term").filter({
+        hasText: new RegExp(`^${termino.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
+      }),
     })
     .getByRole("definition");
 
@@ -218,7 +220,7 @@ test("Auditoría: los eventos se leen en palabras, con actor, rol, recurso y res
     "17 oct 2026, 10:15:00",
   ]);
   const importacion = "19 oct 2026";
-  await expect(await celda(tabla, importacion, "Actor")).toHaveText(/RRHH\s*RRHH/);
+  await expect(await celda(tabla, importacion, "Actor")).toHaveText(/RRHH\s*RR\. HH\./);
   await expect(await celda(tabla, importacion, "Acción")).toHaveText(
     "Confirmó una importación",
   );
@@ -428,7 +430,7 @@ test("Auditoría: del listado se abre el evento con sus cambios y se vuelve con 
   await expect(page.getByText("RRHH publicó una versión de reglas")).toBeVisible();
   await expect(hecho(page, "Fecha y hora")).toHaveText("18 oct 2026, 20:30:00");
   await expect(hecho(page, "Actor")).toHaveText("RRHH");
-  await expect(hecho(page, "Rol")).toHaveText("RRHH");
+  await expect(hecho(page, "Rol")).toHaveText("RR. HH.");
   await expect(hecho(page, "Origen")).toHaveText("Aplicación web");
   await expect(hecho(page, "Resultado")).toHaveText("Exitoso");
   await expect(hecho(page, "Motivo")).toHaveText("No aplica");

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { demo, menu, PERSONAS } from "./demo";
+import { tareasMocks } from "./tareas-mocks";
 import {
   LUNES_ACTUAL,
   organizacion,
@@ -189,6 +190,8 @@ test("Ficha: datos clave, historial de asignaciones y acciones solo para RR. HH.
 }) => {
   await demo(page, "demo-rrhh");
   await organizacion(page);
+  // The profile also lists the person's weeks with tasks (SeccionTareas).
+  await tareasMocks(page);
   await page.goto("/employees/EMP-001");
   await expect(page.getByRole("heading", { level: 1, name: "Persona ficticia 001" })).toBeVisible();
   await expect(hechos(page)).toContainText("EMP-001");
@@ -217,6 +220,8 @@ test("Ficha: datos clave, historial de asignaciones y acciones solo para RR. HH.
   // Gerencia reads the same page without the actions that write.
   await demo(page, "demo-gerencia");
   await organizacion(page);
+  // The profile also lists the person's weeks with tasks (SeccionTareas).
+  await tareasMocks(page);
   await page.goto("/employees/EMP-001");
   await expect(page.getByRole("heading", { level: 1, name: "Persona ficticia 001" })).toBeVisible();
   for (const nombre of ["Editar datos", "Cambiar equipo o puesto", "Dar de baja"])
@@ -321,7 +326,7 @@ test("Equipos: cada fila abre su equipo y los grupos pequeños no muestran agreg
   await expect(hechos(page)).toContainText("Team Lead ficticio 1");
   await expect(hechos(page)).toContainText("Gerente ficticio de Operaciones");
   await expect(hechos(page)).toContainText("No disponible");
-  await expect(page.getByText("Oculto para proteger a un grupo más pequeño.")).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "Oculto para proteger a un grupo más pequeño." })).toBeVisible();
   const integrantes = page.getByRole("region", { name: "Integrantes de Célula ficticia 1" });
   await expect(integrantes.getByRole("rowheader")).toHaveCount(5);
   for (const [nombre, destino] of [
@@ -359,7 +364,7 @@ test("Equipos: nuevo equipo, cambio de líder y desactivación envían lo elegid
   await page.goto("/teams/new");
   await expect(page.getByLabel("Código")).toHaveValue("EQ-10");
   await page.getByLabel("Nombre del equipo").fill("Célula ficticia 10");
-  await page.getByLabel("Líder").selectOption("TL-02");
+  await page.getByLabel("Líder (opcional)").selectOption("TL-02");
   await page.getByRole("button", { name: "Crear equipo" }).click();
   await expect(page).toHaveURL(/\/teams\/EQ-10$/);
   expect(enviado(pedidos, "/api/equipos")).toEqual({
@@ -371,9 +376,9 @@ test("Equipos: nuevo equipo, cambio de líder y desactivación envían lo elegid
 
   await page.goto("/teams/EQ-01/lead");
   await expect(
-    page.getByLabel("Líder").locator("option", { hasText: "Team Lead ficticio 1" }),
+    page.getByLabel("Líder", { exact: true }).locator("option", { hasText: "Team Lead ficticio 1" }),
   ).toHaveCount(0);
-  await page.getByLabel("Líder").selectOption("TL-02");
+  await page.getByLabel("Líder", { exact: true }).selectOption("TL-02");
   await page.getByRole("button", { name: "Cambiar líder" }).click();
   await expect(page).toHaveURL(/\/teams\/EQ-01$/);
   expect(enviado(pedidos, "/api/equipos/EQ-01/lider")).toEqual({ liderId: "TL-02" });

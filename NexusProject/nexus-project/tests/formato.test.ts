@@ -6,6 +6,7 @@ import {
   NIVEL,
   decimal,
   diaCorto,
+  diaCompleto,
   semana,
   valorFactor,
   variacion,
@@ -16,6 +17,8 @@ test("formato: semanas legibles sin pasar por la zona horaria del navegador", ()
   assert.equal(semana("2026-09-28", "2026-10-04"), "28 sep – 4 oct 2026");
   assert.equal(semana("2026-12-28", "2027-01-03"), "28 dic 2026 – 3 ene 2027");
   assert.equal(diaCorto("2026-10-05"), "5 oct");
+  assert.equal(diaCompleto("2026-11-20"), "20 nov 2026");
+  assert.equal(diaCompleto("2027-01-03"), "3 ene 2027");
 });
 
 test("formato: decimales con coma y dos cifras, como el informe", () => {

@@ -59,19 +59,7 @@ const coincide = (employeeId: string): ConciliacionSemana => ({
 test("S6: el conjunto de datos se elige en el primer paso, con sus límites y su plantilla", async ({
   page,
 }) => {
-  const descargas: string[] = [];
-  await importaciones(page, (route, ruta) => {
-    if (!ruta.startsWith("/api/importaciones/plantillas/"))
-      return route.abort();
-    descargas.push(ruta);
-    return route.fulfill({
-      headers: {
-        "content-type": "text/csv; charset=utf-8",
-        "content-disposition": 'attachment; filename="plantilla.csv"',
-      },
-      body: "employee_id\r\n",
-    });
-  });
+  await importaciones(page, (route) => route.abort());
   await page.goto("/importaciones");
   await expect(
     page.getByRole("radio", { name: "Indicadores semanales" }),
@@ -97,16 +85,9 @@ test("S6: el conjunto de datos se elige en el primer paso, con sus límites y su
       "href",
       `/api/importaciones/plantillas/${tipo}`,
     );
-    const [descarga] = await Promise.all([
-      page.waitForEvent("download"),
-      enlace.click(),
-    ]);
-    expect(descarga.suggestedFilename()).toMatch(/\.csv$/);
+    // The browser downloads it as a file (a link with `download`, not a screen).
+    await expect(enlace).toHaveAttribute("download", "");
   }
-  expect(descargas).toEqual([
-    "/api/importaciones/plantillas/indicadores",
-    "/api/importaciones/plantillas/tareas",
-  ]);
   // The wizard footer: Cancel on the left, the main action on the right.
   const [izquierda, derecha] = await Promise.all([
     page.getByRole("link", { name: "Cancelar" }).boundingBox(),

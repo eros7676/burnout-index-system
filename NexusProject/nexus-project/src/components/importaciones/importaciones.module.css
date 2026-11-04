@@ -348,6 +348,8 @@
 }
 .bloque {
   display: grid;
+  /* A wide table scrolls inside its region instead of widening the page. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
 }
 .progreso {

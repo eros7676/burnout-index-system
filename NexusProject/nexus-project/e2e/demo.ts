@@ -251,6 +251,9 @@ export async function demo(page: Page, inicial: UsuarioDemo | null) {
       return route.fulfill({ json: cuerposExitoMock.consultarReglas });
     if (ruta === "/api/auditoria")
       return route.fulfill({ json: cuerposExitoMock.listarAuditoria });
+    // The profile lists the person's weeks with tasks (SeccionTareas); specs about tasks mock the rest.
+    if (ruta === "/api/tareas/semanas")
+      return route.fulfill({ json: cuerposExitoMock.listarSemanasConTareas });
     // An alert's page and its follow-up case (shapes of the contract mocks, keyed by the path's id).
     const alertaDe = /^\/api\/alertas\/([^/]+)(\/seguimiento)?$/.exec(ruta);
     if (alertaDe && route.request().method() === "GET") {

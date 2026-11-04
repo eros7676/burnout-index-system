@@ -34,6 +34,12 @@ export function diaCorto(fecha: string) {
   return `${dia} ${mes}`;
 }
 
+/** "5 oct 2026": the same month names as the week labels, whatever the runtime's ICU data says. */
+export function diaCompleto(fecha: string) {
+  const { dia, mes, anio } = partes(fecha);
+  return `${dia} ${mes} ${anio}`;
+}
+
 /** "12–18 oct 2026", "28 sep – 4 oct 2026", "28 dic 2026 – 3 ene 2027" */
 export function semana(inicio: string, fin: string) {
   const a = partes(inicio);
