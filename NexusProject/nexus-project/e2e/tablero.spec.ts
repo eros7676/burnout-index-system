@@ -163,12 +163,12 @@ test("T14: un resultado desactualizado nunca se muestra como nivel actual y el i
   ).toHaveAttribute("href", "/reports/mock-evaluation-2");
   const seccionAlerta = page.getByRole("region", { name: "Alerta" });
   await expect(seccionAlerta).toContainText("Superada");
-  await expect(seccionAlerta).toContainText(
+  // The simulated mail is its own section (one build on the alert page and the report).
+  const correo = page.getByRole("region", { name: "Correo simulado" });
+  await expect(correo).toContainText(
     "Alerta superada: solo se conserva el historial.",
   );
-  await expect(
-    seccionAlerta.getByRole("button", { name: /^Simular/ }),
-  ).toHaveCount(0);
+  await expect(correo.getByRole("button", { name: /^Simular/ })).toHaveCount(0);
 });
 
 test("T14: el informe muestra el ranking del servidor, las reglas, la persistencia y la alerta guardada", async ({
