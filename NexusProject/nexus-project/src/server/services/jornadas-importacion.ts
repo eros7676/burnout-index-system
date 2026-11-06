@@ -111,9 +111,13 @@ const dias = (desde: FechaISO, hasta: FechaISO) =>
   Math.round((fechaParaDb(hasta).getTime() - fechaParaDb(desde).getTime()) / MS_DIA);
 const sumar = (iso: FechaISO, n: number) =>
   new Date(fechaParaDb(iso).getTime() + n * MS_DIA).toISOString().slice(0, 10);
-/** Sums of decimal hours, without binary noise (7.1 + 0.2 is 7.3, not 7.300000000000001). */
-const redondear = (n: number) => Math.round(n * 100) / 100;
-const iguales = (a: number, b: number) => Math.abs(a - b) < 0.005;
+/**
+ * Sums of decimal hours without binary noise (7.1 + 0.2 is 7.3, not 7.300000000000001). Six
+ * decimals keep every value the files can carry exact, so the comparison tolerates only that noise:
+ * 8.125 h against 8.125 h matches, 8.124 h does not.
+ */
+const redondear = (n: number) => Math.round(n * 1e6) / 1e6;
+const iguales = (a: number, b: number) => Math.abs(a - b) < 1e-6;
 
 /**
  * What the seven days add up to (D2, D3 of Docs/detalle-jornadas.md). The streak counts the
@@ -174,7 +178,8 @@ export function huellaJornadas(
 const claveSemana = (p: ParPeriodo) => JSON.stringify([p.employeeId, p.periodStart, p.periodEnd]);
 const fechaCorta = (f: FechaISO) => `${f.slice(8)}/${f.slice(5, 7)}/${f.slice(0, 4)}`;
 const diaMes = (f: FechaISO) => `${f.slice(8)}/${f.slice(5, 7)}`;
-const HORAS = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
+// The messages show as many decimals as a difference needs (up to the parser's precision in practice).
+const HORAS = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 6 });
 const h = (n: number) => `${HORAS.format(n)} h`;
 const cuantos = (n: number) => `${n} ${n === 1 ? "día" : "días"}`;
 const lista = (xs: string[]) =>

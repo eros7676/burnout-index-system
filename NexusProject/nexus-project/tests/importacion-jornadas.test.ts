@@ -310,3 +310,22 @@ test("jornadas-v1: la huella no depende del orden de las filas", () => {
   assert.equal(huellaJornadas(dias), huellaJornadas([...dias].reverse()));
   assert.notEqual(huellaJornadas(dias), huellaJornadas(dias.map((d, i) => (i ? d : { ...d, horasExtra: 1 }))));
 });
+
+test("jornadas-v1: horas con tres decimales coinciden exactas y una milésima de diferencia rechaza", async () => {
+  const dias: Dia[] = [
+    ["TRABAJO", "8.125", "0.125"],
+    ["TRABAJO", "8", "0"],
+    ["TRABAJO", "8", "0"],
+    ["TRABAJO", "8", "0"],
+    ["TRABAJO", "8", "0"],
+    ["DESCANSO", "", ""],
+    ["DESCANSO", "", ""],
+  ];
+  const resumen = { horasTrabajadas: 40.125, diasConsecutivosSinDescanso: 0 };
+  const bien = await validar(semana(dias), fuente([registro({ ...resumen, horasExtra: 0.125 })]));
+  assert.equal(bien.status, "VALIDADA", JSON.stringify(bien.errores));
+
+  const mal = await validar(semana(dias), fuente([registro({ ...resumen, horasExtra: 0.124 })]));
+  assert.deepEqual(codigos(mal), ["JORNADAS_NO_COINCIDEN"]);
+  assert.match(mal.errores[0]!.detalle, /informa 0,124 h extra y los días del archivo suman 0,125 h \(sobran 0,001 h\)/);
+});
