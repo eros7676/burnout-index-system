@@ -40,6 +40,19 @@ Hasta 10.000 filas y 5 MB.
 - **D5. Un detalle cargado no se reemplaza.** El mismo archivo otra vez se omite. Días distintos para una
   semana que ya los tiene son un conflicto (`CONFLICTO_HISTORICO`), como en tareas.
 
+## Dónde se ve
+
+- **Personas** (lista) y **Semana a semana** (ficha): debajo de los días consecutivos sin descanso,
+  «Licencia, 2 de 7 días», «Vacaciones, 5 de 7 días» o «Vacaciones y licencia, 4 de 7 días».
+- **Última semana** (ficha) e **informe**: la misma leyenda, junto con la aclaración de que el índice no
+  descuenta esos días.
+- **Días de la semana** (ficha): los siete días de la semana elegida, con su tipo y sus horas. Sigue la
+  regla del detalle de tareas: RR. HH. ve a todos, el Team Lead a su equipo y Gerencia a los Team Leads.
+  Gerencia ve los conteos de un técnico, no sus días.
+
+Una semana importada solo como resumen no muestra ninguna leyenda: no se sabe si hubo ausencias, que no
+es lo mismo que cero.
+
 ## Demo
 
 Los resúmenes de la demo nunca tienen vacaciones dentro de la semana, así que el generador no produce días
@@ -51,6 +64,7 @@ que informa el resumen. Las horas se reparten en medias horas para que sumen exa
 - `tests/importacion-jornadas.test.ts`: reglas por fila y por semana, conciliación y huella.
 - `tests/importacion-jornadas-demo.test.ts`: las 392 semanas de la demo coinciden con su resumen y el archivo
   es el que produce el generador.
-- `tests/importacion-jornadas.mysql.test.ts`: confirmación sin recálculo, idempotencia, conflicto y la
-  restricción de la base.
+- `tests/importacion-jornadas.mysql.test.ts`: confirmación sin recálculo, en varios lotes, idempotencia,
+  conflicto, la restricción de la base, las ausencias por versión del registro y quién lee los días.
 - `e2e/importaciones-jornadas.spec.ts`: la pantalla de importación con el archivo de días.
+- `e2e/personas.spec.ts`: la leyenda en la lista, la ficha y el informe, y la tabla de días.

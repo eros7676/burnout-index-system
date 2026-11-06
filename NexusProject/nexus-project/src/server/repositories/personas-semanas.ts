@@ -3,6 +3,7 @@ import type { FechaISO, SemanaPersona } from "../../shared/contracts";
 import { ENGINE_VERSION, huellaEvaluacion } from "../services/huella-evaluacion";
 import { sumarDias } from "../services/organizacion-validacion";
 import { registroDesdeDb, reglasDesdeDb } from "./evaluaciones";
+import { ausenciasDeRegistros } from "./jornadas-consulta";
 import { fechaDesdeDb, fechaParaDb } from "./fechas";
 
 const SEMANA = 7 * 86_400_000;
@@ -64,6 +65,10 @@ export async function leerSemanasPersonas(
   const porSemana = new Map(
     periodos.map((p) => [`${p.employeeId}/${p.periodStart.toISOString()}`, p]),
   );
+  const ausencias = await ausenciasDeRegistros(
+    tx,
+    salida.map((p) => p.registroVigente!.recordId),
+  );
 
   for (const p of salida) {
     const par = {
@@ -123,6 +128,7 @@ export async function leerSemanasPersonas(
       indice: evaluacion ? Number(evaluacion.indice) : null,
       nivel: evaluacion?.nivel ?? null,
       alertId: alerta?.alertId ?? null,
+      ausencias: ausencias.get(p.registroVigente!.recordId) ?? null,
     };
     porPersona.set(p.employeeId, [...(porPersona.get(p.employeeId) ?? []), semana]);
   }

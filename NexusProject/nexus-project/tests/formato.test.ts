@@ -9,6 +9,7 @@ import {
   diaCompleto,
   momentoConAnio,
   semana,
+  textoAusencias,
   valorFactor,
   variacion,
 } from "../src/shared/formato";
@@ -57,4 +58,12 @@ test("formato: un instante lleva el año y usa los meses del producto", () => {
     momentoConAnio("2027-01-01T01:00:00.000Z"),
     "31 dic 2026, 22:00",
   );
+});
+
+test("formato: las ausencias de la semana se nombran y una semana sin detalle no dice nada", () => {
+  assert.equal(textoAusencias({ vacaciones: 0, licencias: 2 }), "Licencia, 2 de 7 días");
+  assert.equal(textoAusencias({ vacaciones: 5, licencias: 0 }), "Vacaciones, 5 de 7 días");
+  assert.equal(textoAusencias({ vacaciones: 3, licencias: 1 }), "Vacaciones y licencia, 4 de 7 días");
+  assert.equal(textoAusencias({ vacaciones: 0, licencias: 0 }), null);
+  assert.equal(textoAusencias(null), null);
 });

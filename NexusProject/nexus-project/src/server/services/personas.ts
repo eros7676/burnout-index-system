@@ -8,6 +8,7 @@ import type {
   ReglasDTO,
 } from "../../shared/contracts";
 import { leerResultados } from "../repositories/consultas";
+import { ausenciasDeRegistros } from "../repositories/jornadas-consulta";
 import { reglasDesdeDb } from "../repositories/evaluaciones";
 
 type Filtros = { teamId?: string; employeeId?: string };
@@ -54,6 +55,10 @@ export async function consultarPersonas(
       pageSize: 1,
     });
     const porPersona = new Map<string, PersonaDTO["semanas"]>();
+    const ausencias = await ausenciasDeRegistros(
+      tx,
+      resultados.flatMap(({ registro }) => (registro ? [registro.recordId] : [])),
+    );
     for (const { fila, registro } of resultados) {
       if (!registro) continue;
       const semanas = porPersona.get(fila.employeeId) ?? [];
@@ -65,6 +70,7 @@ export async function consultarPersonas(
         indice: fila.indice,
         nivel: fila.nivel,
         alertId: fila.alertId,
+        ausencias: ausencias.get(registro.recordId) ?? null,
       });
       porPersona.set(fila.employeeId, semanas);
     }

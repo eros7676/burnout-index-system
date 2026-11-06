@@ -8,7 +8,8 @@ type Operacion =
   | "listarTareasEquipo"
   | "listarSemanasConTareas"
   | "consultarHistorialTarea"
-  | "consultarMisTareas";
+  | "consultarMisTareas"
+  | "listarJornadasSemana";
 
 async function consultar<K extends Operacion>(
   operacion: K,
@@ -67,4 +68,7 @@ export const tareasApi = {
     filtros: NonNullable<PeticionesApi["consultarMisTareas"]["query"]>,
     signal: AbortSignal,
   ) => consultar("consultarMisTareas", filtros, signal),
+  /** The seven days of a person-week (jornadas-v1), under the task rows' rule. */
+  dias: (filtros: PeticionesApi["listarJornadasSemana"]["query"], signal: AbortSignal) =>
+    consultar("listarJornadasSemana", filtros, signal),
 };

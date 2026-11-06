@@ -4,10 +4,13 @@ import {
   api,
   celda,
   demo,
+  informe,
   PERSONAS,
   type UsuarioDemo,
 } from "./demo";
-import { directorio, organizacion } from "./organizacion-mocks";
+import { directorio, ficha, organizacion } from "./organizacion-mocks";
+import type { SemanaPersona } from "../src/shared/contracts";
+import { cuerposExitoMock } from "../src/shared/mocks";
 
 // Personas (/employees and /employees/[employeeId]): who is how this week, then one
 // person's weeks with their tasks. The list is paged and filtered by the server
@@ -266,4 +269,98 @@ test("Ficha: las sugerencias de la última semana salen de sus datos, y sin umbr
   await page.goto("/employees/EMP-002");
   await expect(page.getByRole("region", { name: "Semana a semana" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Sugerencias de revisión" })).toHaveCount(0);
+});
+
+test("Ficha, lista e informe: la licencia de la semana se muestra, el índice no la descuenta y los días se leen uno a uno", async ({
+  page,
+}) => {
+  await demo(page, "demo-rrhh");
+  await organizacion(page);
+  const licencia = { vacaciones: 0, licencias: 2 };
+  // EMP-001's newest week (12–18 oct) had two days of leave in its day detail.
+  const conLicencia = (w: SemanaPersona) => (w.periodStart === "2026-10-12" ? { ...w, ausencias: licencia } : w);
+  await page.route(api("/api/personas/directorio"), (route) => {
+    const d = directorio(Object.fromEntries(new URL(route.request().url()).searchParams));
+    return route.fulfill({
+      json: {
+        ...d,
+        items: d.items.map((p) => (p.employeeId === "EMP-001" ? { ...p, semanas: p.semanas.map(conLicencia) } : p)),
+      },
+    });
+  });
+  await page.route(api("/api/personas/EMP-001"), (route) => {
+    const f = ficha("EMP-001")!;
+    return route.fulfill({ json: { ...f, semanas: f.semanas.map(conLicencia) } });
+  });
+  const dias = cuerposExitoMock.listarJornadasSemana;
+  await page.route(api("/api/jornadas"), (route) =>
+    route.fulfill({
+      json: {
+        ...dias,
+        dias: dias.dias!.map((d, i) =>
+          i < 2 ? { ...d, tipo: "LICENCIA", horasTrabajadas: 0, horasExtra: 0 } : d,
+        ),
+      },
+    }),
+  );
+  await page.route(api("/api/evaluaciones/mock-evaluation-2"), (route) =>
+    route.fulfill({ json: { ...informe("mock-evaluation-2"), ausencias: licencia } }),
+  );
+
+  await page.goto("/employees");
+  const ds = await celda(lista(page), "Persona ficticia 001", "Días consecutivos sin descanso");
+  await expect(ds).toContainText("Licencia, 2 de 7 días");
+  await expect(
+    await celda(lista(page), "Persona ficticia 003", "Días consecutivos sin descanso"),
+  ).not.toContainText("de 7 días");
+
+  await page.goto("/employees/EMP-001");
+  await expect(page.getByRole("region", { name: "Última semana" })).toContainText(
+    "Licencia, 2 de 7 días. El índice no descuenta esos días.",
+  );
+  const semanas = page.getByRole("region", { name: "Semanas de Persona ficticia 001" });
+  await expect(await celda(semanas, "12–18 oct 2026", "Días consecutivos sin descanso")).toContainText(
+    "Licencia, 2 de 7 días",
+  );
+  await expect(await celda(semanas, "5–11 oct 2026", "Días consecutivos sin descanso")).not.toContainText(
+    "de 7 días",
+  );
+  const tabla = page.getByRole("region", { name: "Días de Persona ficticia 001, semana 12–18 oct 2026" });
+  await expect(tabla.getByRole("rowheader")).toHaveText([
+    "lun 12 oct",
+    "mar 13 oct",
+    "mié 14 oct",
+    "jue 15 oct",
+    "vie 16 oct",
+    "sáb 17 oct",
+    "dom 18 oct",
+  ]);
+  await expect(await celda(tabla, "lun 12 oct", "Tipo de día")).toHaveText("Licencia");
+  await expect(await celda(tabla, "lun 12 oct", "Horas trabajadas")).toHaveText("—");
+  await expect(await celda(tabla, "mié 14 oct", "Horas trabajadas")).toHaveText("10 h");
+  await expect(await celda(tabla, "mié 14 oct", "Horas extra")).toHaveText("2 h");
+
+  await page.goto("/reports/mock-evaluation-2");
+  const resultado = page.getByRole("region", { name: "Resultado de la semana" });
+  await expect(resultado.getByText("Licencia, 2 de 7 días", { exact: true })).toBeVisible();
+  await expect(resultado).toContainText("El índice no descuenta los días de licencia ni de vacaciones de esta semana.");
+});
+
+test("Ficha: una semana sin detalle de días lo dice, y Gerencia no ve los días de un técnico", async ({ page }) => {
+  await demo(page, "demo-rrhh");
+  await organizacion(page);
+  await page.route(api("/api/jornadas"), (route) =>
+    route.fulfill({ json: { ...cuerposExitoMock.listarJornadasSemana, dias: null } }),
+  );
+  await page.goto("/employees/EMP-001");
+  await expect(page.getByRole("region", { name: "Días de la semana" })).toContainText(
+    "Todavía no hay detalle de días para esta semana",
+  );
+  await expect(page.getByRole("region", { name: "Última semana" })).not.toContainText("de 7 días");
+
+  await demo(page, "demo-gerencia");
+  await organizacion(page);
+  await page.goto("/employees/EMP-001");
+  await expect(page.getByRole("region", { name: "Semana a semana" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Días de la semana" })).toHaveCount(0);
 });

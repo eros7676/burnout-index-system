@@ -24,6 +24,10 @@ export const httpTareas = {
   historial: proteger(prisma, "LEER", (request) =>
     tareas.historial(request, sesion(request)),
   ),
+  // The days of a person-week: the same narrowing and per-person rule as its tasks.
+  jornadas: proteger(prisma, "LEER", (request) =>
+    tareas.jornadas(request, sesion(request)),
+  ),
   // The person is the session's own; PROPIOS is not narrowed by team.
   misTareas: proteger(prisma, "PROPIOS", (request) =>
     tareas.misTareas(request, sesion(request)),

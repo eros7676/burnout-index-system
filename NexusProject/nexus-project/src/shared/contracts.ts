@@ -266,6 +266,8 @@ export type InformeDTO = {
   explicacion: string;
   recomendaciones: string[];
   alerta: Alerta | null;
+  /** Days away in the evaluated week; null when its record has no day detail. */
+  ausencias: AusenciasSemana | null;
 };
 export type FilaTablero = ParPeriodo & {
   teamId: string;
@@ -319,6 +321,8 @@ export type FiltrosAlertas = FiltrosComunes &
 
 /** One week of loaded work data, without any index: all the employee sees of themselves (RF10). */
 export type DatosSemana = Omit<DatosLaborales, 'employeeId'>;
+/** Days of a week on vacation and on other leave, from its day detail (jornadas-v1). */
+export type AusenciasSemana = { vacaciones: number; licencias: number };
 /** One week of a person: loaded data plus its current evaluation, with FilaTablero's vigencia rules. */
 export type SemanaPersona = DatosSemana & {
   actualizado: boolean;
@@ -327,6 +331,10 @@ export type SemanaPersona = DatosSemana & {
   indice: number | null;
   nivel: Nivel | null;
   alertId: string | null;
+  /** null: the week has no day detail, so whether the person was away is unknown. The index never
+   * discounts these days (v1 weighs only the vacation balance); they are shown so a level is read
+   * knowing the person was away. */
+  ausencias: AusenciasSemana | null;
 };
 export type PersonaDTO = {
   employeeId: string; nombre: string;

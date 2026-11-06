@@ -10,7 +10,14 @@ import type {
   FiltroNivel,
   OrdenDirectorio,
 } from "@/shared/contratos/organizacion";
-import { NIVEL, decimal, entero, valorFactor, semana as textoSemana } from "@/shared/formato";
+import {
+  NIVEL,
+  decimal,
+  entero,
+  textoAusencias,
+  valorFactor,
+  semana as textoSemana,
+} from "@/shared/formato";
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import { tienePermiso } from "@/shared/permisos";
 import {
@@ -339,6 +346,9 @@ export function ListaPersonas() {
                         </td>
                         <td className={tabla.num}>
                           {w ? valorFactor("DS", w.diasConsecutivosSinDescanso) : "—"}
+                          {w && textoAusencias(w.ausencias) && (
+                            <span className={tabla.sub}>{textoAusencias(w.ausencias)}</span>
+                          )}
                         </td>
                         <td className={s.tasks}>
                           {!w ? (

@@ -13,7 +13,9 @@ import type {
   TareasEquipoDTO,
   TareasSemanaDTO,
 } from "../../shared/contratos/tareas";
+import type { JornadasSemanaDTO } from "../../shared/contratos/jornadas";
 import { ErrorDominio } from "../../shared/errors";
+import { diasDeRegistro } from "../repositories/jornadas-consulta";
 import { fechaDesdeDb, fechaParaDb } from "../repositories/fechas";
 import { leerResultados } from "../repositories/consultas";
 import { registrarEvento, type ContextoAuditoria } from "../repositories/auditoria";
@@ -207,6 +209,35 @@ export async function consultarTareasSemana(
         },
       });
     return semana;
+  }, LECTURA);
+}
+
+/**
+ * The days of one person-week (jornadas-v1), under the same rule as its task rows: a role that may
+ * not read a person's tasks does not read their days either. The weekly totals they back are on the
+ * person page already, so the read is not recorded.
+ */
+export async function consultarJornadasSemana(
+  db: PrismaClient,
+  filtro: Pick<FiltroSemana, "employeeId" | "periodStart" | "recordId" | "teamId">,
+  sesion: SesionTareas,
+): Promise<JornadasSemanaDTO> {
+  const persona = await personaEnAlcance(db, filtro.employeeId, filtro.teamId, sesion.usuario);
+  const visibles = puedeVerDetalleTareas(sesion.usuario, persona);
+  return db.$transaction(async (tx) => {
+    const lectura = await leerRegistroSemana(tx, filtro);
+    if (!lectura) throw new ErrorDominio("NO_ENCONTRADO", NO_EXISTE);
+    const dias = visibles ? await diasDeRegistro(tx, lectura.registro.recordId) : [];
+    return {
+      semana: {
+        periodStart: fechaDesdeDb(lectura.periodo.periodStart),
+        periodEnd: fechaDesdeDb(lectura.periodo.periodEnd),
+        recordId: lectura.registro.recordId,
+        vigente: lectura.vigente,
+      },
+      visibles,
+      dias: dias.length ? dias : null,
+    };
   }, LECTURA);
 }
 
