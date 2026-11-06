@@ -80,6 +80,9 @@ function generar() {
       ds: Number(v[col.dias_consecutivos_sin_descanso]),
       desde: v[col.dias_desde_ultimas_vacaciones],
     };
+    // The days reproduce the summary only when it gives the hours, in half-hour steps.
+    if (v[col.horas_trabajadas] === "" || [s.he, s.ht].some((x) => !Number.isInteger(x * 2)))
+      throw new Error(`${s.id} ${s.inicio}: el generador necesita horas en medias horas.`);
     if (s.desde !== "" && Number(s.desde) < 7)
       throw new Error(`${s.id} ${s.inicio}: las vacaciones dentro de la semana no están previstas.`);
     for (const dia of diasDeSemana(s)) salida.push([s.id, s.inicio, s.fin, ...dia].join(","));
