@@ -21,7 +21,8 @@
     "db:test": "tsc -p tsconfig.test.json && node scripts/test.mjs --mysql",
     "db:test:http": "tsc -p tsconfig.test.json && node .test-build/tests/importaciones.next.mysql.js",
     "rules:publish": "node scripts/rules-publish.mjs",
-    "demo:tareas": "node scripts/demo-tareas-csv.mjs"
+    "demo:tareas": "node scripts/demo-tareas-csv.mjs",
+    "demo:jornadas": "node scripts/demo-jornadas-csv.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
