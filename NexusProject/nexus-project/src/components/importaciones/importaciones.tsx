@@ -23,7 +23,7 @@ import { Stepper } from "@/shared/ui/stepper";
 import {
   CONJUNTOS,
   conjuntoDe,
-  esResultadoTareas,
+  conjuntoDelResultado,
   type ResultadoConfirmacion,
   type VistaImportacion,
 } from "./conjuntos";
@@ -210,9 +210,7 @@ export function Importaciones() {
   const activo: PlantillaImportacion = vista
     ? conjuntoDe(vista)
     : resultado
-      ? esResultadoTareas(resultado)
-        ? "tareas"
-        : "indicadores"
+      ? conjuntoDelResultado(resultado)
       : conjunto;
   const pasos = ["Seleccionar archivo", "Revisar", CONJUNTOS[activo].pasoFinal];
 
@@ -285,7 +283,9 @@ export function Importaciones() {
                     setVista(
                       await (conjunto === "tareas"
                         ? api.validarTareas(file)
-                        : api.validar(file)),
+                        : conjunto === "jornadas"
+                          ? api.validarJornadas(file)
+                          : api.validar(file)),
                     );
                   });
               }}

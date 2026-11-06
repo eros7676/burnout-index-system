@@ -3,7 +3,7 @@ import type { EstadoJob, JobDTO } from "@/shared/contracts";
 import { entero, momentoConAnio, semana as textoSemana } from "@/shared/formato";
 import { useRowsEnter } from "@/shared/motion";
 import { Button, DataTable, Figure, Notice, Section } from "@/shared/ui";
-import { esResultadoTareas, type ResultadoConfirmacion } from "./conjuntos";
+import { esResultadoJornadas, esResultadoTareas, type ResultadoConfirmacion } from "./conjuntos";
 import { problema } from "./textos";
 import s from "./importaciones.module.css";
 
@@ -54,6 +54,9 @@ export function ResultadoConfirmado({
   acciones?: ReactNode;
 }) {
   const tareas = esResultadoTareas(resultado) ? resultado : null;
+  const jornadas = esResultadoJornadas(resultado) ? resultado : null;
+  const uno = tareas ? "tarea nueva" : jornadas ? "día nuevo" : "fila nueva";
+  const varios = tareas ? "tareas nuevas" : jornadas ? "días nuevos" : "filas nuevas";
   return (
     <Section titulo="Importación confirmada">
       <div className={s.bloque}>
@@ -61,15 +64,7 @@ export function ResultadoConfirmado({
           <Figure
             etiqueta="Guardadas"
             valor={entero(resultado.insertados)}
-            detalle={
-              tareas
-                ? resultado.insertados === 1
-                  ? "tarea nueva"
-                  : "tareas nuevas"
-                : resultado.insertados === 1
-                  ? "fila nueva"
-                  : "filas nuevas"
-            }
+            detalle={resultado.insertados === 1 ? uno : varios}
           />
           <Figure
             etiqueta="Omitidas"
@@ -90,8 +85,16 @@ export function ResultadoConfirmado({
               />
             </>
           )}
+          {jornadas && (
+            <Figure etiqueta="Semanas" valor={entero(jornadas.semanas)} detalle="con el detalle de días" />
+          )}
         </div>
-        {tareas ? (
+        {jornadas ? (
+          <Notice>
+            {resultado.insertados === 0 ? "No se duplicó ningún dato. " : ""}
+            Los índices y las alertas no cambian: el detalle de días no requiere un nuevo cálculo.
+          </Notice>
+        ) : tareas ? (
           <Notice>
             {resultado.insertados === 0 ? "No se duplicó ningún dato. " : ""}
             Los índices y las alertas no cambian: el detalle de tareas no
