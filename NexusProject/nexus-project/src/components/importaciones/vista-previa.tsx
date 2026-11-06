@@ -5,9 +5,11 @@ import { Button, ErrorBox, Figure, Notice, Section } from "@/shared/ui";
 import { StatusTag } from "@/shared/ui/status-tag";
 import { WeekDataTable } from "@/shared/ui/week-data-table";
 import { Conciliacion, MuestraTareas } from "./conciliacion";
+import { ConciliacionJornadas, MuestraJornadas } from "./conciliacion-jornadas";
 import {
   CONJUNTOS,
   conjuntoDe,
+  esVistaJornadas,
   esVistaTareas,
   type VistaImportacion,
 } from "./conjuntos";
@@ -50,10 +52,13 @@ export function VistaPrevia({
   const filas = useRef<HTMLTableSectionElement>(null);
   useRowsEnter(filas, vista.muestra);
   const tareas = esVistaTareas(vista) ? vista : null;
+  const jornadas = esVistaJornadas(vista) ? vista : null;
   const conjunto = CONJUNTOS[conjuntoDe(vista)];
   const rechazada = vista.status === "RECHAZADA";
   const errores = vista.errores.length;
-  const sinConciliar = tareas ? tareas.conciliacion.diferencias : 0;
+  const sinConciliar = (tareas ?? jornadas)?.conciliacion.diferencias ?? 0;
+  /** What the file holds, in the words of the messages below. */
+  const ninguno = tareas ? "ninguna tarea" : jornadas ? "ningún día" : "ningún registro";
 
   return (
     <>
@@ -117,7 +122,7 @@ export function VistaPrevia({
           )}
           {rechazada && !vencida && (
             <ErrorBox
-              mensaje={`El archivo tiene ${plural(errores, "error", "errores")} y no se guardó ${tareas ? "ninguna tarea" : "ningún registro"}. Corrija el archivo y valídelo nuevamente.`}
+              mensaje={`El archivo tiene ${plural(errores, "error", "errores")} y no se guardó ${ninguno}. Corrija el archivo y valídelo nuevamente.`}
             />
           )}
           {sinConciliar > 0 && !vencida && (
@@ -125,7 +130,7 @@ export function VistaPrevia({
               {sinConciliar === 1
                 ? "El detalle de una semana no suma lo que informa su resumen semanal."
                 : `El detalle de ${entero(sinConciliar)} semanas no suma lo que informa su resumen semanal.`}{" "}
-              Para no guardar tareas que contradigan los indicadores, se rechaza
+              Para no guardar {jornadas ? "días" : "tareas"} que contradigan los indicadores, se rechaza
               el archivo completo. Corrija el detalle o los indicadores
               semanales y valide nuevamente.
             </Notice>
@@ -134,7 +139,9 @@ export function VistaPrevia({
             <Notice>
               {tareas
                 ? "Todas las tareas ya están cargadas. Confirmar no duplica ningún dato."
-                : "Todos los registros ya existen. Confirmar no duplica ningún dato."}
+                : jornadas
+                  ? "Todos los días ya están cargados. Confirmar no duplica ningún dato."
+                  : "Todos los registros ya existen. Confirmar no duplica ningún dato."}
             </Notice>
           )}
         </div>
@@ -167,11 +174,17 @@ export function VistaPrevia({
         <Conciliacion resumen={tareas.conciliacion} />
       )}
 
+      {jornadas && jornadas.conciliacion.filas.length > 0 && (
+        <ConciliacionJornadas resumen={jornadas.conciliacion} />
+      )}
+
       {tareas
         ? tareas.muestraTareas.length > 0 && (
             <MuestraTareas tareas={tareas.muestraTareas} />
           )
-        : vista.muestra.length > 0 && (
+        : jornadas
+          ? jornadas.muestraJornadas.length > 0 && <MuestraJornadas dias={jornadas.muestraJornadas} />
+          : vista.muestra.length > 0 && (
             <Section
               titulo="Primeras filas válidas"
               aside={

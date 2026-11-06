@@ -32,6 +32,7 @@ import {
 import {
   RUTAS_IMPORTACIONES,
   type CuerposImportaciones,
+  type ErrorValidacionImportacionJornadas,
   type ErrorValidacionImportacionTareas,
   type PeticionesImportaciones,
 } from "./contratos/importaciones";
@@ -188,7 +189,9 @@ export type RespuestaApi<K extends OperacionApi> =
         ? ErrorValidacionImportacion
         : K extends "validarImportacionTareas"
           ? ErrorValidacionImportacionTareas
-          : ApiError;
+          : K extends "validarImportacionJornadas"
+            ? ErrorValidacionImportacionJornadas
+            : ApiError;
     };
 
 export const API_DEFAULTS = {

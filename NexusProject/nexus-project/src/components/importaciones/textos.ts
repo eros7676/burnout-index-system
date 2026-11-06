@@ -20,6 +20,8 @@ const PROBLEMA: Record<string, string> = {
   VALOR_NO_PERMITIDO: "Valor no permitido",
   SEMANA_SIN_RESUMEN: "Semana sin resumen semanal",
   TAREAS_NO_COINCIDEN: "No coincide con el resumen semanal",
+  JORNADAS_NO_COINCIDEN: "No coincide con el resumen semanal",
+  SEMANA_INCOMPLETA: "Faltan días de la semana",
   VENCIMIENTO_ANTERIOR: "Vence antes de la asignación",
   ERRORES_OMITIDOS: "Hay más problemas",
   COLUMNAS_CSV: "Columnas del archivo",
@@ -49,6 +51,8 @@ const COLUMNA: Record<string, string> = {
   vencimiento_fecha: "Fecha de vencimiento",
   completada_fecha: "Fecha de finalización",
   motivo_exclusion: "Motivo de exclusión",
+  fecha: "Fecha",
+  tipo_dia: "Tipo de día",
 };
 
 /** "IMPORTACION_ALGO" → "Importacion algo"; "fooBar" → "Foo bar". */

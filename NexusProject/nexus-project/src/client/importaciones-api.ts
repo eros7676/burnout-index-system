@@ -8,7 +8,9 @@ import type {
 } from "../shared/contracts";
 import type {
   PlantillaImportacion,
+  ResultadoImportacionJornadas,
   ResultadoImportacionTareas,
+  VistaPreviaJornadas,
   VistaPreviaTareas,
 } from "../shared/contratos/importaciones";
 
@@ -16,7 +18,7 @@ export class ErrorImportacionHttp extends Error {
   constructor(
     public status: number,
     public detalle: ApiError,
-    public vistaPrevia?: VistaPrevia | VistaPreviaTareas,
+    public vistaPrevia?: VistaPrevia | VistaPreviaTareas | VistaPreviaJornadas,
   ) {
     super(detalle.error.mensaje);
   }
@@ -81,8 +83,15 @@ export const importacionesApi = {
       "/api/importaciones/tareas/validar",
       archivo(file),
     ),
+  validarJornadas: (file: File) =>
+    solicitar<VistaPreviaJornadas>(
+      "/api/importaciones/jornadas/validar",
+      archivo(file),
+    ),
   confirmar: (id: string) =>
-    solicitar<ResultadoImportacion | ResultadoImportacionTareas>(
+    solicitar<
+      ResultadoImportacion | ResultadoImportacionTareas | ResultadoImportacionJornadas
+    >(
       `/api/importaciones/${encodeURIComponent(id)}/confirmar`,
       jsonPost,
     ),

@@ -8,6 +8,7 @@ import type {
   Nivel,
   UsuarioDemoDTO,
 } from "./contracts";
+import type { TipoDia } from "./contratos/importaciones";
 
 const MESES = [
   "ene",
@@ -32,6 +33,14 @@ const partes = (fecha: string) => {
 export function diaCorto(fecha: string) {
   const { dia, mes } = partes(fecha);
   return `${dia} ${mes}`;
+}
+
+const DIAS_SEMANA = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+
+/** "lun 5 oct": a day of a week, named from its date parts (no time zone involved). */
+export function diaConNombre(fecha: string) {
+  const [anio, mes, dia] = fecha.split("-").map(Number);
+  return `${DIAS_SEMANA[new Date(Date.UTC(anio, mes - 1, dia)).getUTCDay()]} ${diaCorto(fecha)}`;
 }
 
 /** "5 oct 2026": the same month names as the week labels, whatever the runtime's ICU data says. */
@@ -83,6 +92,11 @@ export function decimal(valor: number | null) {
 export function entero(valor: number) {
   return ENTERO.format(valor);
 }
+const HASTA_DOS = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
+/** "9,5 h", "8 h": hours as recorded, never rounded to the hour. */
+export function horas(valor: number) {
+  return `${HASTA_DOS.format(valor)} h`;
+}
 
 /** Week-over-week change of an index: "+7,50", "−5,50", "=". */
 export function variacion(actual: number, anterior: number | null) {
@@ -104,6 +118,14 @@ export const NIVEL_DETALLE: Record<Nivel, string> = {
   MEDIO: "Índice de 40 o más, sin cumplir la condición de Alto.",
   ALTO: "Índice de 70 o más durante dos semanas consecutivas, con factores en común.",
   INCOMPLETO: "Sin semana anterior para confirmar si la carga se sostiene.",
+};
+
+/** What a day of the week was (jornadas-v1). Leave carries no reason. */
+export const TIPO_DIA: Record<TipoDia, string> = {
+  TRABAJO: "Trabajo",
+  DESCANSO: "Descanso",
+  VACACIONES: "Vacaciones",
+  LICENCIA: "Licencia",
 };
 
 export const FACTOR: Record<Factor, string> = {

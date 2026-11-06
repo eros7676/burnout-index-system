@@ -13,6 +13,11 @@ import {
   leerCsvTareas,
   validarCsvTareas,
 } from "../src/server/services/tareas-importacion";
+import {
+  PLANTILLA_JORNADAS_CSV,
+  leerCsvJornadas,
+  validarCsvJornadas,
+} from "../src/server/services/jornadas-importacion";
 import { validarCsvImportacion } from "../src/server/services/validacion-importacion";
 import { PLANTILLAS_IMPORTACION } from "../src/shared/contratos/importaciones";
 
@@ -26,6 +31,10 @@ test("plantillas: cada archivo de templates/ es el que ofrece la pantalla", () =
   assert.equal(
     readFileSync("templates/tareas.csv", "utf8").replaceAll("\r\n", "\n"),
     PLANTILLA_TAREAS_CSV,
+  );
+  assert.equal(
+    readFileSync("templates/jornadas.csv", "utf8").replaceAll("\r\n", "\n"),
+    PLANTILLA_JORNADAS_CSV,
   );
 });
 
@@ -60,6 +69,30 @@ test("plantillas: la fila de ejemplo de cada conjunto de datos es válida", asyn
   );
   assert.equal(tareas.status, "VALIDADA", JSON.stringify(tareas.errores));
   assert.equal(tareas.grupos[0].tareas[0].estadoCierre, "VENCIDA");
+  // The day example is a week with one leave day and a rest day, then five worked days.
+  const jornadas = await validarCsvJornadas(
+    Buffer.from(PLANTILLA_JORNADAS_CSV),
+    {
+      ...fuente,
+      semanas: async () => [
+        {
+          employeeId: "EMP-003",
+          periodStart: "2026-10-12",
+          periodEnd: "2026-10-18",
+          recordId: "r",
+          periodoId: "p",
+          horasExtra: 2.5,
+          horasTrabajadas: 42.5,
+          diasConsecutivosSinDescanso: 5,
+          diasDesdeUltimasVacaciones: 40,
+          huellaJornadas: null,
+        },
+      ],
+    },
+    ahora,
+  );
+  assert.equal(jornadas.status, "VALIDADA", JSON.stringify(jornadas.errores));
+  assert.equal(jornadas.conciliacion.filas[0].derivado.licencias, 1);
 });
 
 test("plantillas: la descarga es un CSV UTF-8 con BOM y saltos CRLF, y no abre la base", async () => {
@@ -79,8 +112,9 @@ test("plantillas: la descarga es un CSV UTF-8 con BOM y saltos CRLF, y no abre l
     const texto = new TextDecoder().decode(bytes.slice(3));
     assert.ok(texto.includes("\r\n") && !/[^\r]\n/.test(texto));
     // The downloaded bytes, BOM and CRLF included, are accepted by the real parser.
-    const leer = tipo === "tareas" ? leerCsvTareas : leerCsvImportacion;
-    assert.equal(leer(bytes).filas.length, 1);
+    const leer =
+      tipo === "tareas" ? leerCsvTareas : tipo === "jornadas" ? leerCsvJornadas : leerCsvImportacion;
+    assert.equal(leer(bytes).filas.length, tipo === "jornadas" ? 7 : 1);
   }
   for (const tipo of ["desconocida", "__proto__", "constructor", ""]) {
     const r = await http.plantilla(new Request("http://localhost/"), tipo);

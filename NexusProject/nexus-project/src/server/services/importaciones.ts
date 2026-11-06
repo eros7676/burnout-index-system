@@ -44,16 +44,19 @@ import {
   confirmarTareasEnTransaccion,
   registrarRechazoDeFormato,
 } from "./tareas-importacion-flujo";
+import { confirmarJornadasEnTransaccion } from "./jornadas-importacion-flujo";
 import {
   ESQUEMA_INDICADORES,
+  ESQUEMA_JORNADAS,
   ESQUEMA_TAREAS,
 } from "../../shared/contratos/importaciones";
 
 export { comprobarArchivoCsv, MAX_ARCHIVO_CSV, VIGENCIA_PREVIA_MS };
 export type OpcionesImportacion = OpcionesProcesamiento & {
   ahora?: () => Date;
-  /** Rows per INSERT when storing task detail; tests lower it to fail between chunks. */
+  /** Rows per INSERT when storing task or day detail; tests lower them to fail between chunks. */
   tamanoLoteTareas?: number;
+  tamanoLoteJornadas?: number;
 };
 
 async function validarImportacionInterna(
@@ -174,6 +177,17 @@ export async function confirmarImportacion(
         return {
           repetida: false,
           resultado: await confirmarTareasEnTransaccion(
+            tx,
+            { importId, sourceHash: carga.sourceHash, temporal: carga.temporal },
+            actor,
+            reloj(),
+            opciones,
+          ),
+        };
+      if (carga.schemaVersion === ESQUEMA_JORNADAS)
+        return {
+          repetida: false,
+          resultado: await confirmarJornadasEnTransaccion(
             tx,
             { importId, sourceHash: carga.sourceHash, temporal: carga.temporal },
             actor,

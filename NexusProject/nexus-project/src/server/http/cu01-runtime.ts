@@ -6,6 +6,7 @@ const cu01 = crearHttpCu01(prisma);
 export const httpCu01 = {
   validar: proteger(prisma, "IMPORTAR", cu01.validar),
   validarTareas: proteger(prisma, "IMPORTAR", cu01.validarTareas),
+  validarJornadas: proteger(prisma, "IMPORTAR", cu01.validarJornadas),
   plantilla: proteger(prisma, "IMPORTAR", cu01.plantilla),
   confirmar: proteger(prisma, "IMPORTAR", cu01.confirmar),
   cancelar: proteger(prisma, "IMPORTAR", cu01.cancelar),

@@ -1,6 +1,6 @@
-// Shared scaffolding for the MySQL tests of the task import and the processing events:
-// one throwaway employee, the example's two weekly summaries, and the task detail that
-// reproduces them. Not a test file (no .test suffix): scripts/test.mjs does not run it.
+// Shared scaffolding for the MySQL tests of the task and day imports and the processing events:
+// one throwaway employee, the example's two weekly summaries, and the task and day detail that
+// reproduce them. Not a test file (no .test suffix): scripts/test.mjs does not run it.
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -11,11 +11,15 @@ import {
   COLUMNAS_TAREAS,
   type ColumnaTarea,
 } from "../src/server/services/tareas-importacion";
+import { COLUMNAS_JORNADAS } from "../src/server/services/jornadas-importacion";
 import type {
   ResultadoImportacion,
   VistaPrevia,
 } from "../src/shared/contracts";
-import type { VistaPreviaTareas } from "../src/shared/contratos/importaciones";
+import type {
+  VistaPreviaJornadas,
+  VistaPreviaTareas,
+} from "../src/shared/contratos/importaciones";
 
 const ejemplo = readFileSync("templates/ejemplo-dos-semanas.csv", "utf8");
 const SEMANAS = [
@@ -70,6 +74,22 @@ export function filasTareas(employeeId: string): FilaT[] {
   );
 }
 
+/**
+ * Both weeks of the example: 56 h worked, 16 of them overtime, and days without rest that run
+ * past the week (9 and 16), so all seven days are worked. Monday to Friday 10 h with 2 extra,
+ * the weekend 3 h, all of them extra.
+ */
+export function filasJornadas(employeeId: string): string[][] {
+  return SEMANAS.flatMap((w) =>
+    Array.from({ length: 7 }, (_, i) => {
+      const fecha = new Date(Date.parse(`${w.inicio}T00:00:00Z`) + i * 86_400_000).toISOString().slice(0, 10);
+      return [employeeId, w.inicio, w.fin, fecha, "TRABAJO", i < 5 ? "10" : "3", i < 5 ? "2" : "3"];
+    }),
+  );
+}
+export const csvJornadas = (filas: string[][]) =>
+  `${COLUMNAS_JORNADAS.join(",")}\n${filas.map((f) => f.join(",")).join("\n")}\n`;
+
 export async function peticion(
   manejador: (request: Request, ...ids: string[]) => Promise<Response>,
   texto: string,
@@ -105,6 +125,7 @@ export async function crear(db: PrismaClient, opciones: OpcionesImportacion) {
   const imports: string[] = [];
   const indicadores = ejemplo.replaceAll("EMP-001", employeeId);
   const tareas = csvDe(filasTareas(employeeId));
+  const jornadas = csvJornadas(filasJornadas(employeeId));
   const registrar = (r: {
     body: { importId?: string; vistaPrevia?: { importId: string } };
   }) => {
@@ -140,6 +161,17 @@ export async function crear(db: PrismaClient, opciones: OpcionesImportacion) {
       };
     };
   }
+  async function validarJornadas(texto = jornadas) {
+    const r = await peticion(http.validarJornadas, texto, "dias.csv");
+    registrar(r);
+    return r as {
+      status: number;
+      body: VistaPreviaJornadas & {
+        vistaPrevia?: VistaPreviaJornadas;
+        error?: { codigo: string; detalles?: { codigo: string }[] };
+      };
+    };
+  }
   return {
     db,
     http,
@@ -147,8 +179,10 @@ export async function crear(db: PrismaClient, opciones: OpcionesImportacion) {
     imports,
     indicadores,
     tareas,
+    jornadas,
     importarIndicadores,
     validarTareas,
+    validarJornadas,
     confirmar,
     json,
     eventos: (accion: string) =>
@@ -180,6 +214,7 @@ export async function escenario(
     });
     await db.$transaction(async (tx) => {
       await tx.tareaSemana.deleteMany({ where: { employeeId: s.employeeId } });
+      await tx.jornadaSemana.deleteMany({ where: { employeeId: s.employeeId } });
       await tx.processingJobPar.deleteMany({
         where: { OR: [{ job: { importId } }, { periodoId }] },
       });
@@ -227,6 +262,9 @@ export async function limpiarImportaciones(db: PrismaClient, ids: string[]) {
   await db.$transaction(
     async (tx) => {
       await tx.tareaSemana.deleteMany({
+        where: { OR: [{ sourceImportId: importId }, { periodoId }] },
+      });
+      await tx.jornadaSemana.deleteMany({
         where: { OR: [{ sourceImportId: importId }, { periodoId }] },
       });
       await tx.processingJobPar.deleteMany({
