@@ -218,6 +218,7 @@ model Importacion {
   temporal              ImportacionTemporal?
   registros             RegistroLaboral[]
   tareas                TareaSemana[]
+  jornadas              JornadaSemana[]
   job                   ProcessingJob?
 
   @@index([status, expiresAt])
@@ -276,6 +277,8 @@ model RegistroLaboral {
   diasDesdeUltimasVacaciones  Int?
   /// SHA-256 of the normalized task rows attached to this version; null = summary without detail.
   huellaTareas                String?           @db.Char(64)
+  /// SHA-256 of the normalized day rows attached to this version; null = summary without day detail.
+  huellaJornadas              String?           @db.Char(64)
   createdAt                   DateTime          @default(now()) @db.DateTime(3)
   periodo                     PeriodoEmpleado   @relation("RegistrosPeriodo", fields: [periodoId, employeeId], references: [periodoId, employeeId], onDelete: Restrict, onUpdate: Restrict)
   importacion                 Importacion       @relation(fields: [sourceImportId], references: [importId], onDelete: Restrict, onUpdate: Restrict)
@@ -285,6 +288,7 @@ model RegistroLaboral {
   evaluacionesActuales        Evaluacion[]      @relation("RegistroActualEvaluado")
   evaluacionesComoAntecedente Evaluacion[]      @relation("RegistroAnteriorEvaluado")
   tareas                      TareaSemana[]
+  jornadas                    JornadaSemana[]
 
   @@unique([periodoId, dataVersion])
   @@unique([recordId, periodoId])
@@ -325,6 +329,36 @@ model TareaSemana {
   @@unique([recordId, taskId])
   @@index([recordId, estadoCierre, diasAtraso])
   @@index([employeeId, taskId, periodStart])
+  @@index([sourceImportId])
+}
+
+/// What a day of an employee-week was. VACACIONES and LICENCIA carry no reason: no health data.
+enum TipoDia {
+  TRABAJO
+  DESCANSO
+  VACACIONES
+  LICENCIA
+}
+
+// One day of one employee-week. Immutable: it substantiates the hours, the rest streak and the
+// last vacation day of the RegistroLaboral version it hangs from (jornadas-v1).
+model JornadaSemana {
+  jornadaSemanaId String          @id @default(cuid()) @db.VarChar(36)
+  recordId        String          @db.VarChar(36)
+  periodoId       String          @db.VarChar(36)
+  employeeId      String          @db.VarChar(64)
+  periodStart     DateTime        @db.Date
+  sourceImportId  String          @db.VarChar(36)
+  fecha           DateTime        @db.Date
+  tipo            TipoDia
+  // Double keeps the precision of the contract's numbers, as RegistroLaboral does.
+  horasTrabajadas Float           @db.Double
+  horasExtra      Float           @db.Double
+  registro        RegistroLaboral @relation(fields: [recordId, periodoId], references: [recordId, periodoId], onDelete: Restrict, onUpdate: Restrict)
+  importacion     Importacion     @relation(fields: [sourceImportId], references: [importId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([recordId, fecha])
+  @@index([employeeId, periodStart])
   @@index([sourceImportId])
 }
 
