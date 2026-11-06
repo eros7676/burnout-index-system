@@ -329,3 +329,22 @@ test("jornadas-v1: horas con tres decimales coinciden exactas y una milésima de
   assert.deepEqual(codigos(mal), ["JORNADAS_NO_COINCIDEN"]);
   assert.match(mal.errores[0]!.detalle, /informa 0,124 h extra y los días del archivo suman 0,125 h \(sobran 0,001 h\)/);
 });
+
+test("jornadas-v1: vacaciones el domingo son cero días desde las últimas, y descanso el domingo es racha cero", async () => {
+  const conVacaciones: Dia[] = [...SEMANA_LARGA.slice(0, 6), ["VACACIONES", "", ""]];
+  const r = await validar(
+    semana(conVacaciones),
+    fuente([registro({ horasExtra: 13, horasTrabajadas: 53, diasConsecutivosSinDescanso: 0, diasDesdeUltimasVacaciones: 0 })]),
+  );
+  assert.equal(r.status, "VALIDADA", JSON.stringify(r.errores));
+  assert.equal(r.conciliacion.filas[0]!.derivado.diasDesdeVacaciones, 0);
+  assert.equal(r.conciliacion.filas[0]!.derivado.diasSeguidos, 0);
+
+  const conDescanso: Dia[] = [...SEMANA_LARGA.slice(0, 6), ["DESCANSO", "", ""]];
+  const d = await validar(
+    semana(conDescanso),
+    fuente([registro({ horasExtra: 13, horasTrabajadas: 53, diasConsecutivosSinDescanso: 6 })]),
+  );
+  assert.deepEqual(codigos(d), ["JORNADAS_NO_COINCIDEN"]);
+  assert.match(d.errores[0]!.detalle, /la racha que llega al domingo es de 0 días/);
+});

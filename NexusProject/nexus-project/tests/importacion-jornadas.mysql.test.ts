@@ -93,6 +93,22 @@ test("MySQL jornadas-v1: confirmación atómica, idempotente y con eventos", asy
       }),
     );
 
+    await t.test("la confirmación en varios lotes guarda todos los días", () =>
+      escenario(
+        db,
+        async (s) => {
+          await s.importarIndicadores();
+          const v = await s.validarJornadas();
+          assert.equal(v.status, 200, JSON.stringify(v.body));
+          const c = await s.confirmar(v.body.importId);
+          assert.equal(c.status, 200, JSON.stringify(c.body));
+          assert.equal((c.body as ResultadoImportacionJornadas).insertados, 14);
+          assert.equal(await db.jornadaSemana.count({ where: { employeeId: s.employeeId } }), 14);
+        },
+        { tamanoLoteJornadas: 3 },
+      ),
+    );
+
     await t.test("un día sin resumen semanal rechaza el archivo y no guarda nada", () =>
       escenario(db, async (s) => {
         const v = await s.validarJornadas();
