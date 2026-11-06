@@ -53,6 +53,7 @@ type Carga = Partial<
     | "tareasVencidas"
     | "vacacionesPendientesDias"
     | "horasTrabajadas"
+    | "ausencias"
   >
 >;
 
@@ -74,6 +75,7 @@ export function semana(
     vacacionesPendientesDias: 6,
     horasTrabajadas: 44,
     diasDesdeUltimasVacaciones: 60,
+    ausencias: null,
     ...carga,
     actualizado: true,
     processingState: "COMPLETADO",
@@ -256,6 +258,8 @@ export async function demo(
     if (ruta === "/api/tareas")
       return route.fulfill({ json: cuerposExitoMock.listarTareasSemana });
     // Counts per week; the person page reads the newest one for its oldest overdue task.
+    if (ruta === "/api/jornadas")
+      return route.fulfill({ json: cuerposExitoMock.listarJornadasSemana });
     if (ruta === "/api/tareas/semanas")
       return route.fulfill({ json: cuerposExitoMock.listarSemanasConTareas });
     if (ruta === "/api/reglas")

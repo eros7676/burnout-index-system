@@ -1,6 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
 import {
   consultarHistorialTarea,
+  consultarJornadasSemana,
   consultarMisTareas,
   consultarSemanasConTareas,
   consultarTareasEquipo,
@@ -57,6 +58,8 @@ export function crearHttpTareas(db: PrismaClient) {
       responder(() =>
         consultarHistorialTarea(db, filtrosHistorial(request), sesion),
       ),
+    jornadas: (request: Request, sesion: SesionTareas) =>
+      responder(() => consultarJornadasSemana(db, filtrosSemana(request), sesion)),
     misTareas: (request: Request, sesion: SesionTareas) =>
       responder(() => consultarMisTareas(db, filtrosMisTareas(request), sesion)),
   };

@@ -358,6 +358,7 @@ const semanaMock: SemanaPersona = {
   indice: 91.21,
   nivel: "ALTO",
   alertId: "mock-alert-1",
+  ausencias: null,
 };
 const liderMock: Referencia = {
   employeeId: "TL-01",

@@ -17,6 +17,7 @@ import { ErrorDominio } from "./errors";
 import { MOCKS_ORGANIZACION } from "./contratos/organizacion";
 import { MOCKS_IMPORTACIONES } from "./contratos/importaciones";
 import { MOCKS_TAREAS } from "./contratos/tareas";
+import { MOCKS_JORNADAS } from "./contratos/jornadas";
 import { MOCKS_REGLAS } from "./contratos/reglas";
 import { MOCKS_AUDITORIA } from "./contratos/auditoria";
 import { MOCKS_SEGUIMIENTO } from "./contratos/seguimiento";
@@ -210,6 +211,7 @@ export const informeMock: InformeDTO = {
     "91,21 puntos; dos semanas consecutivas ≥70 y cuatro factores comunes excedidos. Parámetros demostrativos; requiere revisión humana.",
   recomendaciones,
   alerta: alertaMock,
+  ausencias: null,
 };
 export const vistaPreviaMock: VistaPrevia = {
   importId: "mock-import-1",
@@ -321,6 +323,7 @@ export const personaMock = {
       indice: filaAltaMock.indice,
       nivel: filaAltaMock.nivel,
       alertId: filaAltaMock.alertId,
+      ausencias: null,
     },
   ],
 } satisfies import("./contracts").PersonaDTO;
@@ -385,6 +388,7 @@ export const cuerposExitoMock = {
   ...MOCKS_ORGANIZACION,
   ...MOCKS_IMPORTACIONES,
   ...MOCKS_TAREAS,
+  ...MOCKS_JORNADAS,
   ...MOCKS_REGLAS,
   ...MOCKS_AUDITORIA,
   ...MOCKS_SEGUIMIENTO,

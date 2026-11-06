@@ -24,6 +24,7 @@ const semana = (
   indice: 0,
   nivel,
   alertId: null,
+  ausencias: null,
 });
 const persona = (semanas: SemanaPersona[]): PersonaDTO => ({
   employeeId: "EMP-X",

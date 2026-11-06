@@ -8,6 +8,7 @@ import {
 import { explicarInforme, factoresInforme } from "./informe-contenido";
 import { obtenerEvaluacion } from "./evaluaciones";
 import { recomendacionesDe } from "./recomendaciones";
+import { ausenciasDeRegistros } from "../repositories/jornadas-consulta";
 
 /**
  * Arma el informe desde la evaluación persistida.
@@ -37,9 +38,10 @@ export async function construirInformePublicado(
   evaluacion: Evaluacion,
 ): Promise<InformeDTO> {
   const evaluationId = evaluacion.evaluationId;
-  const [empleado, alerta] = await Promise.all([
+  const [empleado, alerta, ausencias] = await Promise.all([
     leerEmpleadoInforme(db, evaluacion.employeeId),
     leerAlertaEvaluacion(db, evaluationId),
+    ausenciasDeRegistros(db, [evaluacion.snapshot.actual.recordId]),
   ]);
   return {
     evaluacion,
@@ -48,5 +50,6 @@ export async function construirInformePublicado(
     explicacion: explicarInforme(evaluacion),
     recomendaciones: recomendacionesDe(evaluacion),
     alerta,
+    ausencias: ausencias.get(evaluacion.snapshot.actual.recordId) ?? null,
   };
 }

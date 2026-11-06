@@ -42,6 +42,11 @@ import {
   type PeticionesTareas,
 } from "./contratos/tareas";
 import {
+  RUTAS_JORNADAS,
+  type CuerposJornadas,
+  type PeticionesJornadas,
+} from "./contratos/jornadas";
+import {
   RUTAS_REGLAS,
   type CuerposReglas,
   type PeticionesReglas,
@@ -104,6 +109,7 @@ export const API_ROUTES = {
   ...RUTAS_ORGANIZACION,
   ...RUTAS_IMPORTACIONES,
   ...RUTAS_TAREAS,
+  ...RUTAS_JORNADAS,
   ...RUTAS_REGLAS,
   ...RUTAS_AUDITORIA,
   ...RUTAS_SEGUIMIENTO,
@@ -145,6 +151,7 @@ export type PeticionesApi = {
   PeticionesOrganizacion &
   PeticionesImportaciones &
   PeticionesTareas &
+  PeticionesJornadas &
   PeticionesReglas &
   PeticionesAuditoria &
   PeticionesSeguimiento &
@@ -173,6 +180,7 @@ export type CuerposExito = {
   CuerposOrganizacion &
   CuerposImportaciones &
   CuerposTareas &
+  CuerposJornadas &
   CuerposReglas &
   CuerposAuditoria &
   CuerposSeguimiento &

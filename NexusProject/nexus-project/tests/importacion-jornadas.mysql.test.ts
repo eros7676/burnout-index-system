@@ -4,7 +4,33 @@ import { test } from "node:test";
 import { PrismaClient } from "@prisma/client";
 import { sembrarBase } from "../prisma/seed-base";
 import type { ResultadoImportacionJornadas } from "../src/shared/contratos/importaciones";
+import { leerSemanasPersonas } from "../src/server/repositories/personas-semanas";
+import { fechaDesdeDb } from "../src/server/repositories/fechas";
+import { obtenerEvaluacion } from "../src/server/services/evaluaciones";
+import { construirInformePublicado } from "../src/server/services/informes";
+import { consultarPersonas } from "../src/server/services/personas";
+import { consultarJornadasSemana } from "../src/server/services/tareas-consulta";
+import type { UsuarioDemoDTO } from "../src/shared/contracts";
 import { csvJornadas, escenario, filasJornadas } from "./importacion-fixture";
+
+const sesion = (usuario: UsuarioDemoDTO) => ({
+  usuario,
+  actor: {
+    actorId: usuario.userId,
+    actorNombre: usuario.nombre,
+    actorRol: usuario.rol,
+    origen: "WEB" as const,
+    solicitudId: randomUUID(),
+  },
+});
+const RRHH = sesion({ userId: "demo-rrhh", nombre: "RRHH", rol: "RRHH", employeeId: null, teamId: null });
+const GERENCIA = sesion({
+  userId: "demo-gerencia",
+  nombre: "Gerencia",
+  rol: "GERENCIA",
+  employeeId: "GER-01",
+  teamId: null,
+});
 
 test("MySQL jornadas-v1: confirmación atómica, idempotente y con eventos", async (t) => {
   const url = process.env.TEST_DATABASE_URL;
@@ -118,6 +144,80 @@ test("MySQL jornadas-v1: confirmación atómica, idempotente y con eventos", asy
           ["SEMANA_SIN_RESUMEN"],
         );
         assert.equal(await db.jornadaSemana.count({ where: { employeeId: s.employeeId } }), 0);
+      }),
+    );
+
+    await t.test("las ausencias se cuentan por versión del registro y los días siguen la regla de las tareas", () =>
+      escenario(db, async (s) => {
+        await s.importarIndicadores();
+        const registros = await db.registroLaboral.findMany({
+          where: { employeeId: s.employeeId },
+          include: { periodo: true },
+          orderBy: { periodo: { periodStart: "asc" } },
+        });
+        const [conDias, sinDias] = registros;
+        // Two days of leave in the first week; the second week came as a summary alone.
+        await db.jornadaSemana.createMany({
+          data: Array.from({ length: 7 }, (_, i) => ({
+            jornadaSemanaId: randomUUID(),
+            recordId: conDias!.recordId,
+            periodoId: conDias!.periodoId,
+            employeeId: s.employeeId,
+            periodStart: conDias!.periodo.periodStart,
+            sourceImportId: conDias!.sourceImportId,
+            fecha: new Date(conDias!.periodo.periodStart.getTime() + i * 86_400_000),
+            tipo: i < 2 ? ("LICENCIA" as const) : ("TRABAJO" as const),
+            horasTrabajadas: i < 2 ? 0 : 8,
+            horasExtra: 0,
+          })),
+        });
+        const esperado = new Map([
+          [fechaDesdeDb(conDias!.periodo.periodStart), { vacaciones: 0, licencias: 2 }],
+          [fechaDesdeDb(sinDias!.periodo.periodStart), null],
+        ]);
+
+        const lista = await consultarPersonas(db, { employeeId: s.employeeId });
+        const semanas = lista.items.find((p) => p.employeeId === s.employeeId)!.semanas;
+        assert.deepEqual(new Map(semanas.map((w) => [w.periodStart, w.ausencias])), esperado);
+
+        const ficha = await db.$transaction((tx) =>
+          leerSemanasPersonas(tx, {
+            employeeIds: [s.employeeId],
+            hasta: fechaDesdeDb(sinDias!.periodo.periodStart),
+            semanas: 12,
+          }),
+        );
+        assert.deepEqual(
+          new Map(ficha.get(s.employeeId)!.map((w) => [w.periodStart, w.ausencias])),
+          esperado,
+        );
+
+        // The report reads its evaluated record's days.
+        for (const r of [conDias!, sinDias!]) {
+          const fila = await db.evaluacion.findFirstOrThrow({ where: { actualRecordId: r.recordId } });
+          const informe = await construirInformePublicado(db, (await obtenerEvaluacion(db, fila.evaluationId))!);
+          assert.deepEqual(informe.ausencias, esperado.get(fechaDesdeDb(r.periodo.periodStart)));
+        }
+
+        const filtro = { employeeId: s.employeeId, periodStart: fechaDesdeDb(conDias!.periodo.periodStart) };
+        const deRrhh = await consultarJornadasSemana(db, filtro, RRHH);
+        assert.equal(deRrhh.visibles, true);
+        assert.deepEqual(
+          deRrhh.dias!.map((d) => d.tipo),
+          ["LICENCIA", "LICENCIA", "TRABAJO", "TRABAJO", "TRABAJO", "TRABAJO", "TRABAJO"],
+        );
+        assert.equal(deRrhh.dias![0]!.fecha, filtro.periodStart);
+        // Gerencia reads a technician's counts, never their days.
+        const deGerencia = await consultarJornadasSemana(db, filtro, GERENCIA);
+        assert.equal(deGerencia.visibles, false);
+        assert.equal(deGerencia.dias, null);
+        // A week without day detail answers null, not an empty week.
+        const sinDetalle = await consultarJornadasSemana(
+          db,
+          { employeeId: s.employeeId, periodStart: fechaDesdeDb(sinDias!.periodo.periodStart) },
+          RRHH,
+        );
+        assert.equal(sinDetalle.dias, null);
       }),
     );
 
