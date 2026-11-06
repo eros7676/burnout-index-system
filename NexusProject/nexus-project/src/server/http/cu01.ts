@@ -20,7 +20,12 @@ import {
 import { obtenerJob, procesarImportacion } from "../services/procesamientos";
 import { validarImportacionTareas } from "../services/tareas-importacion-flujo";
 import { PLANTILLA_TAREAS_CSV } from "../services/tareas-importacion";
-import type { ErrorValidacionImportacionTareas } from "../../shared/contratos/importaciones";
+import { validarImportacionJornadas } from "../services/jornadas-importacion-flujo";
+import { PLANTILLA_JORNADAS_CSV } from "../services/jornadas-importacion";
+import type {
+  ErrorValidacionImportacionJornadas,
+  ErrorValidacionImportacionTareas,
+} from "../../shared/contratos/importaciones";
 
 // El runtime T15a verifica la sesión; los adaptadores internos usan demo-local por defecto.
 const actor = actorDemo;
@@ -195,6 +200,7 @@ const PLANTILLAS = {
     contenido: PLANTILLA_INDICADORES_CSV,
   },
   tareas: { archivo: "plantilla-tareas.csv", contenido: PLANTILLA_TAREAS_CSV },
+  jornadas: { archivo: "plantilla-dias.csv", contenido: PLANTILLA_JORNADAS_CSV },
 } as const;
 
 /** Los Route Handlers delegan aquí; cliente y fallos inyectables para integración. */
@@ -234,6 +240,27 @@ export function crearHttpCu01(
         );
         if (vistaPrevia.status === "RECHAZADA") {
           const error: ErrorValidacionImportacionTareas = {
+            vistaPrevia,
+            error: {
+              codigo: "FILAS_INVALIDAS",
+              mensaje: MENSAJE_RECHAZO,
+              detalles: vistaPrevia.errores,
+            },
+          };
+          return json(error, 422);
+        }
+        return json(vistaPrevia);
+      }),
+    validarJornadas: (request: Request) =>
+      respuestaCu01(async () => {
+        const vistaPrevia = await validarImportacionJornadas(
+          db,
+          await archivoDePeticion(request),
+          actor(request),
+          opciones,
+        );
+        if (vistaPrevia.status === "RECHAZADA") {
+          const error: ErrorValidacionImportacionJornadas = {
             vistaPrevia,
             error: {
               codigo: "FILAS_INVALIDAS",
