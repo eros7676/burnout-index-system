@@ -3,6 +3,7 @@
 // formatted from their parts, never through the browser's time zone (D p2).
 import type {
   Alerta,
+  AusenciasSemana,
   EstadoJob,
   Factor,
   Nivel,
@@ -127,6 +128,16 @@ export const TIPO_DIA: Record<TipoDia, string> = {
   VACACIONES: "Vacaciones",
   LICENCIA: "Licencia",
 };
+
+/**
+ * "Licencia, 2 de 7 días", "Vacaciones, 5 de 7 días", "Vacaciones y licencia, 4 de 7 días"; null
+ * when the person was not away or the week has no day detail.
+ */
+export function textoAusencias(a: AusenciasSemana | null) {
+  if (!a || a.vacaciones + a.licencias === 0) return null;
+  const que = a.vacaciones && a.licencias ? "Vacaciones y licencia" : a.vacaciones ? "Vacaciones" : "Licencia";
+  return `${que}, ${a.vacaciones + a.licencias} de 7 días`;
+}
 
 export const FACTOR: Record<Factor, string> = {
   HE: "Horas extra",

@@ -14,6 +14,7 @@ import {
   decimal,
   semana as textoSemana,
   valorFactor,
+  textoAusencias,
 } from "@/shared/formato";
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import { semanaDe, serieHasta } from "@/shared/semanas";
@@ -209,6 +210,13 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
                     />
                   </div>
                 )}
+                {textoAusencias(informe.ausencias) && (
+                  // Shown, never discounted: the index weighs only the vacation balance (v1).
+                  <div className={s.fact}>
+                    <span className={s.label}>Ausencias</span>
+                    <span>{textoAusencias(informe.ausencias)}</span>
+                  </div>
+                )}
                 <div className={s.fact}>
                   <span className={s.label}>Calculado con</span>
                   <Link className={s.inlineLink} href="/rules-config">
@@ -218,6 +226,8 @@ export function Informe({ evaluationId }: { evaluationId: string }) {
               </div>
               <p className={s.explanation}>
                 {explicacionEnPalabras(informe.explicacion)}
+                {textoAusencias(informe.ausencias) &&
+                  " El índice no descuenta los días de licencia ni de vacaciones de esta semana."}
               </p>
             </>
           )}

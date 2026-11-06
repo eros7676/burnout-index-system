@@ -12,6 +12,7 @@ import {
   diaCorto,
   entero,
   semana as textoSemana,
+  textoAusencias,
   valorFactor,
   variacion,
 } from "@/shared/formato";
@@ -51,6 +52,7 @@ import { organizacionApi } from "../organizacion/api";
 import { rutaHistorial } from "../organizacion/rutas";
 import { MOTIVO, PUESTO, fechaCorta } from "../organizacion/textos";
 import { useSesion } from "../shell/sesion";
+import { DiasDeSemana } from "./dias-de-semana";
 import s from "./ficha-persona.module.css";
 
 /** An index only counts when its stored result is current (T14). */
@@ -344,6 +346,11 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                     }
                   />
                 </div>
+                {textoAusencias(vista.actual.ausencias) && (
+                  <p className={s.levelNote}>
+                    {textoAusencias(vista.actual.ausencias)}. El índice no descuenta esos días.
+                  </p>
+                )}
                 {vista.actual.alertId && vista.actual.actualizado && (
                   <Notice>Esta semana generó una alerta.</Notice>
                 )}
@@ -473,6 +480,9 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
                       </td>
                       <td className={tabla.num}>
                         {valorFactor("DS", w.diasConsecutivosSinDescanso)}
+                        {textoAusencias(w.ausencias) && (
+                          <span className={tabla.sub}>{textoAusencias(w.ausencias)}</span>
+                        )}
                       </td>
                       <td>
                         <TextoTareas
@@ -527,6 +537,16 @@ export function FichaPersona({ employeeId }: { employeeId: string }) {
           vista={vistaTareas}
           ir={irATareas}
           semanas={vista.recientes}
+        />
+      )}
+
+      {verTareas && semanaTareas && persona && (
+        // The days of the week the task section shows, under the same per-person rule.
+        <DiasDeSemana
+          employeeId={employeeId}
+          nombre={persona.nombre}
+          periodStart={semanaTareas}
+          recordId={vistaTareas?.recordId}
         />
       )}
 
