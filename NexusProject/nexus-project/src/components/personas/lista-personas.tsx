@@ -10,6 +10,7 @@ import type {
   FiltroNivel,
   OrdenDirectorio,
 } from "@/shared/contratos/organizacion";
+import { seEvalua } from "@/shared/contratos/organizacion";
 import {
   NIVEL,
   decimal,
@@ -143,8 +144,13 @@ export function ListaPersonas() {
     setNumero(1);
   };
   const paginas = datos ? Math.max(1, Math.ceil(datos.total / datos.pageSize)) : 1;
+  // Resumen counts only who is evaluated; say so when the list holds someone who is not.
+  const enSeguimientoTexto =
+    datos && estado === "ACTIVAS" && datos.enSeguimiento < datos.total
+      ? `, ${datos.enSeguimiento} en seguimiento`
+      : "";
   const contexto = datos
-    ? `${semana ? `Semana ${textoSemana(semana, finDeSemana(semana))}, ` : ""}${contar(datos.total, "persona", "personas")}${filtrado ? " con estos filtros" : ""}`
+    ? `${semana ? `Semana ${textoSemana(semana, finDeSemana(semana))}, ` : ""}${contar(datos.total, "persona", "personas")}${filtrado ? " con estos filtros" : ""}${enSeguimientoTexto}`
     : "Carga de trabajo de cada persona, semana a semana";
 
   return (
@@ -334,6 +340,15 @@ export function ListaPersonas() {
                         <td className={tabla.centro}>
                           {w ? (
                             <LevelTag nivel={w.nivel} actualizado={w.actualizado} />
+                          ) : !seEvalua(persona) ? (
+                            <>
+                              <span className={s.sinDatos}>No se evalúa</span>
+                              <span className={tabla.sub}>
+                                {persona.tipo === "GERENCIA"
+                                  ? "Gerencia no se incluye en la evaluación"
+                                  : "Fuera de cobertura"}
+                              </span>
+                            </>
                           ) : (
                             <span className={s.sinDatos}>Sin datos</span>
                           )}
