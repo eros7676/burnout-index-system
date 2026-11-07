@@ -367,3 +367,69 @@ test("Exportar a CSV descarga el archivo con los filtros de la lista y avisa cu�
   await expect(fallo(page)).toContainText("No tiene permiso para exportar datos.");
   await expect(page.getByRole("button", { name: "Exportar a CSV" })).toBeEnabled();
 });
+
+test("la lista agrupa por persona: una fila con la semana más reciente y las semanas abiertas, cada una con su alerta", async ({
+  page,
+}) => {
+  await demo(page, "demo-rrhh");
+  const semana = (periodStart: string, periodEnd: string) => ({
+    ...alertaListadaMock.semana!,
+    periodStart,
+    periodEnd,
+  });
+  const alerta = (alertId: string, empleado: string, nombre: string, s: [string, string]) => ({
+    ...alertaListadaMock,
+    alertId,
+    employeeId: empleado,
+    persona: { ...alertaListadaMock.persona!, nombre },
+    semana: semana(...s),
+    seguimiento: alertId === "a-1" ? resumenDe(null) : null,
+  });
+  await page.route(api("/api/alertas"), (route) =>
+    route.fulfill({
+      json: {
+        ...paginaAlertasMock,
+        total: 4,
+        personas: 2,
+        items: [
+          alerta("a-3", "EMP-001", "Persona ficticia 001", ["2026-10-12", "2026-10-18"]),
+          alerta("a-2", "EMP-001", "Persona ficticia 001", ["2026-10-05", "2026-10-11"]),
+          alerta("a-1", "EMP-001", "Persona ficticia 001", ["2026-09-28", "2026-10-04"]),
+          alerta("b-1", "EMP-002", "Persona ficticia 002", ["2026-10-12", "2026-10-18"]),
+        ],
+      },
+    }),
+  );
+  await page.goto("/alerts");
+  await expect(page.getByRole("status").filter({ hasText: "4 alertas" })).toContainText(
+    "4 alertas de 2 personas",
+  );
+  // One row per person.
+  await expect(lista(page).getByRole("rowheader")).toHaveText([
+    /^Persona ficticia 001/,
+    /^Persona ficticia 002/,
+  ]);
+  const primera = lista(page).getByRole("row").filter({ hasText: "Persona ficticia 001" });
+  await expect(primera).toContainText("12–18 oct 2026");
+  await expect(primera).toContainText("3 alertas: 3 sin seguimiento");
+  await expect(lista(page).getByRole("button", { name: /semanas con alerta/ })).toHaveCount(1);
+  await expect(page.getByText(/la exportación cuentan alertas/)).toBeVisible();
+
+  // The weeks open under the person, each linking to its own alert.
+  const ver = lista(page).getByRole("button", { name: "Ver las 3 semanas con alerta" });
+  await expect(ver).toHaveAttribute("aria-expanded", "false");
+  await ver.click();
+  await expect(
+    lista(page).getByRole("button", { name: "Ocultar las 3 semanas con alerta" }),
+  ).toHaveAttribute("aria-expanded", "true");
+  await expect(lista(page).getByRole("link", { name: /^Semana 28 sep/ })).toHaveAttribute(
+    "href",
+    "/alerts/a-1",
+  );
+  await expect(lista(page).getByRole("link", { name: /^Semana 5–11 oct/ })).toHaveAttribute(
+    "href",
+    "/alerts/a-2",
+  );
+  await lista(page).getByRole("button", { name: /Ocultar/ }).click();
+  await expect(lista(page).getByRole("link", { name: /^Semana / })).toHaveCount(0);
+});

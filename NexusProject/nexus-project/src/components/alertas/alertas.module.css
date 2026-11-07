@@ -58,3 +58,27 @@
 .parte:hover {
   color: var(--accent-hover);
 }
+/* The weeks of one person, opened under their row. */
+.semanaAbierta > th,
+.semanaAbierta > td {
+  background: var(--surface-2);
+}
+.alternar {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--text-xs);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.alternar:hover {
+  color: var(--accent-hover);
+}
+.nota {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
