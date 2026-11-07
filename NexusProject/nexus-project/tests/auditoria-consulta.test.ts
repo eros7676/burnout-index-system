@@ -242,5 +242,4 @@ test("B6: cada manejador del runtime exige el permiso que le corresponde", () =>
 
 test("B6: los límites de lectura son los de la investigación", () => {
   assert.equal(AUDITORIA_LIMITES.exportacionMaxFilas, 10_000);
-  assert.equal(AUDITORIA_LIMITES.retencionMeses, 12);
 });

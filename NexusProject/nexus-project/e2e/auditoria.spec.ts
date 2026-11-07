@@ -238,7 +238,7 @@ test("Auditoría: los eventos se leen en palabras, con actor, rol, recurso y res
 
   await expect(page.getByRole("main").getByText("3 eventos")).toBeVisible();
   await expect(
-    page.getByText("Los eventos se conservan 12 meses."),
+    page.getByText(/Los eventos se conservan sin borrado automático/),
   ).toBeVisible();
 
   // Words, not codes: no raw id, enum, user id or ISO instant reaches the list.

@@ -7,10 +7,7 @@ import {
   ENTIDADES_AUDITORIA,
   type EntidadAuditoria,
 } from "@/shared/auditoria-catalogo";
-import {
-  AUDITORIA_LIMITES,
-  type FormatoExportacion,
-} from "@/shared/contratos/auditoria";
+import { type FormatoExportacion } from "@/shared/contratos/auditoria";
 import { entero } from "@/shared/formato";
 import { useArrival, usePageEnter, useRowsEnter } from "@/shared/motion";
 import {
@@ -384,8 +381,8 @@ export function Auditoria() {
             {aviso?.tipo === "error" && <ErrorBox mensaje={aviso.mensaje} />}
             {datos?.totalAcotado && (
               <Notice tono="info">
-                Hay más de {entero(datos.total)} eventos con estos filtros. Acote
-                el período para ver el total.
+                Hay más de {entero(datos.total)} eventos con estos filtros.
+                Acote el período para ver el total.
               </Notice>
             )}
           </div>
@@ -397,7 +394,10 @@ export function Auditoria() {
               La fecha desde es posterior a la fecha hasta.
             </Notice>
           ) : consulta.estado === "error" ? (
-            <ErrorBox mensaje={consulta.mensaje} onRetry={consulta.reintentar} />
+            <ErrorBox
+              mensaje={consulta.mensaje}
+              onRetry={consulta.reintentar}
+            />
           ) : !datos ? (
             <SkeletonRows filas={6} />
           ) : items.length === 0 ? (
@@ -493,9 +493,9 @@ export function Auditoria() {
 
         <div className={s.pie}>
           <p className={s.nota}>
-            Los eventos se conservan {AUDITORIA_LIMITES.retencionMeses} meses.
-            Las consultas y las exportaciones de esta pantalla también quedan
-            registradas.
+            Los eventos se conservan sin borrado automático; la política de
+            retención la define la organización. Las consultas y las
+            exportaciones de esta pantalla también quedan registradas.
           </p>
           {datos && (cursores.length > 0 || hayMas) && (
             <nav className={s.paginas} aria-label="Páginas de eventos">

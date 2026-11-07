@@ -11,7 +11,6 @@ export const AUDITORIA_LIMITES = {
   exportacionMaxFilas: 10_000,
   /** Events shown in one operation view. */
   operacionMaxEventos: 200,
-  retencionMeses: 12,
 } as const;
 
 export const RUTAS_AUDITORIA = {
