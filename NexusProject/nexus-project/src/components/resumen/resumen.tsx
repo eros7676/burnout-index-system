@@ -48,6 +48,9 @@ import s from "./resumen.module.css";
 /** People with a level in a week (Incompleto has none yet). */
 const conNivel = (c: Record<Nivel, number>) => c.BAJO + c.MEDIO + c.ALTO;
 
+/** The first loaded week has no week before it, so nobody can have a level in it yet. */
+const PRIMERA_SEMANA = "Primera semana: sin semana anterior para comparar.";
+
 /** The finding first: the chosen week's people in Alto against the week before. */
 function hallazgoAlto(
   evolucion: { periodStart: string; periodEnd: string; conteo: Record<Nivel, number> }[],
@@ -481,6 +484,12 @@ export function Resumen() {
             ) : (
               <div className={s.trend}>
                 <p className={s.hallazgo}>{hallazgoAlto(vista.evolucion, semana, vista.nuevas)}</p>
+                {vista.evolucion[0] && !conNivel(vista.evolucion[0].conteo) && (
+                  <p className={s.note}>
+                    La primera semana cargada no tiene semana anterior: el nivel se calcula
+                    comparando dos semanas, por eso no cuenta personas en Alto.
+                  </p>
+                )}
                 <TrendLine
                   nombre="Personas en Alto por semana"
                   etiqueta="personas en Alto"
@@ -493,8 +502,10 @@ export function Resumen() {
                   }))}
                   actual={semana}
                   formato={entero}
+                  sinDato={(i) => (i === 0 ? PRIMERA_SEMANA : undefined)}
                   nota={(i) => {
                     const c = vista.evolucion[i].conteo;
+                    if (i === 0 && !conNivel(c)) return PRIMERA_SEMANA;
                     return conNivel(c)
                       ? `De ${entero(conNivel(c))} con nivel; ${entero(c.MEDIO)} en Medio, ${entero(c.BAJO)} en Bajo.`
                       : "Ninguna persona tiene nivel esta semana: falta la semana anterior.";
