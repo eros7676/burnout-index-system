@@ -39,9 +39,16 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const usuarios = sesion.estado === "listo" ? sesion.datos.usuarios : [];
   const correo = sesion.estado === "listo" ? sesion.datos.correo : "SIMULADO";
+  const empresa = sesion.estado === "listo" ? sesion.datos.empresa : null;
+  const empresas = sesion.estado === "listo" ? sesion.datos.empresas : [];
   const visible = usuario && !fuera ? usuario : null;
+  // Another company is another database: the same profile there, or its login list when it has none.
+  const cambiarEmpresa = (id: string) => {
+    if (!visible) return;
+    elegirUsuario(visible, id).catch(() => router.replace(`/?empresa=${encodeURIComponent(id)}`));
+  };
   return (
-    <SesionProvider value={{ usuario: visible, usuarios, correo }}>
+    <SesionProvider value={{ empresa, usuario: visible, usuarios, correo }}>
       <div className={s.app}>
         <div className={s.demo} role="region" aria-label="Modo demostración">
           <p>
@@ -55,6 +62,22 @@ export function AppShell({ children }: { children: ReactNode }) {
           {sesion.estado === "error" && (
             <ErrorBox mensaje={sesion.mensaje} onRetry={sesion.reintentar} />
           )}
+          {visible && empresa && empresas.length > 1 && (
+            <label className={s.switcher}>
+              <span>Empresa</span>
+              <select
+                aria-label="Empresa de la demostración"
+                value={empresa.id}
+                onChange={(e) => cambiarEmpresa(e.target.value)}
+              >
+                {empresas.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           {visible && (
             <label className={s.switcher}>
               <span>Perfil activo</span>
@@ -66,7 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     (u) => u.userId === e.target.value,
                   );
                   if (elegido)
-                    elegirUsuario(elegido).catch((error: Error) =>
+                    elegirUsuario(elegido, empresa?.id).catch((error: Error) =>
                       setErrorCambio(error.message),
                     );
                 }}
@@ -99,6 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {visible
               ? `${ROL[visible.rol]}${visible.rol === "RRHH" || visible.rol === "GERENCIA" ? ", toda la empresa" : ""}`
               : " "}
+            {visible && empresa && <span className={s.empresa}>{empresa.nombre}</span>}
           </p>
           <nav aria-label="Secciones">
             {NAVEGACION.map((grupo) => {
