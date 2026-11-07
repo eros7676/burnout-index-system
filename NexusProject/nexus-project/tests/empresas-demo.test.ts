@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { empleadosSemilla, reglasSemilla } from "../prisma/seed-data";
+import {
+  empleadosSemilla,
+  equiposSemilla,
+  reglasSemilla,
+  semillaDeEmpresa,
+  type CatalogoEmpresa,
+} from "../prisma/seed-data";
+import { validarConfiguracion } from "../src/server/services/reglas";
 import { MAX_ARCHIVO_CSV, leerCsvImportacion } from "../src/server/services/csv-importacion";
 import { validarCsvImportacion } from "../src/server/services/validacion-importacion";
 import { validarCsvTareas, type RegistroSemana } from "../src/server/services/tareas-importacion";
@@ -100,6 +107,23 @@ for (const empresa of EMPRESAS) {
       "a sustained case",
     );
     assert.ok(archivo(empresa, "jornadas.csv").byteLength < MAX_ARCHIVO_CSV);
+  });
+
+  test(`${empresa}: el catálogo da nombre a todos y sus reglas son una versión válida`, () => {
+    const catalogo = JSON.parse(archivo(empresa, "catalogo.json").toString()) as CatalogoEmpresa;
+    const semilla = semillaDeEmpresa(catalogo, validarConfiguracion);
+    // Same ids, teams, leads and coverage as the generic seed; only names and rules change.
+    const estructura = ({ nombre: _n, ...resto }: { nombre: string }) => (void _n, resto);
+    assert.deepEqual(semilla.empleados.map(estructura), empleadosSemilla.map(estructura));
+    assert.deepEqual(semilla.equipos.map(estructura), equiposSemilla.map(estructura));
+    assert.ok(semilla.empleados.every((e) => !e.nombre.includes("ficticio") && !e.nombre.includes("ficticia")));
+    assert.equal(new Set(semilla.empleados.map((e) => e.nombre)).size, 50, "no repeated names");
+    assert.equal(semilla.reglas.version, "v1");
+    assert.equal(semilla.reglas.effectiveFrom, reglasSemilla.effectiveFrom);
+    assert.throws(
+      () => semillaDeEmpresa({ ...catalogo, personas: { ...catalogo.personas, "EMP-007": " " } }, validarConfiguracion),
+      /no tiene el nombre de EMP-007/,
+    );
   });
 
   test(`${empresa}: los archivos son los que produce el generador`, () => {

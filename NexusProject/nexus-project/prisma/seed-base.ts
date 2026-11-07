@@ -1,10 +1,13 @@
 import { isDeepStrictEqual } from "node:util";
 import type { Prisma } from "@prisma/client";
 import { fechaParaDb } from "../src/server/repositories/fechas";
-import { empleadosSemilla, equiposSemilla, reglasSemilla } from "./seed-data";
+import { semillaGenerica, type Semilla } from "./seed-data";
 
 /** Ejecutar en una transacción. Repetir el seed no modifica el catálogo ni el historial. */
-export async function sembrarBase(tx: Prisma.TransactionClient) {
+export async function sembrarBase(
+  tx: Prisma.TransactionClient,
+  { equipos: equiposSemilla, empleados: empleadosSemilla, reglas: reglasSemilla }: Semilla = semillaGenerica,
+) {
   for (const equipo of equiposSemilla) {
     await tx.equipo.upsert({
       where: { teamId: equipo.teamId },

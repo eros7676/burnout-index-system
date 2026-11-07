@@ -56,3 +56,43 @@ export const reglasSemilla = {
   createdBy: "demo-local",
   createdAt: "2026-01-05T00:00:00.000Z",
 } satisfies ConfiguracionIndice;
+
+/** What the seed writes: the catalog (teams, people) and the first version of the rules. */
+export type Semilla = {
+  equipos: typeof equiposSemilla;
+  empleados: typeof empleadosSemilla;
+  reglas: ConfiguracionIndice;
+};
+
+/** The generic catalog: fictional names and the product's default rules. Tests rely on it. */
+export const semillaGenerica: Semilla = {
+  equipos: equiposSemilla,
+  empleados: empleadosSemilla,
+  reglas: reglasSemilla,
+};
+
+/** A demo company's catalog, as scripts/demo-empresa.mjs writes it to templates/empresas/<id>/. */
+export type CatalogoEmpresa = {
+  empresa: string;
+  equipos: Record<string, string>;
+  personas: Record<string, string>;
+  reglas: Pick<ConfiguracionIndice, "weights" | "thresholds" | "mediumLimit" | "highLimit" | "minExceededFactors">;
+};
+
+/**
+ * The same structure as the generic catalog (ids, teams, chain of leads, coverage) with the
+ * company's names and its v1 rules. Fails when a name is missing; the rules go through the same
+ * validation as a published version.
+ */
+export function semillaDeEmpresa(catalogo: CatalogoEmpresa, validar: (reglas: unknown) => ConfiguracionIndice): Semilla {
+  const nombre = (nombres: Record<string, string>, id: string) => {
+    const valor = nombres[id]?.trim();
+    if (!valor) throw new Error(`El catálogo de ${catalogo.empresa} no tiene el nombre de ${id}.`);
+    return valor;
+  };
+  return {
+    equipos: equiposSemilla.map((e) => ({ ...e, nombre: nombre(catalogo.equipos, e.teamId) })),
+    empleados: empleadosSemilla.map((e) => ({ ...e, nombre: nombre(catalogo.personas, e.employeeId) })),
+    reglas: validar({ ...reglasSemilla, ...catalogo.reglas }),
+  };
+}
