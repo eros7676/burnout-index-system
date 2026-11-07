@@ -59,6 +59,10 @@ Los resúmenes de la demo nunca tienen vacaciones dentro de la semana, así que 
 `VACACIONES`. Sí produce semanas con días de descanso y de licencia (35 de 392), siempre antes de la racha
 que informa el resumen. Las horas se reparten en medias horas para que sumen exactamente el resumen.
 
+Las empresas de la demostración (`templates/empresas/<id>/jornadas.csv`) se simulan al revés: primero los
+días y después el resumen. Por eso sí tienen vacaciones dentro de la semana (ver
+[Empresas de la demostración](empresas-demo.md), E6).
+
 ## Pruebas
 
 - `tests/importacion-jornadas.test.ts`: reglas por fila y por semana, conciliación y huella.
