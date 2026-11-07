@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { agruparPorPersona } from "../src/server/services/seguimiento-alertas";
 import type { UsuarioDemoDTO } from "../src/shared/contracts";
 import {
   asignablesDe,
@@ -368,4 +369,14 @@ test("cierre: motivo de la lista, justificación de 10 a 280 caracteres y cohere
   const baja = { ...ok, motivoCierre: "BAJA_PERSONA" };
   assert.deepEqual(codigos(validarCierre(baja, contexto)), ["PERSONA_ACTIVA"]);
   assert.deepEqual(validarCierre(baja, { ...contexto, personaActiva: false }), []);
+});
+
+test("agruparPorPersona junta las alertas de cada persona en el lugar de su alerta más reciente", () => {
+  const a = (employeeId: string, semana: string) => ({ employeeId, semana });
+  const orden = [a("A", "11-02"), a("B", "11-02"), a("A", "10-26"), a("C", "10-26"), a("A", "10-19"), a("B", "10-19")];
+  assert.deepEqual(
+    agruparPorPersona(orden).map((x) => `${x.employeeId}${x.semana}`),
+    ["A11-02", "A10-26", "A10-19", "B11-02", "B10-19", "C10-26"],
+  );
+  assert.deepEqual(agruparPorPersona([]), []);
 });
