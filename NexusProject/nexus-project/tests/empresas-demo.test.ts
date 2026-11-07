@@ -10,7 +10,7 @@ import { validarCsvJornadas, type RegistroJornadas } from "../src/server/service
 
 // Every demo company's files go through the real import validators, in the order RR. HH. imports
 // them, and keep the invariants a day-first simulation guarantees across weeks.
-const EMPRESAS = ["conecta"];
+const EMPRESAS = ["conecta", "rutas", "salud"];
 const ahora = new Date("2026-11-02T12:00:00Z");
 const archivo = (empresa: string, nombre: string) => readFileSync(`templates/empresas/${empresa}/${nombre}`);
 const base = {
@@ -93,7 +93,12 @@ for (const empresa of EMPRESAS) {
     const texto = archivo(empresa, "jornadas.csv").toString();
     assert.ok((texto.match(/,LICENCIA,/g) ?? []).length >= 20, "leave to show on screen");
     assert.ok((texto.match(/,VACACIONES,/g) ?? []).length >= 20, "vacation blocks");
-    assert.ok(semanas(empresa).some((s) => s.diasConsecutivosSinDescanso >= 14), "a sustained case");
+    // Each company counts a long streak from its own threshold (a nurse's 12-hour shifts, a driver's week).
+    const { reglas } = JSON.parse(archivo(empresa, "catalogo.json").toString());
+    assert.ok(
+      semanas(empresa).some((s) => s.diasConsecutivosSinDescanso >= 2 * reglas.thresholds.DS),
+      "a sustained case",
+    );
     assert.ok(archivo(empresa, "jornadas.csv").byteLength < MAX_ARCHIVO_CSV);
   });
 

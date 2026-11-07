@@ -7,7 +7,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { simular } from "./lib/simulacion-demo.mjs";
 
-const EMPRESAS = ["conecta"];
+const EMPRESAS = ["conecta", "rutas", "salud"];
 
 async function archivos(id) {
   const { default: perfil } = await import(`./empresas/${id}.mjs`);
