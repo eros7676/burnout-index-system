@@ -615,3 +615,36 @@ test("Resumen: las condiciones que superan el umbral, la más frecuente primero 
     /Carga de tareas\s*12 de 49/,
   ]);
 });
+
+test("Resumen: la primera semana cargada dice que no tiene semana anterior en vez de «Sin dato»", async ({
+  page,
+}) => {
+  await demo(page, "demo-rrhh");
+  // The oldest week (28 sep) has no week before it: nobody can have a level there yet.
+  await page.route(api("/api/personas"), (route) => {
+    const d = personas();
+    return route.fulfill({
+      json: {
+        ...d,
+        items: d.items.map((p) => ({
+          ...p,
+          semanas: p.semanas.map((w) =>
+            w.periodStart === "2026-09-28"
+              ? { ...w, nivel: "INCOMPLETO", indice: null }
+              : w,
+          ),
+        })),
+      },
+    });
+  });
+  await page.goto("/home");
+  const tendencia = page.getByRole("region", { name: "En Alto por semana" });
+  await expect(
+    tendencia.getByText(/La primera semana cargada no tiene semana anterior/),
+  ).toBeVisible();
+  const tabla = tendencia.getByRole("table", { name: "Personas en Alto por semana" });
+  await expect(tabla.getByRole("row").nth(1)).toContainText(
+    "Primera semana: sin semana anterior para comparar.",
+  );
+  await expect(tabla).not.toContainText("Sin dato");
+});

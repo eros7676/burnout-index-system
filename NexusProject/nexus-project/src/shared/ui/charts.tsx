@@ -131,6 +131,7 @@ export function TrendLine({
   tono = "neutro",
   enteros = false,
   nota,
+  sinDato,
 }: {
   /** What the line measures, for its accessible name and hidden table. */
   nombre: string;
@@ -145,6 +146,8 @@ export function TrendLine({
   enteros?: boolean;
   /** An extra line for a week's readout. */
   nota?: (i: number) => string | undefined;
+  /** What a week without a value says (readout and hidden table) when «Sin dato» is not the whole story. */
+  sinDato?: (i: number) => string | undefined;
 }) {
   const valores = puntos.map((p) => p.valor);
   const maximo = Math.max(0, ...valores.filter((v): v is number => v !== null));
@@ -158,7 +161,7 @@ export function TrendLine({
     return {
       titulo: textoSemana(puntos[i].periodStart, puntos[i].periodEnd),
       filas: v === null ? [] : [{ etiqueta, valor: formato(v), clave }],
-      nota: nota?.(i) ?? (v === null ? "Sin dato para esta semana." : undefined),
+      nota: nota?.(i) ?? (v === null ? (sinDato?.(i) ?? "Sin dato para esta semana.") : undefined),
     };
   };
   return (
@@ -210,10 +213,10 @@ export function TrendLine({
             </tr>
           </thead>
           <tbody>
-            {puntos.map((p) => (
+            {puntos.map((p, i) => (
               <tr key={p.periodStart}>
                 <th scope="row">{textoSemana(p.periodStart, p.periodEnd)}</th>
-                <td>{p.valor === null ? "Sin dato" : formato(p.valor)}</td>
+                <td>{p.valor === null ? (sinDato?.(i) ?? "Sin dato") : formato(p.valor)}</td>
               </tr>
             ))}
           </tbody>
