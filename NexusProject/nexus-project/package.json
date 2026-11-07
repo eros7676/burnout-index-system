@@ -22,7 +22,9 @@
     "db:test:http": "tsc -p tsconfig.test.json && node .test-build/tests/importaciones.next.mysql.js",
     "rules:publish": "node scripts/rules-publish.mjs",
     "demo:tareas": "node scripts/demo-tareas-csv.mjs",
-    "demo:jornadas": "node scripts/demo-jornadas-csv.mjs"
+    "demo:jornadas": "node scripts/demo-jornadas-csv.mjs",
+    "demo:empresas": "node scripts/demo-empresa.mjs --todas",
+    "demo:cargar": "node scripts/demo-empresas.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
