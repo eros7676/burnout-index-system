@@ -4,7 +4,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { tableroApi } from "@/client/tablero-api";
 import { useConsulta } from "@/client/use-consulta";
-import type { FiltrosAlertas, PaginaAlertas } from "@/shared/contracts";
+import type {
+  AlertaListada,
+  FiltrosAlertas,
+  PaginaAlertas,
+} from "@/shared/contracts";
 import {
   ESTADO_SEGUIMIENTO,
   FILTROS_SEGUIMIENTO,
@@ -60,12 +64,169 @@ const plural = (n: number, uno: string, varios: string) =>
   `${entero(n)} ${n === 1 ? uno : varios}`;
 
 /** One part of the list's summary: its count, linked to the list filtered to it when there is any. */
-function ParteFiltro({ n, href, children }: { n: number; href: string; children: string }) {
+function ParteFiltro({
+  n,
+  href,
+  children,
+}: {
+  n: number;
+  href: string;
+  children: string;
+}) {
   if (n === 0) return <>{`0 ${children}`}</>;
   return (
     <Link className={s.parte} href={href} scroll={false}>
       {entero(n)} {children}
     </Link>
+  );
+}
+
+type Usuario = ReturnType<typeof useSesion>["usuario"];
+
+/** One person's active alerts, newest week first, in the order the server lists them. */
+function agrupar(items: AlertaListada[]) {
+  const grupos: { employeeId: string; alertas: AlertaListada[] }[] = [];
+  for (const alerta of items) {
+    const ultimo = grupos.at(-1);
+    if (ultimo?.employeeId === alerta.employeeId) ultimo.alertas.push(alerta);
+    else grupos.push({ employeeId: alerta.employeeId, alertas: [alerta] });
+  }
+  return grupos;
+}
+
+function CeldaDestinatario({
+  alerta,
+  usuario,
+}: {
+  alerta: AlertaListada;
+  usuario: Usuario;
+}) {
+  const estado = envio(alerta);
+  // An internal-only notice is the common case: plain text, no tag.
+  const lineaEnvio =
+    alerta.estadoEnvio === "SIN_DESTINATARIO" ? null : estado.tono ===
+      "neutro" ? (
+      <span className={tabla.sub}>{estado.texto}</span>
+    ) : (
+      <StatusTag tono={estado.tono}>{estado.texto}</StatusTag>
+    );
+  return (
+    <td>
+      <span className={s.recipient}>
+        {sinDestinatario(alerta) ? (
+          <StatusTag tono="incidencia">Sin destinatario</StatusTag>
+        ) : (
+          <span>
+            {alerta.destinatario ?? "Responsable"}
+            {alerta.destinatarioId === usuario?.employeeId ? " (usted)" : ""}
+          </span>
+        )}
+        {lineaEnvio}
+      </span>
+    </td>
+  );
+}
+
+const textoPeriodo = (a: AlertaListada) =>
+  a.semana ? textoSemana(a.semana.periodStart, a.semana.periodEnd) : "—";
+
+/**
+ * A person is one row: their newest alert and how many weeks are open. With more than one, the
+ * weeks open below it, each linking to its own alert (the export still lists one row per alert).
+ */
+function FilasPersona({
+  alertas,
+  abierto,
+  onAlternar,
+  usuario,
+}: {
+  alertas: AlertaListada[];
+  abierto: boolean;
+  onAlternar: () => void;
+  usuario: Usuario;
+}) {
+  const [alerta, ...anteriores] = alertas;
+  const varias = anteriores.length > 0;
+  const sinSeguimiento = alertas.filter((a) => !a.seguimiento).length;
+  const vencidas = alertas.filter((a) => a.seguimiento?.vencido).length;
+  return (
+    <>
+      <tr>
+        <th scope="row">
+          <Link className={tabla.rowLink} href={`/alerts/${alerta.alertId}`}>
+            {alerta.persona?.nombre ?? "Persona sin datos cargados"}
+          </Link>
+          {alerta.persona && (
+            <span className={tabla.sub}>{alerta.persona.equipo}</span>
+          )}
+        </th>
+        <td>
+          {alerta.semana ? (
+            <span className={s.week}>
+              {textoPeriodo(alerta)}
+              <WeekStrip semanas={alerta.serie} />
+              {!alerta.semana.actualizado && (
+                <span className={s.stale}>Resultado desactualizado</span>
+              )}
+              {varias && (
+                <button
+                  type="button"
+                  className={s.alternar}
+                  aria-expanded={abierto}
+                  onClick={onAlternar}
+                >
+                  {abierto ? "Ocultar" : "Ver"} las {alertas.length} semanas con
+                  alerta
+                </button>
+              )}
+            </span>
+          ) : (
+            "—"
+          )}
+        </td>
+        <td className={s.factors}>{causasEnPalabras(alerta.causas)}</td>
+        <CeldaDestinatario alerta={alerta} usuario={usuario} />
+        <td>
+          <ResumenSeguimientoCelda
+            resumen={alerta.seguimiento}
+            usuarioId={usuario?.userId}
+          />
+          {varias && (
+            <span className={tabla.sub}>
+              {plural(alertas.length, "alerta", "alertas")}:{" "}
+              {entero(sinSeguimiento)} sin seguimiento
+              {vencidas > 0
+                ? `, ${entero(vencidas)} con el seguimiento vencido`
+                : ""}
+            </span>
+          )}
+        </td>
+      </tr>
+      {varias &&
+        abierto &&
+        alertas.map((a) => (
+          <tr key={a.alertId} className={s.semanaAbierta}>
+            <th scope="row">
+              <Link className={tabla.rowLink} href={`/alerts/${a.alertId}`}>
+                Semana {textoPeriodo(a)}
+              </Link>
+            </th>
+            <td>
+              {a.semana && !a.semana.actualizado && (
+                <span className={s.stale}>Resultado desactualizado</span>
+              )}
+            </td>
+            <td className={s.factors}>{causasEnPalabras(a.causas)}</td>
+            <CeldaDestinatario alerta={a} usuario={usuario} />
+            <td>
+              <ResumenSeguimientoCelda
+                resumen={a.seguimiento}
+                usuarioId={usuario?.userId}
+              />
+            </td>
+          </tr>
+        ))}
+    </>
   );
 }
 
@@ -114,19 +275,27 @@ export function Alertas() {
     filtros.dirigidas;
   const esTeamLead = usuario?.rol === "TEAM_LEAD";
   // RR. HH. may follow every alert; a Team Lead and Gerencia only those addressed to them.
-  const tieneDirigidas = usuario?.rol === "TEAM_LEAD" || usuario?.rol === "GERENCIA";
+  const tieneDirigidas =
+    usuario?.rol === "TEAM_LEAD" || usuario?.rol === "GERENCIA";
   // With no follow-up filter on, the summary says how many wait and links to each part (one-row reads).
   const sinFiltroDeSeguimiento =
-    !filtros.seguimiento && !filtros.responsable && !filtros.vencidos && !filtros.dirigidas;
+    !filtros.seguimiento &&
+    !filtros.responsable &&
+    !filtros.vencidos &&
+    !filtros.dirigidas;
   const equipoFiltro = filtros.equipo || undefined;
   const partes = useConsulta(
     async (signal) => {
       const contar = (f: FiltrosAlertas) =>
-        tableroApi.alertas({ ...f, teamId: equipoFiltro, pageSize: 1 }, signal).then((p) => p.total);
+        tableroApi
+          .alertas({ ...f, teamId: equipoFiltro, pageSize: 1 }, signal)
+          .then((p) => p.total);
       const [sinSeguimiento, vencidos, dirigidas] = await Promise.all([
         contar({ seguimiento: "SIN_SEGUIMIENTO" }),
         contar({ vencido: "1" }),
-        tieneDirigidas ? contar({ dirigidas: "1", seguimiento: "SIN_SEGUIMIENTO" }) : null,
+        tieneDirigidas
+          ? contar({ dirigidas: "1", seguimiento: "SIN_SEGUIMIENTO" })
+          : null,
       ]);
       return { sinSeguimiento, vencidos, dirigidas };
     },
@@ -137,7 +306,8 @@ export function Alertas() {
   const hrefCon = (cambios: Record<string, string>) => {
     const nuevos = new URLSearchParams(params);
     nuevos.delete("pagina");
-    for (const [clave, valor] of Object.entries(cambios)) nuevos.set(clave, valor);
+    for (const [clave, valor] of Object.entries(cambios))
+      nuevos.set(clave, valor);
     return `${ruta}?${nuevos}`;
   };
   const responsables = usuarios.filter((u) => u.rol !== "EMPLEADO");
@@ -154,6 +324,14 @@ export function Alertas() {
   }
   const quitar = () => router.replace(ruta, { scroll: false });
 
+  const [abiertos, setAbiertos] = useState<ReadonlySet<string>>(new Set());
+  const alternar = (id: string) =>
+    setAbiertos((previos) => {
+      const nuevos = new Set(previos);
+      if (!nuevos.delete(id)) nuevos.add(id);
+      return nuevos;
+    });
+  const grupos = agrupar(datos?.items ?? []);
   const total = datos?.total ?? 0;
   const paginas = datos ? Math.ceil(datos.total / datos.pageSize) : 1;
 
@@ -212,7 +390,9 @@ export function Alertas() {
             <option value="">Todos</option>
             {responsables.map((u) => (
               <option key={u.userId} value={u.userId}>
-                {u.userId === usuario?.userId ? `${u.nombre} (usted)` : u.nombre}
+                {u.userId === usuario?.userId
+                  ? `${u.nombre} (usted)`
+                  : u.nombre}
               </option>
             ))}
           </SelectField>
@@ -241,15 +421,22 @@ export function Alertas() {
           )}
           {datos && (
             <p className={s.count} role="status">
-              {plural(total, "alerta", "alertas")} de {plural(datos.personas, "persona", "personas")}
+              {plural(total, "alerta", "alertas")} de{" "}
+              {plural(datos.personas, "persona", "personas")}
               {partes.estado === "listo" && (
                 <>
                   ;{" "}
-                  <ParteFiltro n={partes.datos.sinSeguimiento} href={hrefCon({ seguimiento: "SIN_SEGUIMIENTO" })}>
+                  <ParteFiltro
+                    n={partes.datos.sinSeguimiento}
+                    href={hrefCon({ seguimiento: "SIN_SEGUIMIENTO" })}
+                  >
                     sin seguimiento
                   </ParteFiltro>
                   ,{" "}
-                  <ParteFiltro n={partes.datos.vencidos} href={hrefCon({ vencidos: "1" })}>
+                  <ParteFiltro
+                    n={partes.datos.vencidos}
+                    href={hrefCon({ vencidos: "1" })}
+                  >
                     con el seguimiento vencido
                   </ParteFiltro>
                   {partes.datos.dirigidas !== null && (
@@ -257,7 +444,10 @@ export function Alertas() {
                       ;{" "}
                       <ParteFiltro
                         n={partes.datos.dirigidas}
-                        href={hrefCon({ dirigidas: "1", seguimiento: "SIN_SEGUIMIENTO" })}
+                        href={hrefCon({
+                          dirigidas: "1",
+                          seguimiento: "SIN_SEGUIMIENTO",
+                        })}
                       >
                         {partes.datos.dirigidas === 1
                           ? "dirigida a usted, sin seguimiento"
@@ -279,7 +469,10 @@ export function Alertas() {
           aria-busy={actualizando}
         >
           {consulta.estado === "error" ? (
-            <ErrorBox mensaje={consulta.mensaje} onRetry={consulta.reintentar} />
+            <ErrorBox
+              mensaje={consulta.mensaje}
+              onRetry={consulta.reintentar}
+            />
           ) : !datos ? (
             <SkeletonRows filas={6} />
           ) : datos.items.length === 0 ? (
@@ -318,86 +511,35 @@ export function Alertas() {
                   </tr>
                 </thead>
                 <tbody ref={cuerpo} className={s.rows}>
-                  {datos.items.map((alerta) => {
-                    const estado = envio(alerta);
-                    // An internal-only notice is the common case: plain text, no tag.
-                    const lineaEnvio =
-                      alerta.estadoEnvio === "SIN_DESTINATARIO" ? null : estado.tono ===
-                        "neutro" ? (
-                        <span className={tabla.sub}>{estado.texto}</span>
-                      ) : (
-                        <StatusTag tono={estado.tono}>{estado.texto}</StatusTag>
-                      );
+                  {grupos.map((g) => {
+                    const abierto = abiertos.has(g.employeeId);
                     return (
-                      <tr key={alerta.alertId}>
-                        <th scope="row">
-                          <Link
-                            className={tabla.rowLink}
-                            href={`/alerts/${alerta.alertId}`}
-                          >
-                            {alerta.persona?.nombre ?? "Persona sin datos cargados"}
-                          </Link>
-                          {alerta.persona && (
-                            <span className={tabla.sub}>
-                              {alerta.persona.equipo}
-                            </span>
-                          )}
-                        </th>
-                        <td>
-                          {alerta.semana ? (
-                            <span className={s.week}>
-                              {textoSemana(
-                                alerta.semana.periodStart,
-                                alerta.semana.periodEnd,
-                              )}
-                              <WeekStrip semanas={alerta.serie} />
-                              {!alerta.semana.actualizado && (
-                                <span className={s.stale}>
-                                  Resultado desactualizado
-                                </span>
-                              )}
-                            </span>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                        <td className={s.factors}>
-                          {causasEnPalabras(alerta.causas)}
-                        </td>
-                        <td>
-                          <span className={s.recipient}>
-                            {sinDestinatario(alerta) ? (
-                              <StatusTag tono="incidencia">
-                                Sin destinatario
-                              </StatusTag>
-                            ) : (
-                              <span>
-                                {alerta.destinatario ?? "Responsable"}
-                                {alerta.destinatarioId === usuario?.employeeId
-                                  ? " (usted)"
-                                  : ""}
-                              </span>
-                            )}
-                            {lineaEnvio}
-                          </span>
-                        </td>
-                        <td>
-                          <ResumenSeguimientoCelda
-                            resumen={alerta.seguimiento}
-                            usuarioId={usuario?.userId}
-                          />
-                        </td>
-                      </tr>
+                      <FilasPersona
+                        key={g.employeeId}
+                        alertas={g.alertas}
+                        abierto={abierto}
+                        onAlternar={() => alternar(g.employeeId)}
+                        usuario={usuario}
+                      />
                     );
                   })}
                 </tbody>
               </DataTable>
+              {grupos.some((g) => g.alertas.length > 1) && (
+                <p className={s.nota}>
+                  Cada persona aparece una vez, con su alerta más reciente. El
+                  conteo, la paginación y la exportación cuentan alertas: una
+                  fila por alerta y semana.
+                </p>
+              )}
               {paginas > 1 && (
                 <Pagination
                   pagina={datos.page}
                   paginas={paginas}
                   etiqueta="Paginación de alertas"
-                  onCambio={(p) => cambiar({ pagina: p > 1 ? String(p) : null })}
+                  onCambio={(p) =>
+                    cambiar({ pagina: p > 1 ? String(p) : null })
+                  }
                 />
               )}
             </>

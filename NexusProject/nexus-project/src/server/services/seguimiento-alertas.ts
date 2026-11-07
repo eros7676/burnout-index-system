@@ -215,6 +215,20 @@ export async function alertasFiltradas(
 
 export const LECTURA_ALERTAS = LECTURA;
 
+/**
+ * The list's order with each person's alerts together: people keep the place of their newest
+ * alert and their own weeks follow it, newest first. The export keeps `alertasFiltradas`' order.
+ */
+export function agruparPorPersona<T extends { employeeId: string }>(alertas: readonly T[]): T[] {
+  const porPersona = new Map<string, T[]>();
+  for (const a of alertas) {
+    const propias = porPersona.get(a.employeeId);
+    if (propias) propias.push(a);
+    else porPersona.set(a.employeeId, [a]);
+  }
+  return [...porPersona.values()].flat();
+}
+
 /** One page of `alertasFiltradas`, with the teams the viewer may filter by. */
 export async function listarAlertas(
   db: PrismaClient,
@@ -222,7 +236,7 @@ export async function listarAlertas(
   solicitante: Solicitante,
 ): Promise<PaginaAlertas> {
   return db.$transaction(async (tx) => {
-    const listadas = await alertasFiltradas(tx, filtros, solicitante);
+    const listadas = agruparPorPersona(await alertasFiltradas(tx, filtros, solicitante));
     // Avoids overflow with a safe but very large page number.
     const inicio =
       filtros.page - 1 > listadas.length / filtros.pageSize
