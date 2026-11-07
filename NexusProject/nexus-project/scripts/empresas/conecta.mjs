@@ -8,7 +8,7 @@ const TECNICOS =
     "|",
   );
 
-export default {
+const perfil = {
   id: "conecta",
   semilla: 20261107,
   equipos: {
@@ -69,3 +69,5 @@ export default {
     ref: (id) => `https://tareas.example/ordenes/${id}`,
   },
 };
+
+export default perfil;

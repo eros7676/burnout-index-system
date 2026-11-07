@@ -11,7 +11,7 @@ const PERSONAL =
     "|",
   );
 
-export default {
+const perfil = {
   id: "rutas",
   semilla: 20261108,
   equipos: {
@@ -72,3 +72,5 @@ export default {
     ref: (id) => `https://tareas.example/viajes/${id}`,
   },
 };
+
+export default perfil;

@@ -11,7 +11,7 @@ const PERSONAL =
     "|",
   );
 
-export default {
+const perfil = {
   id: "salud",
   semilla: 20261109,
   equipos: {
@@ -71,3 +71,5 @@ export default {
     ref: (id) => `https://tareas.example/enfermeria/${id}`,
   },
 };
+
+export default perfil;
