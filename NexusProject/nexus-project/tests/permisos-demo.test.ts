@@ -12,6 +12,7 @@ import {
   sesionDemo,
 } from "../src/server/http/permisos-demo";
 import { MATRIZ_PERMISOS, tienePermiso } from "../src/shared/permisos";
+import { empresaActual, empresaValida, empresasDisponibles } from "../src/server/empresas";
 
 const req = (userId?: string, url = "http://local/api/evaluaciones") =>
   new Request(url, {
@@ -325,4 +326,62 @@ test("A3: el Team Lead opera solo sobre personas, equipos y alertas propios", as
   const admin = proteger<[string]>(dbFalsa().db, "ADMINISTRAR_PERSONAS", ok, "empleado");
   assert.equal((await admin(post("demo-gerencia"), "EMP-001")).status, 403);
   assert.equal((await admin(post("demo-rrhh"), "EMP-001")).status, 200);
+});
+
+test("Empresas: la sesión firma la empresa y cada solicitud lee la base de esa empresa", async () => {
+  const antes = process.env.DATABASE_URL_TRANSPORTE;
+  process.env.DATABASE_URL_TRANSPORTE = "mysql://demo@localhost:3306/nexus_transporte";
+  try {
+    assert.deepEqual(
+      empresasDisponibles().map((e) => e.id),
+      ["conecta", "rutas"],
+    );
+    // A company without its database variable is not offered, and its id is never accepted.
+    assert.equal(empresaValida("salud"), null);
+    assert.equal(empresaValida("nexus_salud; DROP"), null);
+
+    const { db, eventos } = dbFalsa();
+    const elegir = (body: unknown) =>
+      seleccionarDemo(db, new Request("http://local", { method: "POST", body: JSON.stringify(body) }));
+    assert.equal((await elegir({ userId: "demo-rrhh", empresa: "salud" })).status, 403);
+    assert.equal((await elegir({ userId: "demo-rrhh", empresa: "rutas", rol: "RRHH" })).status, 403);
+    const r = await elegir({ userId: "demo-rrhh", empresa: "rutas" });
+    assert.equal(r.status, 200);
+    assert.deepEqual(eventos.at(-1)!.detalles, { rol: "RRHH", teamId: null, empresa: "rutas" });
+    const cookie = r.headers.get("set-cookie")!.split(";")[0];
+
+    // The guarded handler runs in the session's company.
+    let leida: string | undefined;
+    const respuesta = await proteger(db, "LEER", async () => {
+      leida = empresaActual();
+      return Response.json({});
+    })(new Request("http://local/api/evaluaciones", { headers: { Cookie: cookie } }));
+    assert.equal(respuesta.status, 200);
+    assert.equal(leida, "rutas");
+    assert.equal(empresaActual(), "conecta", "outside a request, the default company");
+
+    // The picker lists another company's logins without signing the user in there.
+    const sesion = async (url: string) =>
+      (await sesionDemo(db, new Request(url, { headers: { Cookie: cookie } }))).json();
+    const propia = await sesion("http://local/api/demo/sesion");
+    assert.equal(propia.empresa.id, "rutas");
+    assert.equal(propia.usuario.userId, "demo-rrhh");
+    assert.equal(propia.empresas.length, 2);
+    const otra = await sesion("http://local/api/demo/sesion?empresa=conecta");
+    assert.equal(otra.empresa.id, "conecta");
+    assert.equal(otra.usuario, null);
+    assert.equal((await sesion("http://local/api/demo/sesion?empresa=salud")).empresa.id, "rutas");
+
+    // A session from before companies (no `empresa` in the token) stays in the default company.
+    assert.equal((await usuarioDemo(db, req("demo-rrhh"))).rol, "RRHH");
+  } finally {
+    if (antes === undefined) delete process.env.DATABASE_URL_TRANSPORTE;
+    else process.env.DATABASE_URL_TRANSPORTE = antes;
+  }
+  // With the variable gone, a session signed for that company is no session.
+  const { db } = dbFalsa();
+  const token = tokenDemo("demo-rrhh", "rutas");
+  await assert.rejects(
+    usuarioDemo(db, new Request("http://local", { headers: { Cookie: `nexo_demo=${token}` } })),
+  );
 });

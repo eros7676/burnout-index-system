@@ -1,11 +1,16 @@
 import "server-only";
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
+import { clienteDe, empresaActual } from "../server/empresas";
 
-const globalPrisma = globalThis as typeof globalThis & {
-  prisma?: PrismaClient;
-};
-
-// Reutilizar el pool durante hot reload. La conexión se abre al consultar, no al importar.
-export const prisma = globalPrisma.prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== "production") globalPrisma.prisma = prisma;
+/**
+ * The database of the request's company (src/server/empresas.ts). Every access resolves the client
+ * at call time, so runtimes built once at import (`crearHttpX(prisma)`) still reach the company the
+ * session chose. The connection opens on the first query, not on import.
+ */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_, clave) {
+    const cliente = clienteDe(empresaActual());
+    const valor = Reflect.get(cliente, clave, cliente);
+    return typeof valor === "function" ? valor.bind(cliente) : valor;
+  },
+});

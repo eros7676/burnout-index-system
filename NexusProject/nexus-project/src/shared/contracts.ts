@@ -12,7 +12,18 @@ export type UsuarioDemoDTO = {
   rol: 'RRHH' | 'GERENCIA' | 'TEAM_LEAD' | 'EMPLEADO';
   employeeId: string | null; teamId: string | null;
 };
+/** A demo company: its own database, so its people, teams, data and rules are its own. */
+export type EmpresaDTO = {
+  id: string;
+  nombre: string;
+  rubro: string;
+  descripcion: string;
+};
 export type SesionDemoDTO = {
+  /** The company the session (or the picker) reads; `usuarios` are its logins. */
+  empresa: EmpresaDTO;
+  /** Companies this server can open, the first being the default; one means no company step. */
+  empresas: readonly EmpresaDTO[];
   usuario: UsuarioDemoDTO | null;
   usuarios: readonly UsuarioDemoDTO[];
   /** How an alert's notice leaves: real mail when the server has SMTP configured, simulated otherwise. */
