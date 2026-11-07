@@ -364,3 +364,30 @@ test("Ficha: una semana sin detalle de días lo dice, y Gerencia no ve los días
   await expect(page.getByRole("region", { name: "Semana a semana" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Días de la semana" })).toHaveCount(0);
 });
+
+test("Lista: quien no se evalúa dice «No se evalúa» y el encabezado concilia con Resumen", async ({ page }) => {
+  await demo(page, "demo-rrhh");
+  await organizacion(page);
+  await page.route(api("/api/personas/directorio"), (route) => {
+    const d = directorio(Object.fromEntries(new URL(route.request().url()).searchParams));
+    const gerente = {
+      ...d.items[0],
+      employeeId: "GER-01",
+      nombre: "Gerente ficticio de Operaciones",
+      tipo: "GERENCIA" as const,
+      enCobertura: false,
+      semanas: [],
+    };
+    return route.fulfill({
+      json: { ...d, items: [...d.items, gerente], total: d.total + 1, enSeguimiento: d.total },
+    });
+  });
+  await page.goto("/employees");
+  await expect(
+    page.getByText(/Semana .*, 9 personas, 8 en seguimiento/),
+  ).toBeVisible();
+  const fila = lista(page).getByRole("row").filter({ hasText: "GER-01" });
+  await expect(fila.getByText("No se evalúa")).toBeVisible();
+  await expect(fila.getByText("Gerencia no se incluye en la evaluación")).toBeVisible();
+  await expect(fila.getByText("Sin datos")).toHaveCount(0);
+});

@@ -13,6 +13,7 @@ import {
 } from "../src/server/http/permisos-demo";
 import { registrarEvento } from "../src/server/repositories/auditoria";
 import { leerResultados } from "../src/server/repositories/consultas";
+import { seEvalua } from "../src/shared/contratos/organizacion";
 import { paginaDirectorio } from "../src/server/repositories/personas-directorio";
 import { leerSemanasPersonas } from "../src/server/repositories/personas-semanas";
 import {
@@ -244,6 +245,13 @@ test("MySQL organización: altas, cambios, bajas, líder, importación y lectura
       assert.deepEqual([corregidas[1].motivo, corregidas[1].enCobertura, corregidas[1].comentario], ["CORRECCION", false, "No integra la cobertura"]);
       const correccion = (await eventos({ sujetoId: legajo("T1"), accion: "EMPLEADO_ACTUALIZADO" })).at(-1)!;
       assert.equal(correccion.justificacion, "No integra la cobertura");
+
+      // The directory counts who is evaluated by the rule Resumen uses; T1 is out of coverage now.
+      const enB = await paginaDirectorio(db, { periodStart: null, teamId: equipoB, estado: "ACTIVAS", orden: "nombre", page: 1, pageSize: 100 });
+      const personasB = await db.empleado.findMany({ where: { employeeId: { in: enB.ids } } });
+      assert.ok(personasB.some((p) => p.employeeId === legajo("T1")));
+      assert.equal(enB.enSeguimiento, personasB.filter(seEvalua).length);
+      assert.ok(enB.enSeguimiento < enB.total);
 
       const lider = await rechazo(cambiarAsignacion(db, legajo("L1"), { motivo: "CORRECCION", tipo: "TEAM_LEAD", teamId: equipoB, enCobertura: true, comentario: "Prueba" }, actor, reloj));
       assert.equal(lider.status, 409);

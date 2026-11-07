@@ -95,7 +95,7 @@ export function directorio(filtro: Record<string, string>): DirectorioPersonasDT
       responsable: p.responsable,
       semanas: periodStart ? desde(p, periodStart) : [],
     }));
-  return { items, total: filas.length, page, pageSize, periodStart, semanas };
+  return { items, total: filas.length, enSeguimiento: filas.length, page, pageSize, periodStart, semanas };
 }
 
 export function ficha(employeeId: string): FichaPersonaDTO | null {

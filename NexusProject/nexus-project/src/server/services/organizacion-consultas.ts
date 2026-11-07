@@ -71,7 +71,7 @@ export async function consultarDirectorio(
   return db.$transaction(async (tx) => {
     const semanas = await semanasCargadas(tx, filtros.teamId);
     const periodStart = filtros.periodStart ?? semanas[0] ?? null;
-    const { ids, total } = await paginaDirectorio(tx, {
+    const { ids, total, enSeguimiento } = await paginaDirectorio(tx, {
       periodStart,
       teamId: filtros.teamId,
       estado: filtros.estado,
@@ -113,6 +113,7 @@ export async function consultarDirectorio(
     return {
       items,
       total,
+      enSeguimiento,
       page: filtros.page,
       pageSize: filtros.pageSize,
       periodStart,
