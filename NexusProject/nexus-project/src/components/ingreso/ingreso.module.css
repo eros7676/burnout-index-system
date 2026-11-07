@@ -69,11 +69,17 @@
 .user:disabled {
   cursor: progress;
 }
-.user[aria-current] {
+.user[aria-current],
+.user[aria-pressed="true"] {
   border-color: var(--accent);
   box-shadow: inset 3px 0 0 var(--accent);
 }
 .userName {
+  font-weight: var(--weight-strong);
+}
+/* A company's industry, between its name and what it does. */
+.userRubro {
+  font-size: var(--text-xs);
   font-weight: var(--weight-strong);
 }
 .userScope {

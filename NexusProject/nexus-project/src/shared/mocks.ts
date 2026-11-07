@@ -327,8 +327,21 @@ export const personaMock = {
     },
   ],
 } satisfies import("./contracts").PersonaDTO;
+/** The default demo company, as src/server/empresas.ts lists it (that module is server-only). */
+export const empresaMock = {
+  id: "conecta",
+  nombre: "Conecta Servicios Técnicos",
+  rubro: "Mantenimiento y redes",
+  descripcion: "Cuadrillas de mantenimiento, fibra óptica y mesa de ayuda técnica.",
+} satisfies import("./contracts").EmpresaDTO;
 export const cuerposExitoMock = {
-  consultarSesionDemo: { usuario: null, usuarios: [], correo: "SIMULADO" },
+  consultarSesionDemo: {
+    empresa: empresaMock,
+    empresas: [empresaMock],
+    usuario: null,
+    usuarios: [],
+    correo: "SIMULADO",
+  },
   seleccionarUsuarioDemo: {
     usuario: {
       userId: "demo-rrhh",

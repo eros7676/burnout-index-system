@@ -14,17 +14,26 @@ const QUE_VE: Record<UsuarioDemoDTO["rol"], string> = {
   EMPLEADO: "Sus propias horas y tareas. Nunca ve un índice.",
 };
 
-/** Entry of the demo: pick who to view the product as. Stands in for login. */
-export function Ingreso() {
+/**
+ * Entry of the demo: pick a company (when the server has more than one) and who to view it as.
+ * Stands in for login. Each company is its own database, so its profiles are its own teams' leads.
+ */
+export function Ingreso({ empresa: inicial }: { empresa?: string }) {
   const pagina = useRef<HTMLDivElement>(null);
   usePageEnter(pagina);
-  const sesion = useConsulta(leerSesion, "sesion");
+  const [elegida, setElegida] = useState(inicial);
+  const sesion = useConsulta(
+    (signal) => leerSesion(signal, elegida),
+    `sesion:${elegida ?? ""}`,
+  );
   const [error, setError] = useState<string>();
   const [eligiendo, setEligiendo] = useState<string>();
+  const datos = sesion.estado === "listo" ? sesion.datos : null;
+  const empresa = datos?.empresa.id;
 
   const entrar = (usuario: UsuarioDemoDTO) => {
     setEligiendo(usuario.userId);
-    elegirUsuario(usuario).catch((e: Error) => {
+    elegirUsuario(usuario, empresa).catch((e: Error) => {
       setEligiendo(undefined);
       setError(e.message);
     });
@@ -42,8 +51,33 @@ export function Ingreso() {
           que se sostienen semana tras semana, para revisarlos a tiempo.
         </p>
       </header>
+      {datos && datos.empresas.length > 1 && (
+        <section className={s.panel} data-enter aria-labelledby="empresa">
+          <h2 id="empresa">Empresa</h2>
+          <ul className={s.users}>
+            {datos.empresas.map((e) => (
+              <li key={e.id}>
+                <button
+                  type="button"
+                  className={s.user}
+                  onClick={() => setElegida(e.id)}
+                  disabled={!!eligiendo}
+                  aria-pressed={e.id === empresa}
+                >
+                  <span className={s.userName}>{e.nombre}</span>
+                  <span className={s.userRubro}>{e.rubro}</span>
+                  <span className={s.userScope}>{e.descripcion}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section className={s.panel} data-enter aria-labelledby="perfil">
-        <h2 id="perfil">Seleccione un perfil para ingresar</h2>
+        <h2 id="perfil">
+          Seleccione un perfil para ingresar
+          {datos && datos.empresas.length > 1 ? ` a ${datos.empresa.nombre}` : ""}
+        </h2>
         {sesion.estado === "cargando" && <SkeletonRows filas={4} />}
         {sesion.estado === "error" && (
           <ErrorBox mensaje={sesion.mensaje} onRetry={sesion.reintentar} />

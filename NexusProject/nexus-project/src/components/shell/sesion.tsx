@@ -55,8 +55,10 @@ export function puedeAbrir(rol: Rol, ruta: string, teamId?: string | null) {
   return sub ? sub.roles.includes(rol) : true;
 }
 
-export async function leerSesion(signal: AbortSignal): Promise<SesionDemoDTO> {
-  const respuesta = await fetch(API_ROUTES.consultarSesionDemo.path, {
+/** The session, and the logins of `empresa` (the session's company when omitted). */
+export async function leerSesion(signal: AbortSignal, empresa?: string): Promise<SesionDemoDTO> {
+  const consulta = empresa ? `?${new URLSearchParams({ empresa })}` : "";
+  const respuesta = await fetch(`${API_ROUTES.consultarSesionDemo.path}${consulta}`, {
     cache: "no-store",
     signal,
   });
@@ -64,12 +66,12 @@ export async function leerSesion(signal: AbortSignal): Promise<SesionDemoDTO> {
   return respuesta.json();
 }
 
-/** Signs in as a demo user and reloads at that role's first screen. */
-export async function elegirUsuario(usuario: UsuarioDemoDTO) {
+/** Signs in as a demo user of a company (the default when omitted) and reloads at that role's first screen. */
+export async function elegirUsuario(usuario: UsuarioDemoDTO, empresa?: string) {
   const respuesta = await fetch(API_ROUTES.seleccionarUsuarioDemo.path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId: usuario.userId }),
+    body: JSON.stringify(empresa ? { userId: usuario.userId, empresa } : { userId: usuario.userId }),
   });
   if (!respuesta.ok) throw new Error("No se pudo cambiar de usuario. Intente nuevamente.");
   window.location.assign(inicioDe(usuario.rol));
@@ -77,6 +79,7 @@ export async function elegirUsuario(usuario: UsuarioDemoDTO) {
 
 /** `usuario` is null until the session is read (or while redirecting away). */
 const Sesion = createContext<{
+  empresa: SesionDemoDTO["empresa"] | null;
   usuario: UsuarioDemoDTO | null;
   usuarios: readonly UsuarioDemoDTO[];
   correo: SesionDemoDTO["correo"];

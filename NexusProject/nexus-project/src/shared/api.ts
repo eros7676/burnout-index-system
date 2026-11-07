@@ -120,7 +120,7 @@ type CuerpoVacio = Record<string, never>;
 /** File se envía como campo `file` de multipart/form-data, nunca como JSON. */
 export type PeticionesApi = {
   consultarSesionDemo: { body?: undefined };
-  seleccionarUsuarioDemo: { body: { userId: string } };
+  seleccionarUsuarioDemo: { body: { userId: string; empresa?: string } };
   listarAuditoria: { query?: FiltrosAuditoria; body?: undefined };
   validarImportacion: { file: File };
   confirmarImportacion: { params: { id: string }; body: CuerpoVacio };

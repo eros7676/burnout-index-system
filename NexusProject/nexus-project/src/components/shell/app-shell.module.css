@@ -98,6 +98,12 @@
   color: var(--ink-2);
   font-size: var(--text-xs);
 }
+/* The company under the role: which database every screen reads. */
+.empresa {
+  display: block;
+  color: var(--ink);
+  font-weight: var(--weight-strong);
+}
 .group {
   margin-top: var(--space-4);
 }

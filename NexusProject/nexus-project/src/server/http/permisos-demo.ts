@@ -8,6 +8,13 @@ import type { PrismaClient } from "@prisma/client";
 import type { MotivoAuditoria } from "../../shared/auditoria-catalogo";
 import type { SesionDemoDTO, UsuarioDemoDTO } from "../../shared/contracts";
 import { configCorreo } from "../correo";
+import {
+  EMPRESA_POR_DEFECTO,
+  empresaDTO,
+  empresaValida,
+  empresasDisponibles,
+  enEmpresa,
+} from "../empresas";
 import { tienePermiso, type Permiso, type Rol } from "../../shared/permisos";
 import {
   registrarEvento,
@@ -118,9 +125,9 @@ export class ErrorPermiso extends Error {
   }
 }
 
-export function tokenDemo(userId: string) {
+export function tokenDemo(userId: string, empresa = EMPRESA_POR_DEFECTO) {
   const valor = Buffer.from(
-    JSON.stringify({ userId, exp: Date.now() + 8 * 60 * 60 * 1000 }),
+    JSON.stringify({ userId, empresa, exp: Date.now() + 8 * 60 * 60 * 1000 }),
   ).toString("base64url");
   return `${valor}.${firma(valor)}`;
 }
@@ -133,7 +140,8 @@ function rolDeUsuario(userId: string): Rol | null {
   );
 }
 
-function userIdDeSesion(request: Request): string {
+/** The signed session: who, and in which company's database. */
+function sesionDeSolicitud(request: Request): { userId: string; empresa: string } {
   const cookies = (request.headers.get("cookie") ?? "")
     .split(";")
     .map((s) => s.trim());
@@ -147,14 +155,28 @@ function userIdDeSesion(request: Request): string {
     const a = Buffer.from(partes[1]);
     const b = Buffer.from(firma(partes[0]));
     if (a.length !== b.length || !timingSafeEqual(a, b)) throw new Error();
-    const { userId, exp } = JSON.parse(
+    const { userId, empresa, exp } = JSON.parse(
       Buffer.from(partes[0], "base64url").toString(),
     );
     if (!Number.isFinite(exp) || exp <= Date.now()) throw new Error();
     if (typeof userId !== "string" || !rolDeUsuario(userId)) throw new Error();
-    return userId;
+    // A session from before companies existed belongs to the default one; an unknown company is no session.
+    const valida = empresa === undefined ? EMPRESA_POR_DEFECTO : empresaValida(empresa);
+    if (!valida) throw new Error();
+    return { userId, empresa: valida };
   } catch {
     throw new ErrorPermiso(401, MENSAJES.sinSesion);
+  }
+}
+
+const userIdDeSesion = (request: Request) => sesionDeSolicitud(request).userId;
+
+/** The company a request reads: the session's, else the default (a request without session reads nothing). */
+function empresaDeSolicitud(request: Request) {
+  try {
+    return sesionDeSolicitud(request).empresa;
+  } catch {
+    return EMPRESA_POR_DEFECTO;
   }
 }
 
@@ -257,17 +279,26 @@ const conSolicitud = (respuesta: Response, solicitudId: string) => {
   return respuesta;
 };
 
+/**
+ * The session and the logins of a company. The picker asks for a company with `?empresa=`; without
+ * it, the session's company (or the default). `usuario` is set only when the session is in that company.
+ */
 export async function sesionDemo(db: PrismaClient, request: Request) {
+  let sesion: { userId: string; empresa: string } | null = null;
   try {
-    const usuarios = await usuariosDemo(db);
-    let userId: string | null = null;
-    try {
-      userId = userIdDeSesion(request);
-    } catch {
-      // No session: the picker shows the list.
-    }
+    sesion = sesionDeSolicitud(request);
+  } catch {
+    // No session: the picker shows the list.
+  }
+  const pedida = new URL(request.url).searchParams.get("empresa");
+  const empresa = empresaValida(pedida) ?? sesion?.empresa ?? EMPRESA_POR_DEFECTO;
+  try {
+    const usuarios = await enEmpresa(empresa, () => usuariosDemo(db));
+    const userId = sesion?.empresa === empresa ? sesion.userId : null;
     return Response.json(
       {
+        empresa: empresaDTO(empresa),
+        empresas: empresasDisponibles(),
         usuario: usuarios.find((u) => u.userId === userId) ?? null,
         usuarios,
         correo: configCorreo() ? "REAL" : "SIMULADO",
@@ -294,20 +325,25 @@ export async function seleccionarDemo(db: PrismaClient, request: Request) {
       !body ||
       typeof body !== "object" ||
       typeof body.userId !== "string" ||
-      Object.keys(body).length !== 1 ||
+      Object.keys(body).some((k) => k !== "userId" && k !== "empresa") ||
       !rolDeUsuario(body.userId)
     )
       throw new ErrorPermiso(403, MENSAJES.usuario);
-    const usuario = (await usuariosDemo(db)).find(
-      (u) => u.userId === body.userId,
-    );
-    if (!usuario) throw new ErrorPermiso(403, MENSAJES.usuario);
+    const empresa =
+      body.empresa === undefined ? EMPRESA_POR_DEFECTO : empresaValida(body.empresa);
+    if (!empresa) throw new ErrorPermiso(403, MENSAJES.usuario);
     const solicitudId = randomUUID();
-    await registrarAcceso(db, {
-      accion: "SESION_DEMO_INICIADA",
-      recursoId: usuario.userId,
-      actor: contextoDe(usuario, solicitudId),
-      detalles: { rol: usuario.rol, teamId: usuario.teamId },
+    // The login and its audit event live in the chosen company's database.
+    const usuario = await enEmpresa(empresa, async () => {
+      const elegido = (await usuariosDemo(db)).find((u) => u.userId === body.userId);
+      if (!elegido) throw new ErrorPermiso(403, MENSAJES.usuario);
+      await registrarAcceso(db, {
+        accion: "SESION_DEMO_INICIADA",
+        recursoId: elegido.userId,
+        actor: contextoDe(elegido, solicitudId),
+        detalles: { rol: elegido.rol, teamId: elegido.teamId, empresa },
+      });
+      return elegido;
     });
     return Response.json(
       { usuario },
@@ -315,7 +351,7 @@ export async function seleccionarDemo(db: PrismaClient, request: Request) {
         headers: {
           "Cache-Control": "no-store",
           "X-Request-Id": solicitudId,
-          "Set-Cookie": `${COOKIE}=${tokenDemo(usuario.userId)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800${new URL(request.url).protocol === "https:" ? "; Secure" : ""}`,
+          "Set-Cookie": `${COOKIE}=${tokenDemo(usuario.userId, empresa)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800${new URL(request.url).protocol === "https:" ? "; Secure" : ""}`,
         },
       },
     );
@@ -419,7 +455,9 @@ export function proteger<T extends string[]>(
   accion: (request: Request, ...ids: T) => Promise<Response>,
   recurso?: RecursoProtegido,
 ) {
-  return async (request: Request, ...ids: T): Promise<Response> => {
+  return (request: Request, ...ids: T): Promise<Response> =>
+    enEmpresa(empresaDeSolicitud(request), () => protegida(request, ...ids));
+  async function protegida(request: Request, ...ids: T): Promise<Response> {
     const solicitudId = randomUUID();
     let userId: string | null = null;
     let usuario: UsuarioDemoDTO | null = null;
@@ -466,5 +504,5 @@ export function proteger<T extends string[]>(
       contexto: contextoDe(usuario, solicitudId),
     });
     return conSolicitud(await accion(request, ...ids), solicitudId);
-  };
+  }
 }

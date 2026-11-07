@@ -11,10 +11,12 @@ import type {
   PersonasDTO,
   ResumenDTO,
   SemanaPersona,
+  SesionDemoDTO,
 } from "../src/shared/contracts";
 import {
   alertaMock,
   cuerposExitoMock,
+  empresaMock,
   informeMock,
   resumenMock,
 } from "../src/shared/mocks";
@@ -295,10 +297,12 @@ export async function demo(
     }
     return route.fulfill({
       json: {
+        empresa: empresaMock,
+        empresas: [empresaMock],
         usuario: USUARIOS_DEMO.find((u) => u.userId === actual) ?? null,
         usuarios: USUARIOS_DEMO,
         correo,
-      },
+      } satisfies SesionDemoDTO,
     });
   });
 }
