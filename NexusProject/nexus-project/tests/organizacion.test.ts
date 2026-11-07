@@ -5,7 +5,7 @@ import {
   rutaHistorial,
   rutaMiEquipo,
 } from "../src/components/organizacion/rutas";
-import { COLUMNAS_PERSONAS } from "../src/shared/contratos/organizacion";
+import { COLUMNAS_PERSONAS, seEvalua } from "../src/shared/contratos/organizacion";
 import {
   claveNombre,
   lunesActual,
@@ -630,4 +630,11 @@ test("rutas: el historial de auditoría solo se ofrece a quien tiene el permiso 
   assert.equal(rutaHistorial("GERENCIA", { equipoId: "EQ-01" }), "/audit?entidad=EQUIPO&recursoId=EQ-01");
   for (const rol of ["TEAM_LEAD", "EMPLEADO"] as const)
     assert.equal(rutaHistorial(rol, { sujetoId: "EMP-001" }), null, rol);
+});
+
+test("seEvalua: solo técnicos y team leads dentro de la cobertura se evalúan", () => {
+  assert.equal(seEvalua({ tipo: "TECNICO", enCobertura: true }), true);
+  assert.equal(seEvalua({ tipo: "TEAM_LEAD", enCobertura: true }), true);
+  assert.equal(seEvalua({ tipo: "TECNICO", enCobertura: false }), false);
+  assert.equal(seEvalua({ tipo: "GERENCIA", enCobertura: true }), false);
 });

@@ -51,7 +51,7 @@ export type PaginaDirectorio = {
 export async function paginaDirectorio(
   tx: Prisma.TransactionClient,
   f: PaginaDirectorio,
-): Promise<{ ids: string[]; total: number }> {
+): Promise<{ ids: string[]; total: number; enSeguimiento: number }> {
   // 1900-01-01 matches no period: every person has "no data".
   const semana = f.periodStart ?? "1900-01-01";
   const condiciones: Prisma.Sql[] = [Prisma.sql`e.activo = ${f.estado === "ACTIVAS"}`];
@@ -88,8 +88,14 @@ export async function paginaDirectorio(
     SELECT e.employeeId AS employeeId ${desde}
     ORDER BY ${orden}
     LIMIT ${f.pageSize} OFFSET ${(f.page - 1) * f.pageSize}`;
-  const [conteo] = await tx.$queryRaw<
-    { total: bigint }[]
-  >`SELECT COUNT(*) AS total ${desde}`;
-  return { ids: filas.map((r) => r.employeeId), total: Number(conteo.total) };
+  // The evaluated ones are the same rule as `seEvalua` and as Resumen (equipos-resumen.ts).
+  const [conteo] = await tx.$queryRaw<{ total: bigint; enSeguimiento: bigint }[]>`
+    SELECT COUNT(*) AS total,
+           COALESCE(SUM(e.enCobertura = true AND e.tipo IN ('TECNICO', 'TEAM_LEAD')), 0) AS enSeguimiento
+    ${desde}`;
+  return {
+    ids: filas.map((r) => r.employeeId),
+    total: Number(conteo.total),
+    enSeguimiento: Number(conteo.enSeguimiento),
+  };
 }

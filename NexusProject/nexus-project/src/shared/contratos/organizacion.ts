@@ -65,7 +65,16 @@ export type PersonaFilaDTO = {
   responsable: string | null;
   semanas: SemanaPersona[];
 };
+/**
+ * Whether the index is computed for a person: only an active TECNICO or TEAM_LEAD inside the
+ * coverage. Resumen counts the same way (equipos-resumen.ts), so the directory reconciles with it.
+ */
+export function seEvalua(p: Pick<PersonaFilaDTO, "tipo" | "enCobertura">): boolean {
+  return p.enCobertura && (p.tipo === "TECNICO" || p.tipo === "TEAM_LEAD");
+}
 export type DirectorioPersonasDTO = Pagina<PersonaFilaDTO> & {
+  /** Of `total` (same filters), how many are evaluated: what Resumen counts as people. */
+  enSeguimiento: number;
   /** The week the rows are read for; null when nothing is loaded. */
   periodStart: FechaISO | null;
   /** Loaded weeks in the viewer's scope, newest first (the week selector). */
@@ -441,6 +450,7 @@ export const MOCKS_ORGANIZACION = {
       },
     ],
     total: 1,
+    enSeguimiento: 1,
     page: 1,
     pageSize: 50,
     periodStart: "2026-10-12",
