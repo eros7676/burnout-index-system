@@ -35,6 +35,13 @@ export const EMPRESAS: readonly Empresa[] = [
     descripcion: "Enfermería por turnos, guardia y servicios de internación.",
     variable: "DATABASE_URL_SALUD",
   },
+  {
+    id: "nexus",
+    nombre: "Nexus",
+    rubro: "Mantenimiento y redes",
+    descripcion: "La demo original: los equipos de Conecta con las ocho semanas que se cargaron primero.",
+    variable: "DATABASE_URL_NEXUS",
+  },
 ];
 
 const dto = ({ id, nombre, rubro, descripcion }: Empresa): EmpresaDTO => ({
