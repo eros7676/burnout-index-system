@@ -62,18 +62,27 @@ Los archivos están en `templates/empresas/<id>/`: `catalogo.json` (nombres y re
 
 ## Preparar las empresas
 
-Con una base vacía por empresa y la app corriendo con las mismas variables:
+Con Docker, `docker compose up -d --wait` crea las tres bases (`nexus_workload`, `nexus_rutas` y
+`nexus_salud`) y el `.env.example` de la app ya trae sus tres variables. Con la app corriendo:
 
 ```sh
-npm run demo:cargar -- --url http://127.0.0.1:3000
+npm run demo:cargar
 ```
 
 Por cada empresa configurada, aplica las migraciones, carga su semilla (`DEMO_EMPRESA=<id> npm run db:seed`)
 e importa sus tres archivos por la API de importación, como RR. HH., esperando el cálculo del índice antes
-de los detalles. Una empresa sin variable se omite. Se puede repetir: un archivo ya cargado se omite.
+de los detalles. Lee las variables del entorno o del `.env`, como la app. Una empresa sin variable se
+omite. Se puede repetir: un archivo ya cargado se omite. `--url` apunta a otra dirección de la app
+(por defecto http://127.0.0.1:3000), y los ids limitan la carga (`npm run demo:cargar -- rutas`).
 
 Sobre una base que ya tiene otras semanas cargadas, la importación se detiene por conflicto histórico y la
-semilla rechaza una v1 distinta: hay que usar una base nueva.
+semilla rechaza una v1 distinta. `npm run demo:cargar -- --reiniciar` vacía antes cada base de la demo
+(`prisma migrate reset`), así todas las copias terminan con los mismos datos. Un volumen de Docker creado
+antes de que existieran las otras dos bases las crea con
+`docker compose exec mysql sh /docker-entrypoint-initdb.d/01-empresas.sh`.
+
+`.github/workflows/demo-empresas.yml` hace este recorrido en CI cuando cambia algo de lo que lo compone:
+Docker, el `.env.example`, la base, los archivos de las empresas o el script.
 
 ## Pruebas
 
