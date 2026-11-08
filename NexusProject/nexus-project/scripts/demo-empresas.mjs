@@ -3,11 +3,14 @@
 //   2. its weekly indicators, task detail and day detail through the import API, as RR. HH. would,
 //      waiting for the index to be computed before the detail files.
 //
-//   node scripts/demo-empresas.mjs [conecta|rutas|salud ...] [--url http://127.0.0.1:3000]
+//   node scripts/demo-empresas.mjs [conecta|rutas|salud ...] [--url http://127.0.0.1:3000] [--reiniciar]
 //
-// The app must be running at --url with the same variables. A company whose variable is unset is
-// skipped, as the app does not offer it. Import is idempotent: a file already loaded is skipped.
-// Run it on fresh databases: weeks loaded from other files are a conflict and stop the import.
+// The variables come from the environment or, failing that, from .env, the same ones the app reads.
+// The app must be running at --url. A company whose variable is unset is skipped, as the app does not
+// offer it. Import is idempotent: a file already loaded is skipped. Weeks loaded from other files are
+// a conflict and stop the import: --reiniciar first empties each company's database (prisma migrate
+// reset), so every copy of the demo ends with the same data.
+import "dotenv/config";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
@@ -17,6 +20,8 @@ const VARIABLES = { conecta: "DATABASE_URL", rutas: "DATABASE_URL_TRANSPORTE", s
 const args = process.argv.slice(2);
 const i = args.indexOf("--url");
 const base = i >= 0 ? args.splice(i, 2)[1] : "http://127.0.0.1:3000";
+const r = args.indexOf("--reiniciar");
+const reiniciar = r >= 0 && args.splice(r, 1).length > 0;
 const pedidas = args.length ? args : Object.keys(VARIABLES);
 for (const id of pedidas)
   if (!(id in VARIABLES)) {
@@ -76,14 +81,24 @@ async function importar(cookie, empresa, ruta, nombre) {
   }
 }
 
+// Fail before touching any database when the app is not up.
+await fetch(new URL("/", base)).catch(() => {
+  console.error(`La app no responde en ${base}. Iniciala con npm run dev (o npm run start) y volvé a correr esto.`);
+  process.exit(1);
+});
+
 for (const empresa of pedidas) {
   const variable = VARIABLES[empresa];
   if (!process.env[variable]) {
     console.log(`${empresa}: sin ${variable}, se omite.`);
     continue;
   }
-  console.log(`${empresa}: migraciones y seed.`);
   const env = { DATABASE_URL: process.env[variable], DEMO_EMPRESA: empresa };
+  if (reiniciar) {
+    console.log(`${empresa}: vaciando la base.`);
+    ejecutar("npx", ["prisma", "migrate", "reset", "--force", "--skip-seed"], env);
+  }
+  console.log(`${empresa}: migraciones y seed.`);
   ejecutar("npx", ["prisma", "migrate", "deploy"], env);
   ejecutar("npm", ["run", "-s", "db:seed"], env);
 

@@ -71,19 +71,34 @@ Desde la carpeta donde quieras clonar:
 git clone https://github.com/eros7676/burnout-index-system.git
 cd burnout-index-system
 cp .env.example .env
-docker compose up -d
+docker compose up -d --wait
 cd NexusProject/nexus-project
 cp .env.example .env
 npm ci
 npm run db:generate
-npm run db:deploy
-npm run db:seed
 npm run dev
 ```
 
-Abrir http://localhost:3000. Docker toma DB_NAME/DB_USER/DB_PASSWORD y DB_PORT del .env de la raíz. El puerto publicado por defecto es 3306; si está ocupado, cambiar DB_PORT (por ejemplo, a 3307) y usar el mismo puerto en DATABASE_URL del .env de la aplicación. Esperar a que MySQL esté listo antes de aplicar migraciones. No subir archivos .env. El tablero y la importación necesitan MySQL; contratos y pruebas unitarias pueden ejecutarse sin la base. Sin registros importados, el tablero muestra el estado vacío.
+Con la app corriendo, en otra terminal y en la misma carpeta:
 
-Para demostrar T14: seleccionar **RRHH** y abrir **Importar datos**, validar y confirmar `templates/ejemplo-dos-semanas.csv` y esperar procesamiento COMPLETADO. En **Personas**, la ficha de EMP-001 muestra 83,71 Incompleto y 91,21 Alto, y **Alertas** una alerta interna para TL-01. **Ver informe** muestra ranking, umbrales, reglas y persistencia. Los filtros usan selectores con nombres; nadie escribe IDs. Ver [guía T14](Docs/t14-tablero.md).
+```bash
+npm run demo:cargar
+```
+
+Carga las tres empresas de la demostración (Conecta, Rutas del Plata y Sanatorio del Parque), cada una en
+su base: migraciones, personas, reglas y sus datos de ocho semanas, importados como RR. HH. Tarda unos
+minutos y todos quedan con los mismos datos. Si ya tenías la base de antes:
+
+- con un volumen de Docker creado antes de esta versión, crear una vez las otras dos bases con
+  `docker compose exec mysql sh /docker-entrypoint-initdb.d/01-empresas.sh`;
+- si la base ya tenía otros datos, usar `npm run demo:cargar -- --reiniciar`, que primero vacía las tres
+  bases de la demo.
+
+Abrir http://localhost:3000 y elegir la empresa. Ver [Empresas de la demostración](Docs/empresas-demo.md).
+
+Docker toma DB_NAME/DB_USER/DB_PASSWORD y DB_PORT del .env de la raíz y crea `nexus_rutas` y `nexus_salud` para el mismo usuario. El puerto publicado por defecto es 3306; si está ocupado, cambiar DB_PORT (por ejemplo, a 3307) y usar el mismo puerto en las tres `DATABASE_URL*` del .env de la aplicación. `--wait` espera a que MySQL acepte conexiones. No subir archivos .env. El tablero y la importación necesitan MySQL; contratos y pruebas unitarias pueden ejecutarse sin la base. Sin registros importados, el tablero muestra el estado vacío.
+
+Para demostrar T14, sobre una base vacía (`npm run db:deploy` y `npm run db:seed`, sin `demo:cargar`): seleccionar **RRHH** y abrir **Importar datos**, validar y confirmar `templates/ejemplo-dos-semanas.csv` y esperar procesamiento COMPLETADO. En **Personas**, la ficha de EMP-001 muestra 83,71 Incompleto y 91,21 Alto, y **Alertas** una alerta interna para TL-01. **Ver informe** muestra ranking, umbrales, reglas y persistencia. Los filtros usan selectores con nombres; nadie escribe IDs. Ver [guía T14](Docs/t14-tablero.md).
 
 ## Comprobaciones y base de datos
 
