@@ -3,7 +3,7 @@
 //   2. its weekly indicators, task detail and day detail through the import API, as RR. HH. would,
 //      waiting for the index to be computed before the detail files.
 //
-//   node scripts/demo-empresas.mjs [conecta|rutas|salud ...] [--url http://127.0.0.1:3000] [--reiniciar]
+//   node scripts/demo-empresas.mjs [conecta|rutas|salud|nexus ...] [--url http://127.0.0.1:3000] [--reiniciar]
 //
 // The variables come from the environment or, failing that, from .env, the same ones the app reads.
 // The app must be running at --url. A company whose variable is unset is skipped, as the app does not
@@ -15,7 +15,30 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 /** The same ids and variables as src/server/empresas.ts. */
-const VARIABLES = { conecta: "DATABASE_URL", rutas: "DATABASE_URL_TRANSPORTE", salud: "DATABASE_URL_SALUD" };
+const VARIABLES = {
+  conecta: "DATABASE_URL",
+  rutas: "DATABASE_URL_TRANSPORTE",
+  salud: "DATABASE_URL_SALUD",
+  nexus: "DATABASE_URL_NEXUS",
+};
+const propios = (id) => ({
+  semilla: id,
+  indicadores: `empresas/${id}/indicadores.csv`,
+  tareas: `empresas/${id}/tareas.csv`,
+  jornadas: `empresas/${id}/jornadas.csv`,
+});
+/** Each company's seed catalog and files under templates/. Nexus is the original demo: Conecta's people. */
+const DATOS = {
+  conecta: propios("conecta"),
+  rutas: propios("rutas"),
+  salud: propios("salud"),
+  nexus: {
+    semilla: "conecta",
+    indicadores: "demo-ocho-semanas.csv",
+    tareas: "tareas-demo-ocho-semanas.csv",
+    jornadas: "jornadas-demo-ocho-semanas.csv",
+  },
+};
 
 const args = process.argv.slice(2);
 const i = args.indexOf("--url");
@@ -59,9 +82,10 @@ async function esperar(cookie, job) {
   throw new Error(`El procesamiento ${job.jobId} no terminó en 10 minutos.`);
 }
 
-async function importar(cookie, empresa, ruta, nombre) {
+async function importar(cookie, ruta, camino) {
   const datos = new FormData();
-  const archivo = readFileSync(new URL(`../templates/empresas/${empresa}/${nombre}`, import.meta.url));
+  const archivo = readFileSync(new URL(`../templates/${camino}`, import.meta.url));
+  const nombre = camino.split("/").at(-1);
   datos.set("file", new Blob([archivo], { type: "text/csv" }), nombre);
   const previa = await api(cookie, ruta, { method: "POST", body: datos });
   if (previa.status !== 200)
@@ -93,7 +117,7 @@ for (const empresa of pedidas) {
     console.log(`${empresa}: sin ${variable}, se omite.`);
     continue;
   }
-  const env = { DATABASE_URL: process.env[variable], DEMO_EMPRESA: empresa };
+  const env = { DATABASE_URL: process.env[variable], DEMO_EMPRESA: DATOS[empresa].semilla };
   if (reiniciar) {
     console.log(`${empresa}: vaciando la base.`);
     ejecutar("npx", ["prisma", "migrate", "reset", "--force", "--skip-seed"], env);
@@ -110,7 +134,7 @@ for (const empresa of pedidas) {
   if (sesion.status !== 200) throw new Error(`${empresa}: no se pudo ingresar como RR. HH. (${sesion.status}).`);
   const cookie = sesion.respuesta.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
 
-  await importar(cookie, empresa, "/api/importaciones/validar", "indicadores.csv");
-  await importar(cookie, empresa, "/api/importaciones/tareas/validar", "tareas.csv");
-  await importar(cookie, empresa, "/api/importaciones/jornadas/validar", "jornadas.csv");
+  await importar(cookie, "/api/importaciones/validar", DATOS[empresa].indicadores);
+  await importar(cookie, "/api/importaciones/tareas/validar", DATOS[empresa].tareas);
+  await importar(cookie, "/api/importaciones/jornadas/validar", DATOS[empresa].jornadas);
 }

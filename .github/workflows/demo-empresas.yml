@@ -1,6 +1,6 @@
 name: Empresas de la demo con Docker
 # The README path for a new teammate, end to end: Docker, the copied .env files, the app, and
-# demo:cargar for the three companies, then again (idempotent) and with --reiniciar.
+# demo:cargar for the four companies, then again (idempotent) and with --reiniciar.
 on:
   pull_request:
     paths:
@@ -11,6 +11,7 @@ on:
       - NexusProject/nexus-project/prisma/**
       - NexusProject/nexus-project/scripts/demo-empresas.mjs
       - NexusProject/nexus-project/templates/empresas/**
+      - NexusProject/nexus-project/templates/*-ocho-semanas.csv
       - .github/workflows/demo-empresas.yml
   workflow_dispatch:
 jobs:
@@ -36,16 +37,16 @@ jobs:
           nohup npm run start -- --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/app.log" 2>&1 &
           for i in $(seq 60); do curl -fs -o /dev/null http://127.0.0.1:3000/ && exit 0; sleep 2; done
           exit 1
-      - name: Load the three companies
+      - name: Load the four companies
         run: npm run demo:cargar
       - name: Load again, every file is already there
         run: |
           npm run demo:cargar | tee "$RUNNER_TEMP/segunda.log"
-          test "$(grep -c 'ya estaba cargado' "$RUNNER_TEMP/segunda.log")" -eq 9
+          test "$(grep -c 'ya estaba cargado' "$RUNNER_TEMP/segunda.log")" -eq 12
       - name: Empty and load again, with the app running
         run: |
           npm run demo:cargar -- --reiniciar | tee "$RUNNER_TEMP/reinicio.log"
-          test "$(grep -c 'filas nuevas' "$RUNNER_TEMP/reinicio.log")" -eq 9
+          test "$(grep -c 'filas nuevas' "$RUNNER_TEMP/reinicio.log")" -eq 12
       - name: App log
         if: failure()
         run: cat "$RUNNER_TEMP/app.log"
