@@ -4,6 +4,7 @@
 import { randomUUID } from "node:crypto";
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { idActor, registrarEvento, type Actor } from "../repositories/auditoria";
+import { PLAZO_IMPORTACION } from "../repositories/transaccion-importacion";
 import {
   crearImportacionTemporal,
   eliminarTemporalesVencidos,
@@ -78,7 +79,7 @@ async function validarInterna(
       },
     });
     return creada;
-  });
+  }, PLAZO_IMPORTACION);
   return {
     importId,
     expiresAt: expiresAt.toISOString(),
