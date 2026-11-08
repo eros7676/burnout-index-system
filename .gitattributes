@@ -1,2 +1,4 @@
 # Este fixture prueba bytes BOM/CRLF: conservarlos incluso al clonar en Linux.
 NexusProject/nexus-project/tests/data/identico_reordenado.csv -text whitespace=cr-at-eol
+# Run inside the MySQL container: keep LF even on a Windows checkout.
+*.sh text eol=lf
