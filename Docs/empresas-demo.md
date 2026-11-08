@@ -84,6 +84,24 @@ antes de que existieran las otras dos bases las crea con
 `.github/workflows/demo-empresas.yml` hace este recorrido en CI cuando cambia algo de lo que lo compone:
 Docker, el `.env.example`, la base, los archivos de las empresas o el script.
 
+## Demo en vivo: cargar una semana más
+
+Con las ocho semanas cargadas, cada empresa tiene en `templates/empresas/<id>/` la semana siguiente
+(26/10 al 1/11) para mostrar la importación sin chocar con lo que ya está:
+
+1. Como RR. HH., en **Importar datos**, validar `semana-siguiente-con-errores.csv`. Se rechaza el archivo
+   completo y la pantalla dice fila, campo y causa de tres errores:
+   - fila 7, `horas_extra`: dice «muchas» en lugar de un número;
+   - fila 9, `period_start`: la fecha está como 26/10/2026, no como 2026-10-26;
+   - fila 50, `employee_id`: EMP-999 no es de la empresa.
+2. Validar `semana-siguiente.csv`, el mismo archivo corregido: 49 filas nuevas. Confirmar, y el índice
+   se calcula para esa semana comparando con la anterior.
+3. Validar otra vez `semana-siguiente.csv`: las 49 filas se omiten, porque ya están.
+
+La semana sale de la misma simulación, viviendo esos siete días después de los otros, así que la racha,
+los días desde vacaciones y el saldo continúan desde la octava semana. Para repetir la demo desde cero:
+`npm run demo:cargar -- --reiniciar`.
+
 ## Pruebas
 
 - `tests/permisos-demo.test.ts`: la sesión firma la empresa; una empresa no configurada se rechaza; la
@@ -94,4 +112,5 @@ Docker, el `.env.example`, la base, los archivos de las empresas o el script.
 - `tests/empresas-demo.test.ts`: los archivos de cada empresa pasan los validadores reales de importación
   y concilian; la racha, los días desde vacaciones y el saldo siguen de semana en semana; hay licencias,
   vacaciones y un caso sostenido según el umbral de cada empresa; el catálogo nombra a todos con la misma
-  estructura que la semilla y sus reglas son una v1 válida; los archivos son los del generador.
+  estructura que la semilla y sus reglas son una v1 válida; la semana siguiente valida, continúa la octava
+  y su versión con errores se rechaza en esas tres filas; los archivos son los del generador.

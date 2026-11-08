@@ -126,6 +126,38 @@ for (const empresa of EMPRESAS) {
     );
   });
 
+  test(`${empresa}: la semana siguiente continúa la octava y se puede cargar en vivo; con errores se rechaza`, async () => {
+    const cargadas = semanas(empresa);
+    const historico = { ...base, registros: async () => [] };
+    const siguiente = await validarCsvImportacion(archivo(empresa, "semana-siguiente.csv"), historico, ahora);
+    assert.equal(siguiente.status, "VALIDADA", JSON.stringify(siguiente.errores.slice(0, 3)));
+    assert.equal(siguiente.nuevas, 49, "one new week per person");
+    const nuevas = leerCsvImportacion(archivo(empresa, "semana-siguiente.csv")).filas.map(({ celdas }) => celdas);
+    for (const c of nuevas) {
+      const antes = cargadas.filter((s) => s.employeeId === c.employee_id).at(-1)!;
+      assert.equal(c.period_start, "2026-10-26", "the week after the eight loaded ones");
+      const racha = Number(c.dias_consecutivos_sin_descanso);
+      assert.ok(racha === antes.diasConsecutivosSinDescanso + 7 || racha < 7, `${c.employee_id}: racha`);
+      assert.ok(Number(c.vacaciones_pendientes_dias) <= antes.vacacionesPendientesDias, `${c.employee_id}: saldo`);
+    }
+
+    const conErrores = await validarCsvImportacion(
+      archivo(empresa, "semana-siguiente-con-errores.csv"),
+      historico,
+      ahora,
+    );
+    assert.equal(conErrores.status, "RECHAZADA");
+    // Rows as a spreadsheet numbers them (the header is row 1): EMP-002, EMP-004 and EMP-045's row.
+    assert.deepEqual(
+      conErrores.errores.map((e) => [e.fila, e.codigo]),
+      [
+        [7, "NUMERO_INVALIDO"],
+        [9, "FECHA_INVALIDA"],
+        [50, "EMPLEADO_NO_EXISTE"],
+      ],
+    );
+  });
+
   test(`${empresa}: los archivos son los que produce el generador`, () => {
     const r = spawnSync(process.execPath, ["scripts/demo-empresa.mjs", empresa, "--check"], {
       encoding: "utf8",
