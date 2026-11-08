@@ -328,6 +328,22 @@ test("A3: el Team Lead opera solo sobre personas, equipos y alertas propios", as
   assert.equal((await admin(post("demo-rrhh"), "EMP-001")).status, 200);
 });
 
+test("Empresas: con sus cuatro variables se ofrecen las cuatro, la demo original al final", () => {
+  const env: NodeJS.ProcessEnv = {
+    NODE_ENV: "test",
+    DATABASE_URL: "mysql://demo@localhost:3306/nexus_conecta",
+    DATABASE_URL_TRANSPORTE: "mysql://demo@localhost:3306/nexus_rutas",
+    DATABASE_URL_SALUD: "mysql://demo@localhost:3306/nexus_salud",
+    DATABASE_URL_NEXUS: "mysql://demo@localhost:3306/nexus_workload",
+  };
+  assert.deepEqual(
+    empresasDisponibles(env).map((e) => e.id),
+    ["conecta", "rutas", "salud", "nexus"],
+  );
+  assert.equal(empresaValida("nexus", env), "nexus");
+  assert.equal(empresaValida("nexus", { ...env, DATABASE_URL_NEXUS: "" }), null);
+});
+
 test("Empresas: la sesión firma la empresa y cada solicitud lee la base de esa empresa", async () => {
   const antes = process.env.DATABASE_URL_TRANSPORTE;
   process.env.DATABASE_URL_TRANSPORTE = "mysql://demo@localhost:3306/nexus_transporte";
