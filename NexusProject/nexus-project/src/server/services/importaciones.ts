@@ -22,7 +22,7 @@ import {
   resultadoGuardado,
   VIGENCIA_PREVIA_MS,
 } from "../repositories/importaciones";
-import { transaccionImportacion } from "../repositories/transaccion-importacion";
+import { PLAZO_IMPORTACION, transaccionImportacion } from "../repositories/transaccion-importacion";
 import { fuenteValidacionPrisma } from "../repositories/validacion-importacion";
 import {
   clavePeriodo,
@@ -106,7 +106,7 @@ async function validarImportacionInterna(
       },
     });
     return creada;
-  });
+  }, PLAZO_IMPORTACION);
   const { status, totalFilas, nuevas, omitidas, muestra, errores, warnings } =
     validacion;
   return {
