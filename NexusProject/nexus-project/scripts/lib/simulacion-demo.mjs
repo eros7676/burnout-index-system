@@ -4,6 +4,8 @@
 // - the streak without rest continues across weeks (a 14-day streak on Sunday is 21 or less than
 //   7 the next Sunday, never 9), and the days since the last vacation grow by 7 or restart;
 // - the pending vacation balance goes down when vacation is taken.
+// It also lives the week after the eight, last of all so the eight stay the same: the file a live demo
+// loads on top of them (semana-siguiente.csv).
 // Deterministic for a given profile and seed. Fictional data only: no health or family content.
 import { crearAzar, sumar } from "./azar.mjs";
 import { crearTareas } from "./tareas-demo.mjs";
@@ -87,6 +89,8 @@ export function simular(perfil) {
   const jornadas = [COLUMNAS_JORNADAS.join(",")];
   const inicio = sumar(SEMANAS[0], -PREVIOS);
   const total = PREVIOS + SEMANAS.length * 7;
+  const siguiente = [COLUMNAS_INDICADORES.join(",")];
+  const porVivir = [];
 
   for (const persona of PERSONAS) {
     const carga = perfil.carga(persona, azar);
@@ -100,7 +104,7 @@ export function simular(perfil) {
         ? { desde: PREVIOS + entre(7, SEMANAS.length * 7 - 10), largo: entre(5, 9) }
         : null;
     const vividos = [];
-    for (let d = 0; d < total; d++) {
+    const vivir = (d) => {
       const fecha = sumar(inicio, d);
       const semana = Math.max(0, Math.floor((d - PREVIOS) / 7));
       const c = carga(semana);
@@ -129,9 +133,10 @@ export function simular(perfil) {
       }
       racha = tipo === "TRABAJO" ? racha + 1 : 0;
       vividos.push({ fecha, tipo, horas, extra, racha, saldo });
-    }
+    };
+    for (let d = 0; d < total; d++) vivir(d);
 
-    const semanas = SEMANAS.map((lunes, s) => {
+    const resumir = (lunes, s) => {
       const semana = vividos.slice(PREVIOS + s * 7, PREVIOS + s * 7 + 7);
       const domingo = semana[6].fecha;
       const ultima = vividos
@@ -155,23 +160,25 @@ export function simular(perfil) {
         desde: dias(ultima ?? vacacionPrevia, domingo),
         saldo: semana[6].saldo,
       };
-    });
+    };
+    const fila = (w) =>
+      [
+        persona.id,
+        w.inicio,
+        w.fin,
+        w.horasExtra,
+        w.racha,
+        w.activas,
+        w.pendientes,
+        w.vencidas,
+        w.saldo,
+        w.horasTrabajadas,
+        w.desde,
+      ].join(",");
+    const semanas = SEMANAS.map(resumir);
+    porVivir.push({ vivir, resumir, fila });
     for (const w of semanas) {
-      indicadores.push(
-        [
-          persona.id,
-          w.inicio,
-          w.fin,
-          w.horasExtra,
-          w.racha,
-          w.activas,
-          w.pendientes,
-          w.vencidas,
-          w.saldo,
-          w.horasTrabajadas,
-          w.desde,
-        ].join(","),
-      );
+      indicadores.push(fila(w));
       for (const v of w.dias)
         jornadas.push(
           [persona.id, w.inicio, w.fin, v.fecha, v.tipo, v.horas || "", v.tipo === "TRABAJO" ? v.extra : ""].join(","),
@@ -179,7 +186,12 @@ export function simular(perfil) {
     }
     for (const fila of tareasDePersona(persona.id, semanas)) tareas.push(fila.join(","));
   }
+  for (const { vivir, resumir, fila } of porVivir) {
+    for (let d = total; d < total + 7; d++) vivir(d);
+    siguiente.push(fila(resumir(sumar(SEMANAS.at(-1), 7), SEMANAS.length)));
+  }
   return {
+    siguiente: siguiente.join("\n") + "\n",
     indicadores: indicadores.join("\n") + "\n",
     tareas: tareas.join("\n") + "\n",
     jornadas: jornadas.join("\n") + "\n",
