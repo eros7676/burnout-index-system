@@ -1,20 +1,26 @@
 # Empresas de la demostración
 
-La demo puede mostrar tres empresas de rubros distintos. Cada una tiene sus personas, equipos, datos
-importados, reglas del índice y auditoría. Se elige al ingresar, antes del perfil, y se cambia desde la
-franja de demostración.
+La demo puede mostrar tres empresas de rubros distintos y la demo original. Cada una tiene sus personas,
+equipos, datos importados, reglas del índice y auditoría. Se elige al ingresar, antes del perfil, y se
+cambia desde la franja de demostración.
 
-| Empresa | Rubro | Variable de la base |
-| --- | --- | --- |
-| Conecta Servicios Técnicos | Mantenimiento y redes | `DATABASE_URL` |
-| Rutas del Plata | Transporte y logística | `DATABASE_URL_TRANSPORTE` |
-| Sanatorio del Parque | Salud | `DATABASE_URL_SALUD` |
+| Empresa | Rubro | Variable de la base | Base con Docker |
+| --- | --- | --- | --- |
+| Conecta Servicios Técnicos | Mantenimiento y redes | `DATABASE_URL` | `nexus_conecta` |
+| Rutas del Plata | Transporte y logística | `DATABASE_URL_TRANSPORTE` | `nexus_rutas` |
+| Sanatorio del Parque | Salud | `DATABASE_URL_SALUD` | `nexus_salud` |
+| Nexus | Mantenimiento y redes | `DATABASE_URL_NEXUS` | `nexus_workload` |
+
+Nexus es la demo original: las personas y equipos de Conecta con las ocho semanas que se cargaron primero
+(`templates/demo-ocho-semanas.csv`, `tareas-demo-ocho-semanas.csv` y `jornadas-demo-ocho-semanas.csv`). Vive
+en la base que la demo usó desde el principio, así que una instalación anterior conserva lo que ya tenía
+cargado.
 
 La lista está en `src/server/empresas.ts`.
 
 ## Decisiones
 
-- **E1. Una base por empresa.** Las tres usan el mismo esquema y las mismas migraciones, pero bases
+- **E1. Una base por empresa.** Todas usan el mismo esquema y las mismas migraciones, pero bases
   distintas. Ninguna consulta filtra por empresa: los datos de una empresa no pueden aparecer en otra
   porque viven en otra base. Esto evita agregar una columna de empresa a cada tabla y revisar cada
   consulta, para un uso que en la demo es de a una empresa por vez.
@@ -54,7 +60,7 @@ normal, la carga y las reglas.
 | Caso sostenido (EMP-001) | Sofía Romero | Diego Alvarez | Carla Domínguez |
 | Cuándo sube | Gradualmente | Al final, con el pico de reparto | A mitad del período, con el pico de la guardia |
 
-Los límites de Medio (40) y Alto (70) y los dos factores excedidos son los mismos en las tres.
+Los límites de Medio (40) y Alto (70) y los dos factores excedidos son los mismos en todas.
 
 Los archivos están en `templates/empresas/<id>/`: `catalogo.json` (nombres y reglas), `indicadores.csv`,
 `tareas.csv` y `jornadas.csv`. Se regeneran con `npm run demo:empresas`; los perfiles están en
@@ -62,17 +68,17 @@ Los archivos están en `templates/empresas/<id>/`: `catalogo.json` (nombres y re
 
 ## Preparar las empresas
 
-Con Docker, `docker compose up -d --wait` crea las tres bases (`nexus_workload`, `nexus_rutas` y
-`nexus_salud`) y el `.env.example` de la app ya trae sus tres variables. Con la app corriendo:
+Con Docker, `docker compose up -d --wait` crea las cuatro bases y el `.env.example` de la app ya trae sus
+cuatro variables. Con la app corriendo:
 
 ```sh
 npm run demo:cargar
 ```
 
-Por cada empresa configurada, aplica las migraciones, carga su semilla (`DEMO_EMPRESA=<id> npm run db:seed`)
-e importa sus tres archivos por la API de importación, como RR. HH., esperando el cálculo del índice antes
-de los detalles. Lee las variables del entorno o del `.env`, como la app. Una empresa sin variable se
-omite. Se puede repetir: un archivo ya cargado se omite. `--url` apunta a otra dirección de la app
+Por cada empresa configurada, aplica las migraciones, carga su semilla (`DEMO_EMPRESA=<id> npm run db:seed`;
+Nexus usa la de Conecta) e importa sus tres archivos por la API de importación, como RR. HH., esperando el
+cálculo del índice antes de los detalles. Lee las variables del entorno o del `.env`, como la app. Una
+empresa sin variable se omite. Se puede repetir: un archivo ya cargado se omite. `--url` apunta a otra dirección de la app
 (por defecto http://127.0.0.1:3000), y los ids limitan la carga (`npm run demo:cargar -- rutas`).
 
 Sobre una base que ya tiene otras semanas cargadas, la importación se detiene por conflicto histórico y la
@@ -87,7 +93,8 @@ Docker, el `.env.example`, la base, los archivos de las empresas o el script.
 ## Demo en vivo: cargar una semana más
 
 Con las ocho semanas cargadas, cada empresa tiene en `templates/empresas/<id>/` la semana siguiente
-(26/10 al 1/11) para mostrar la importación sin chocar con lo que ya está:
+(26/10 al 1/11) para mostrar la importación sin chocar con lo que ya está. En Nexus sirven los de Conecta:
+son las mismas personas y las mismas semanas.
 
 1. Como RR. HH., en **Importar datos**, validar `semana-siguiente-con-errores.csv`. Se rechaza el archivo
    completo y la pantalla dice fila, campo y causa de tres errores:
