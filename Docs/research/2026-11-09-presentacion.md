@@ -17,6 +17,12 @@ sistema funcionando. De Jobs se copia la estructura y el ensayo, no el espectác
 estructura (Sequoia, YC y los tribunales coinciden en claridad, progreso y límites dichos a tiempo); media
 en las cifras de entrega (velocidad, letra), que vienen de resúmenes.
 
+En la entrega, lo que más pesa según los estudios: los primeros segundos, antes de hablar; el volumen y sus
+cambios, más que el tono; bajar la voz al final de cada afirmación; gestos que dibujan la idea; no
+encogerse; mirar al tribunal unos tres segundos por persona; cambiar cada muletilla por un silencio. Firmeza:
+media. Hay metaanálisis para gestos y posturas, y estudios sueltos para voz y mirada; nada está medido en
+un tribunal.
+
 ## Por qué un pitch y una defensa no son lo mismo
 
 Un inversor perdona el entusiasmo y castiga la confusión. Un tribunal «presta especial atención a los
@@ -144,8 +150,8 @@ qué es la idea que nos distingue («un pico aislado no basta»).
 9/11/2026); confirmar con la docente.]
 
 El tribunal no conoce el proyecto, así que la apertura carga con la presentación del equipo, el problema,
-qué hicimos y cómo funciona, sin mostrar el sistema: el programa aparece en la parte 4. El guion dura unos
-6 minutos y la parte tiene 7, así que hay tiempo para las pausas sin apurarse.
+qué hicimos y cómo funciona, sin mostrar el sistema: el programa aparece en la parte 4. El guion dura cerca
+de 5 minutos con sus silencios y la parte tiene 7.
 
 | Parte | Min. | Qué tiene que lograr | Láminas actuales |
 | --- | --- | --- | --- |
@@ -160,23 +166,28 @@ qué hicimos y cómo funciona, sin mostrar el sistema: el programa aparece en la
 El cierre vuelve a la apertura: Diego, esta vez visto en la segunda semana. «Los datos ya estaban. Falta
 mirarlos.»
 
-## Guion de la apertura (6 minutos)
+## Guion de la apertura (5 minutos)
 
-Unas 620 palabras: con las pausas marcadas, entre 5 y 6 minutos. Medirlo grabado, no estimarlo. Lo que está
-en *cursiva* entre corchetes no se dice.
+Unas 670 palabras. A un ritmo normal de articulación y con los silencios marcados dura cerca de 4:50, de
+los cuales 1:30 son silencios. La parte tiene 7 minutos: el margen absorbe los nervios, que aceleran o
+traban, y una pregunta del tribunal a mitad de camino. Medirlo grabado. Lo que está en *cursiva* entre
+corchetes no se dice.
 
+> *[Antes de hablar: caminar al frente a paso normal, pararse con los dos pies apoyados, mirar al tribunal y
+> contar tres en silencio.]*
+>
 > *[Lámina: «Nexo Laboral» y los cinco nombres.]*
 >
 > Buenas tardes. Somos el Grupo 8 del Seminario de Analista de Software: Eros, Gonzalo, Santiago, Alfonso
 > y yo, Francisco. *[Mirar a cada uno al nombrarlo.]* En este seminario construimos un sistema, y en la
-> próxima media hora les vamos a mostrar qué hace y por qué lo hicimos. *[pausa]* Pero antes, quiero
-> presentarles a alguien.
+> próxima media hora les vamos a contar qué problema resuelve, cómo lo resuelve y por qué creemos que
+> importa. *[pausa]* Pero antes, quiero presentarles a alguien.
 >
 > *[Lámina negra. Una sola cifra, enorme: «26 días».]*
 >
 > Imaginen a Diego. Es chofer en una empresa de logística. *[pausa]* Hoy cumple veintiséis días seguidos
-> sin un franco. La semana pasada trabajó sesenta y nueve horas: veinticinco más que su semana normal. Y
-> tiene quince días de vacaciones que no se tomó. *[pausa]*
+> sin un franco. La semana pasada trabajó sesenta y nueve horas: veinticinco más que las cuarenta y cuatro
+> que fija su convenio. Y tiene quince días de vacaciones que no se tomó. *[pausa]*
 >
 > ¿Su jefe lo sabe? *[pausa]* No. Y no porque no le importe.
 >
@@ -188,13 +199,14 @@ en *cursiva* entre corchetes no se dice.
 >
 > Diego es un personaje de nuestra demo. Lo que le pasa, no lo es. En Argentina, nueve de cada diez
 > trabajadores dicen sentirse quemados por su trabajo. Es una encuesta donde cada uno responde por sí
-> mismo, así que no es un diagnóstico, pero marca el clima. Cuando se mide con un instrumento validado, el
-> inventario de Maslach, el número baja: uno de cada cinco. *[pausa]* Sigue siendo uno de cada cinco.
+> mismo, así que no es un diagnóstico. Cuando se mide con un instrumento validado, el inventario de
+> Maslach, el número baja: uno de cada cinco. *[pausa]* Uno de cada cinco. En una empresa de cincuenta
+> personas, son diez.
 >
-> *[Lámina: «72 %».]*
+> *[Lámina: «7 de cada 10». Abajo, chico: empresas que detectan un caso, Bumeran 2025.]*
 >
-> Y el dato que más nos marcó es otro. De las empresas que detectan un caso, el setenta y dos por
-> ciento... no hace nada. *[pausa larga]*
+> Y el dato que más nos marcó es otro. De cada diez empresas que detectan un caso, siete... no hacen
+> nada. *[pausa larga]*
 >
 > *[Lámina: tres cajas separadas —fichaje, tareas, RR. HH.— que se unen en una línea.]*
 >
@@ -212,11 +224,11 @@ en *cursiva* entre corchetes no se dice.
 >
 > *[Lámina: datos → índice → alerta.]*
 >
-> ¿Cómo funciona? En tres pasos. Una vez por semana, Recursos Humanos sube un archivo con lo que ya
-> registra. El sistema lo revisa fila por fila: si algo está mal, no guarda nada y dice exactamente qué y
-> dónde. Después calcula, para cada persona, un índice de cero a cien. Y si el riesgo es alto, le avisa a
-> su líder, con las causas y con acciones concretas: redistribuir tareas, dar un descanso, frenar nuevas
-> asignaciones.
+> ¿Cómo funciona? En tres pasos. Primero, una vez por semana, Recursos Humanos sube un archivo con lo que
+> ya registra. El sistema lo revisa fila por fila: si algo está mal, no guarda nada y dice exactamente qué
+> y dónde. Segundo, calcula para cada persona un índice de cero a cien. Tercero, si el riesgo es alto, le
+> avisa a su líder, con las causas y con acciones concretas: redistribuir tareas, dar un descanso, frenar
+> nuevas asignaciones.
 >
 > Cada perfil ve lo suyo. El líder, su equipo. Recursos Humanos, toda la empresa. La gerencia, el
 > panorama. Y la persona no ve su índice: el sistema está para que alguien la cuide, no para ponerle una
@@ -224,11 +236,14 @@ en *cursiva* entre corchetes no se dice.
 >
 > *[Lámina: las tres empresas, una al lado de la otra.]*
 >
-> Y no es una idea en una diapositiva: está funcionando. Antes de escribir código investigamos el
-> problema, las normas laborales y lo que ya existe en el mercado. Y aprendimos algo: la sobrecarga no se
-> ve igual en todos lados. La semana normal de un chofer no es la de una enfermera. Por eso cada empresa
-> tiene sus propias reglas. Hoy van a ver tres: un servicio técnico, una empresa de transporte y un
-> sanatorio, cada una con cincuenta personas y ocho semanas de datos.
+> Antes de escribir una línea de código investigamos el problema, las normas laborales y lo que ya existe
+> en el mercado. Y aprendimos algo: la sobrecarga no se ve igual en todos lados. Un chofer tiene una
+> semana de cuarenta y cuatro horas. Una enfermera hace turnos de doce. Lo que es normal para uno es una
+> alarma para el otro. Por eso cada empresa tiene sus propias reglas.
+>
+> Y no es una idea en una diapositiva: está funcionando. Hoy van a ver tres empresas —un servicio
+> técnico, una empresa de transporte y un sanatorio—, cada una con cincuenta personas y ocho semanas de
+> datos.
 >
 > *[Lámina: «72», enorme.]*
 >
@@ -238,49 +253,182 @@ en *cursiva* entre corchetes no se dice.
 >
 > *[Lámina: hoja de ruta, con los nombres.]*
 >
-> En los próximos veinte minutos, [Nombre 2] les va a mostrar cuánto le cuesta a una empresa no ver a
-> Diego a tiempo. [Nombre 3], cómo se calcula el índice y por qué cada punto se puede explicar. [Nombre 4],
-> el sistema funcionando, en vivo. Y [Nombre 5] va a cerrar con por qué esto, por qué nosotros y qué sigue.
+> En lo que sigue, [Nombre 2] les va a mostrar cuánto le cuesta a una empresa no ver a Diego a tiempo.
+> [Nombre 3], cómo se calcula el índice y por qué cada punto se puede explicar. [Nombre 4], el sistema
+> funcionando, en vivo. Y [Nombre 5] va a cerrar con por qué esto, por qué nosotros y qué sigue.
 >
-> *[Mirar a quien sigue.]* [Nombre 2].
+> *[Lámina negra.]*
+>
+> Empezamos este proyecto con una idea. *[pausa]* Nadie debería llegar al límite por algo que se podía
+> ver a tiempo. *[pausa]* [Nombre 2]. *[Mirar a quien sigue y dar un paso al costado.]*
 
 ### Tiempos, con los silencios
 
-Cuenta hecha sobre el guion, a 135 palabras por minuto de habla y con estos silencios: medio segundo
-entre oraciones, 1,5 s por cada *[pausa]*, 3 s la pausa larga, 1 s después de cada pregunta, 1,5 s para
-que cada lámina aparezca antes de hablar, 3 s de silencio al llegar al frente antes de la primera
-palabra y 4 s para mirar a cada compañero al nombrarlo [inferred · el ritmo se ajusta con la grabación].
+Cuenta hecha sobre el guion, a 200 palabras por minuto de articulación (lo normal en español está entre
+188 y 198 [read · Schwab 2015]) y con estos silencios: 0,6 s entre oraciones, 1,5 s por cada *[pausa]*, 3 s
+la pausa larga, 1 s después de cada pregunta, 1,5 s para que cada lámina aparezca antes de hablar, 3 s al
+llegar al frente y 4 s para mirar a cada compañero al nombrarlo. Da 137 palabras por minuto con los
+silencios incluidos, dentro de lo que se percibe como normal (126 a 179) [read · Schwab 2015, tabla de
+Wainschenker y otros 2002] [inferred · la duración de cada silencio].
 
 | Empieza | Dura | Bloque |
 | --- | --- | --- |
-| 0:00 | 35 s | Saludo y equipo |
-| 0:35 | 54 s | Diego, 26 días |
-| 1:29 | 38 s | 9 de cada 10 y Maslach |
-| 2:06 | 18 s | 72 % |
-| 2:24 | 17 s | Datos en pedazos |
-| 2:41 | 33 s | Qué es Nexo |
-| 3:14 | 59 s | Cómo funciona |
-| 4:13 | 42 s | Qué hicimos, tres empresas |
-| 4:55 | 25 s | Sofía, 72 puntos |
-| 5:20 | 34 s | Hoja de ruta |
-| 5:54 | | Fin. Quedan 66 s de la parte de 7 minutos |
+| 0:00 | 4 s | Llegar, pararse, silencio |
+| 0:04 | 27 s | Saludo y equipo |
+| 0:31 | 44 s | Diego, 26 días |
+| 1:16 | 29 s | 9 de cada 10 y Maslach |
+| 1:45 | 14 s | 7 de cada 10 |
+| 1:58 | 13 s | Datos en pedazos |
+| 2:11 | 25 s | Qué es Nexo |
+| 2:36 | 44 s | Cómo funciona |
+| 3:20 | 38 s | Qué hicimos, reglas por rubro, tres empresas |
+| 3:58 | 19 s | Sofía, 72 puntos |
+| 4:17 | 22 s | Hoja de ruta |
+| 4:39 | 15 s | Cierre: «Nadie debería llegar al límite…» |
+| 4:53 | | Fin |
 
-Si la grabación da más de 6:30, se recorta «Cómo funciona», que es el bloque más largo y el que la
-parte 3 vuelve a explicar. Si una pregunta del tribunal interrumpe, se responde en una frase y se sigue:
-el margen la cubre.
+En la grabación, por debajo de 126 palabras por minuto suena lento y por encima de 179, apurado. Si da más
+de 6 minutos, se recorta «Cómo funciona», que la parte 3 vuelve a explicar. Si una pregunta del tribunal
+interrumpe, se responde en una frase y se sigue.
 
 ### Por qué está armado así
 
-El saludo dura diez segundos y nombra a los cinco: el tribunal no nos conoce, pero un pitch no se abre con
+El saludo dura veinte segundos y nombra a los cinco: el tribunal no nos conoce, pero un pitch no se abre con
 currículums. Los nombres vuelven en la hoja de ruta, cada uno atado a su parte, que es cuando importan. La
-escena va antes que la cifra porque una persona se recuerda y un porcentaje no; Diego es ficticio y se dice
-al minuto, antes de que alguien lo pregunte. Las cifras son las que resisten una pregunta: la primera
-aclara que es autodeclarada, la de Maslach la corrige, y el 72 % justifica un sistema, no un taller. La
-frase de Nexo es la regla de Seibel: qué hace, en palabras simples, y su límite en la oración siguiente,
-porque ante un tribunal el límite dicho a tiempo suma. «Cómo funciona» y «qué hicimos» son lo que un
-tribunal que no leyó el trabajo necesita para seguir el resto; las reglas por rubro son la idea propia que
-pide Seibel. Sofía a 72 sin alerta deja una pregunta abierta que la demo responde: es el momento de la
-presentación. La hoja de ruta anuncia las partes, como Stanford 2005.
+escena va antes que la cifra porque una historia se sigue mejor que un porcentaje; Diego es ficticio y se
+dice al minuto, antes de que alguien lo pregunte, y ese aviso separa la historia de las cifras. Las cifras
+son las que resisten una pregunta: la primera aclara que es autodeclarada, la de Maslach la corrige y se
+traduce a la empresa de la demo, y el «siete de cada diez» justifica un sistema, no un taller. La frase de
+Nexo es la regla de Seibel: qué hace, en palabras simples, y su límite en la oración siguiente, resuelto.
+«Cómo funciona» y «qué hicimos» son lo que un tribunal que no leyó el trabajo necesita para seguir el
+resto; las reglas por rubro, con el convenio de los choferes y los turnos de doce horas, son la idea propia
+que pide Seibel. Sofía a 72 sin alerta deja una pregunta que la demo responde. La apertura termina en una
+frase de convicción y no en la hoja de ruta, porque lo último es lo que queda.
+
+## Cómo decirlo: cuerpo, voz, mirada y palabras
+
+Segunda investigación del 9/11/2026, a pedido de Francisco: postura, gestos, voz, mirada y lenguaje, todo
+con estudios. Cada punto dice cuánto se sostiene: **sólido** (metaanálisis o réplicas), **probable** (un
+estudio o muestras chicas) o **no se sostiene** (mito o réplica fallida). Lo que no tiene estudio va como
+criterio [inferred].
+
+### Lo que más pesa
+
+1. **El tribunal te juzga antes de que hables.** Jueces que vieron clips mudos de 10 segundos de 13
+   docentes predijeron las evaluaciones de sus alumnos a fin de cuatrimestre (r = 0,76; controlando el
+   atractivo, 0,74) [read · math.stonybrook.edu, Ambady y Rosenthal 1993 · 2026-11-09]. Una cara alcanza
+   para un juicio de competencia en 100 ms [snippet · PubMed, Willis y Todorov 2006]. Probable: la muestra
+   es chica, pero la idea se repite en un metaanálisis posterior (r ≈ 0,39) [snippet · APA Monitor].
+2. **El volumen convence más que el tono.** En 4 experimentos con más de 1.000 oyentes, quienes querían
+   persuadir subieron volumen, tono y velocidad, pero solo el volumen y su variación hicieron más
+   persuasivo al orador, porque lo hacían sonar más seguro; el tono y la velocidad no cambiaron nada
+   («these cues did not impact attitudes») [read · faculty.wharton.upenn.edu, Van Zant y Berger 2020 ·
+   2026-11-09]. Probable: efecto chico (d entre 0,15 y 0,32), sin réplica independiente.
+3. **Bajar al final de la frase.** Una afirmación que termina subiendo suena insegura [read ·
+   pmc.ncbi.nlm.nih.gov/articles/PMC10753021, Frontiers in Psychology 2023 · 2026-11-09] [snippet · Guyer,
+   Fabrigar y Vaughan-Johnston 2019, n = 394]. Sólido: varios estudios coinciden.
+4. **Los gestos ayudan a entender.** En 83 muestras, el gesto que acompaña lo que se dice mejora la
+   comprensión, con un efecto moderado; los gestos de «golpe» sin contenido no sumaron [read · Dargue,
+   Sweller y Jones 2019, metaanálisis · 2026-11-09]. Sólido.
+5. **No encogerse; la «postura de poder» no sirve.** Comparadas con una postura neutra, las posturas
+   encogidas empeoran (g = 0,45) y las expandidas no mejoran (g = 0,06, no significativo) [read ·
+   pure.au.dk, Elkjær y otros 2022, metaanálisis de 73 estudios · 2026-11-09]. Una de las autoras del
+   estudio original escribió: «No creo que los efectos de las poses de poder sean reales» [read ·
+   faculty.haas.berkeley.edu, Carney 2016]. No se sostiene la pose; sí se sostiene no encogerse.
+
+### Cuerpo
+
+- **Antes de la primera palabra**: caminar a paso normal, pararse con los dos pies apoyados, mirar al
+  tribunal, tres segundos de silencio. Es lo que ven los clips mudos [inferred, apoyado en Ambady y
+  Rosenthal].
+- **Manos**: a la altura de la cintura, sueltas y visibles. Gesto cuando la idea tiene forma (tres pasos,
+  datos que se unen, algo que sube); manos quietas cuando no. Nada en las manos salvo el control
+  [probable: Maricchiolo y otros 2009, gestos incongruentes o de tocarse se juzgaron menos competentes ·
+  snippet] [inferred el resto: no hay estudios de manos en los bolsillos ni de brazos cruzados].
+- **Moverse solo al cambiar de bloque**: un paso al cambiar de lámina grande, quieto mientras se explica,
+  nada de balancearse [inferred: no encontramos estudios sobre caminar o quedarse quieto].
+- **Los nervios se notan mucho menos de lo que se sienten.** A oradores que les explicaron esto antes de
+  hablar les fue mejor, según ellos y según el público [snippet · Savitsky y Gilovich 2003; el texto no se
+  pudo abrir]. No anunciarlos ni pedir perdón.
+- **Ropa**: formal y simple, que no incomode al moverse. Una misma cara se juzga más competente con ropa
+  que se ve más cara, aun con 129 ms de exposición [snippet · Oh, Shafir y Todorov 2020]. Probable; no hay
+  estudio con tribunales.
+
+### Voz
+
+- **Ritmo**: en español se percibe como normal entre 126 y 179 palabras por minuto, pausas incluidas, con
+  152 de media; 100 es lento [read · Schwab 2015, Revista de Filología y Lingüística de la UCR, tabla de
+  Wainschenker y otros 2002 · 2026-11-09]. En radio, el mejor recuerdo fue entre 170 y 190, y 150 rindió
+  peor con poco contenido [snippet · Rodero, Media Psychology]. Para la apertura: entre 135 y 150, pausas
+  incluidas, más lento que la radio porque el tribunal escucha todo por primera vez [inferred].
+- **Volumen**: un poco más fuerte que en una charla, más alto en la idea central y más bajo en un aparte
+  (punto 2).
+- **Tono**: no forzar una voz grave. La variación media funcionó mejor que poca o mucha en 48 videos tipo
+  «elevator pitch» en español [read · frontiersin.org, Rodero 2022 · 2026-11-09]. «La voz grave da
+  autoridad» no se sostiene como consejo: Van Zant y Berger no encontraron efecto del tono, y el estudio
+  más citado manipuló grabaciones, no entrenó a nadie [read del resumen · PubMed 22418254, Klofstad y
+  otros 2012].
+- **Pausas**: medio segundo entre frases y un silencio más largo antes y después de cada cifra. En el
+  análisis acústico de dos presentaciones, Jobs hacía pausas más cortas que Zuckerberg (0,56 s frente a
+  0,83 s), hablaba más lento (5,0 frente a 6,2 sílabas por segundo) y remarcaba unas 5 palabras por minuto
+  frente a menos de 2 [read · cadernos.abralin.org, Niebuhr y otros 2020 · 2026-11-09]. Probable: son dos
+  oradores.
+- **Muletillas**: con 12 por minuto bajó la credibilidad en un experimento [snippet · Laske y DiGennaro
+  Reed 2024]; un relleno a mitad de frase pesa más que al principio [snippet · Kirkland 2022]. Objetivo: un
+  silencio en vez de cada «eh», «este», «bueno», «o sea», «básicamente», «digamos», «tipo», «¿no?»,
+  «¿viste?». Contarlas en la grabación.
+- **Cifras**: pausa, la cifra con el acento en el número, pausa de un segundo, y recién ahí lo que
+  significa («uno de cada cinco… en una empresa de cincuenta personas, son diez») [inferred].
+
+### Mirada y cara
+
+- **Mirar al tribunal, no a la pantalla**, desde la primera frase. Lo que está medido es que esquivar la
+  mirada perjudica, no que mirar mucho ayude [read · eprints.glos.ac.uk, Fullwood y Doherty-Sneddon 2006,
+  n = 32 · 2026-11-09] [snippet · Burgoon y otros 1985].
+- **Unos 3 segundos por persona**: la mirada directa que más cómoda resulta dura 3,3 s de media (± 0,7)
+  [read · pmc.ncbi.nlm.nih.gov/articles/PMC4968459, Binetti y otros 2016, 428 personas · 2026-11-09].
+  Terminar la frase con un jurado y pasar al siguiente; «una idea, una persona» es consejo de oratoria, sin
+  estudio [inferred].
+- **Al cambiar de lámina**: callarse, dejar que la lean y seguir mirando al tribunal [inferred].
+- **Si un jurado frunce el ceño**, no clavarle la vista: con oyentes en desacuerdo, mirar a los ojos bajó
+  la persuasión [read · Chen, Minson, Schöne y Heinrichs 2013, n = 20 y 42 · 2026-11-09]. Volver a él más
+  tarde.
+- **Sonrisa**: en el saludo y al presentar Nexo, breve y genuina. Seria al contar el problema y al decir
+  «no diagnostica». Una sonrisa amplia hace ver más cálido y menos competente cuando lo que está en juego
+  es importante [read · business.ucf.edu, Wang y otros 2017 · 2026-11-09]; la sonrisa con los ojos da más
+  confianza [snippet · Gunnery y Ruben 2016, metaanálisis].
+
+### Palabras
+
+- **El carisma se entrena.** Después de un entrenamiento en recursos concretos, el mismo discurso se juzgó
+  más carismático (d ≈ 0,62, 41 estudiantes de MBA y 135 evaluadores) [snippet · Antonakis, Fenley y
+  Liechti 2011] [read · bps.org.uk, resumen · 2026-11-09]; una réplica posterior lo confirmó a medias
+  [read · research.tilburguniversity.edu, Meslec y otros 2020]. Los recursos: metáfora, historia,
+  contraste, pregunta retórica, lista de tres, convicción, reflejar lo que siente el público, meta
+  ambiciosa, confianza en lograrla, y voz, cara y gestos animados. El guion usa siete; usarlos todos
+  suena a parodia [snippet · bps.org.uk].
+- **Diego, como historia y no como golpe emocional.** Las historias persuaden, con un efecto moderado y
+  estable [snippet · Braddock y Dillard 2016, 74 estudios]. Pero el «efecto de la víctima identificable»
+  casi desapareció en las réplicas: r = 0,05 en un metaanálisis y un efecto chico en una réplica
+  preregistrada con 2.003 personas [read · cambridge.org, Maier y otros 2023 · 2026-11-09].
+- **Separar a Diego de las cifras.** Dar las estadísticas junto al caso de una persona bajó lo que la gente
+  donó para esa persona [read · Small, Loewenstein y Slovic 2007, estudio 3 · 2026-11-09]. Mide
+  donaciones, no credibilidad: por eso el guion mantiene las cifras, pero con un silencio y «Diego es un
+  personaje…» en el medio.
+- **Decir el límite y resolverlo.** Un mensaje que nombra la objeción y la responde convence más que uno que
+  la calla, y uno que la nombra sin responderla convence menos [snippet · O'Keefe 1999 y Allen 1991,
+  metaanálisis]. «No diagnostica a nadie» va seguido de lo que sí hace.
+- **Tres, no cuatro.** Tres afirmaciones convencieron más que dos o cuatro cuando el público sabe que le
+  quieren vender algo [snippet · Shu y Carlson 2014, cuatro experimentos]. Tres pasos, tres empresas, tres
+  partes en la hoja de ruta.
+- **La pregunta abierta de Sofía.** La curiosidad antes de una respuesta mejoró el recuerdo de esa
+  respuesta una o dos semanas después [snippet · Kang y otros 2009]. Probable: con preguntas de trivia, no
+  con discursos.
+- **Cerrar con una frase, no con la hoja de ruta.** Lo último que se dice es lo que más queda [inferred: la
+  evidencia de primacía y recencia en persuasión es de dos mensajes, no de una charla].
+- **Cifras en frecuencias**: «nueve de cada diez», «siete de cada diez», «uno de cada cinco», no
+  porcentajes [inferred: la investigación de frecuencias naturales es sobre probabilidades, no sobre
+  discursos].
 
 ## Qué decir y qué no
 
@@ -313,7 +461,8 @@ pasa al video sin comentarlo.
 | --- | --- | --- |
 | 1 | Leer el guion en voz alta, de pie, con cronómetro | Duración real; marcar las frases que se traban |
 | 2 | Reescribir en palabras propias lo que se trabó; memorizar los primeros y los últimos 30 segundos | Decirlos sin mirar |
-| 3 | Ensayo completo grabado en video, con tarjetas de 5 ideas en vez del guion | Muletillas, ritmo, pausas, dónde se mira |
+| 3 | Ensayo completo grabado en video, con tarjetas de 5 ideas en vez del guion | Palabras por minuto (entre 126 y 179, idealmente 135 a 150); muletillas por minuto (objetivo cero, nunca más de 5); finales de frase que suben |
+| 3 bis | Mirar ese video sin sonido, solo los primeros 30 segundos y las transiciones | Llegada, postura, manos, si se encoge o se balancea: lo que ve el tribunal antes de oír |
 | 4 | Decirle las dos oraciones de Nexo a alguien que no conoce el proyecto y pedirle que las repita (prueba de Seibel) | Si las repite sin preguntar |
 | 5 | Ensayo con el equipo: apertura, relevo y las primeras láminas de la parte 2 | El relevo no tiene silencio ni «bueno…» |
 | 6 | Ensayo general en la máquina y el proyector del día, con la demo y su video | Los 30 minutos cierran con 2 de margen |
@@ -344,6 +493,16 @@ pasa al video sin comentarlo.
 - **Segunda ronda:** ¿las cifras que vamos a decir en la apertura resisten a un jurado? Las revisamos en
   las notas originales. Dos estaban mal: la muestra de Gallup (casi 7.500 personas, no 12.658) y los
   programas de bienestar (9 %, no 7 %). Una cita estaba entre comillas sin serlo (el 72 %).
+- **Sospecha de la entrega:** la voz y la primera impresión pesan más que los gestos estudiados, y la
+  postura de poder no aguanta las réplicas. **Confirmada en parte:** la postura de poder no se sostiene y la
+  primera impresión sí pesa; los gestos también ayudan (metaanálisis), así que no pesan menos. En la voz,
+  el volumen pesó y el tono no.
+- **Tercera ronda:** ¿el guion tiene el largo justo para el ritmo que piden los estudios? A 135 palabras por
+  minuto sin contar bien los silencios, la primera cuenta daba 5:54 con 620 palabras, que en realidad
+  serían 103 por minuto, por debajo de lo normal. Recontado con la articulación normal del español y los
+  silencios marcados: 670 palabras en 4:53, 137 por minuto. Se agregaron el convenio de 44 horas, «en una
+  empresa de cincuenta personas, son diez», las reglas por rubro y una frase de cierre, y el 72 % pasó a
+  «siete de cada diez».
 
 ## Lo que falta
 
@@ -354,3 +513,13 @@ pasa al video sin comentarlo.
 - **Kawasaki, Duarte («Resonate»), Gallo, Chen y Clark, Brooks**: solo resúmenes; las páginas respondieron
   403 o no traen el texto. No sostienen ninguna cifra de las láminas.
 - **El informe original de Bumeran**: leímos las notas de iProfesional y Canal 26, no el PDF.
+- **Textos completos de la entrega que no se pudieron abrir** (403, captcha o pago): Savitsky y Gilovich
+  2003, Willis y Todorov 2006, Hostetter 2011, Maricchiolo 2009, Oh 2020, Gunnery y Ruben 2016, Antonakis
+  2011, Guyer 2019, Niebuhr 2016, los estudios de Rodero salvo el de 2022, Shu y Carlson 2014, O'Keefe
+  1999, Braddock y Dillard 2016, Kang 2009 y Brooks 2014. Están marcados `snippet` y ninguno sostiene solo
+  una instrucción.
+- **Nada medido en un tribunal académico ni en Argentina.** No hay estudios de contacto visual en
+  Argentina, ni de caminar o quedarse quieto, ni de manos en los bolsillos. Lo que se dice de eso es
+  criterio.
+- **Tu propia voz**: un video del primer ensayo permitiría comparar estas pautas con cómo hablás, en
+  palabras por minuto, muletillas y finales de frase.
