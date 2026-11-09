@@ -140,21 +140,22 @@ qué es la idea que nos distingue («un pico aislado no basta»).
 
 ## Estructura propuesta para los 30 minutos
 
-[inferred; confirmar con la docente si las preguntas entran en los 30 minutos y quién habla en cada parte]
+[inferred; los cinco hablan. Las preguntas van aparte, unos 5 a 10 minutos después de los 30 (Francisco,
+9/11/2026); confirmar con la docente.]
 
-El tribunal no conoce el proyecto, así que la apertura carga con la presentación del equipo, qué hicimos y
-cómo funciona: 6 minutos, el promedio de cinco expositores en 30. Si las preguntas quedan fuera de los 30
-minutos, cada parte gana un poco; la apertura no pasa de 7.
+El tribunal no conoce el proyecto, así que la apertura carga con la presentación del equipo, el problema,
+qué hicimos y cómo funciona, sin mostrar el sistema: el programa aparece en la parte 4. El guion dura unos
+6 minutos y la parte tiene 7, así que hay tiempo para las pausas sin apurarse.
 
 | Parte | Min. | Qué tiene que lograr | Láminas actuales |
 | --- | --- | --- | --- |
-| 1. Apertura | 6 | Saludo y equipo, la escena de Diego, el problema con sus cifras, qué es Nexo en dos oraciones, cómo funciona en tres pasos, qué hicimos, el adelanto de Sofía y la hoja de ruta con los nombres | 1, 2, 3, 7 y 8, nuevas |
-| 2. Por qué le importa a una empresa | 3 | Costo de no actuar; por qué cada rubro; sin el caso de los choferes como «extremo», porque ahora es un rubro | 4 y 5 |
-| 3. Cómo decide | 5 | Las cuatro variables, el umbral, «dos semanas y dos factores», reglas por rubro; qué no afirmamos | 6 |
-| 4. Funcionando | 6 | Archivo con errores, archivo corregido, la semana de Sofía, la alerta con sus causas | 10 |
-| 5. Por qué nosotros, qué sigue y cierre | 3 | Alternativas sin descalificarlas, privacidad, el pedido: un piloto con una empresa real; vuelta a Diego | 9 y 11 |
+| 1. Apertura | 7 | Saludo y equipo, la escena de Diego, el problema con sus cifras, qué es Nexo en dos oraciones, cómo funciona en tres pasos, qué hicimos, el adelanto de Sofía y la hoja de ruta con los nombres | 1, 2, 3, 7 y 8, nuevas |
+| 2. Por qué le importa a una empresa | 5 | Costo de no actuar; por qué cada rubro (servicio técnico, transporte, salud); sin el caso de los choferes como «extremo», porque ahora es un rubro | 4 y 5 |
+| 3. Cómo decide | 6 | Las cuatro variables, el umbral, «dos semanas y dos factores», reglas por rubro; qué no afirmamos | 6 |
+| 4. Funcionando | 7 | Archivo con errores, archivo corregido, la semana de Sofía, la alerta con sus causas | 10 |
+| 5. Por qué nosotros, qué sigue y cierre | 4 | Alternativas sin descalificarlas, privacidad, el pedido: un piloto con una empresa real; vuelta a Diego | 9 y 11 |
 | Margen | 1 | Relevos y demoras | |
-| Preguntas | 6 | Un responsable por tema | 12, anexo |
+| Preguntas | 5 a 10, aparte | Un responsable por tema | 12, anexo |
 
 El cierre vuelve a la apertura: Diego, esta vez visto en la segunda semana. «Los datos ya estaban. Falta
 mirarlos.»
