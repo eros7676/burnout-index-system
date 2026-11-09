@@ -246,7 +246,7 @@ queda cerca del art. 7 [inferred].
 | 88 % no aplica medidas de prevención | «El 88 % reconoce no contar con estrategias específicas para prevenirlo» [read · iProfesional] | Ninguno |
 | 21 % apoyo emocional, 15 % flexible, 12 % reasigna tareas, 7 % bienestar | 21, 15 y 12 coinciden; el último es 7 % en la nota del 3/11 y 9 % en la del 2/11 [read · iProfesional, ambas] | Decir 21, 15 y 12; el último no se dice hasta ver el informe de Bumeran |
 | 1 de cada 5, 19,9 % por Maslach | 19,9 %, cuarto trimestre de 2025, el valor más bajo desde 2018 [snippet · Los Andes, 16/1/2026; mercado.com.ar] | Ninguno; en 2026 subió a 23,8 %, en otra medición: tenerlo para preguntas |
-| Gallup, 12.658 empleados: 63 % más días por enfermedad y 2,6 veces más búsqueda de empleo | 63 % y 2,6 veces, en «casi 7.500 empleados de tiempo completo», 2018 [read · gallup.com/workplace/237059 · 2026-11-09] | 12.658 → casi 7.500 |
+| Gallup, 12.658 empleados: 63 % más días por enfermedad y 2,6 veces más búsqueda de empleo | «63% more likely to take a sick day and 2.6 times as likely to be actively seeking a different job», en «casi 7.500 empleados de tiempo completo», 2018 [read · gallup.com/workplace/237059 · 2026-11-09] | 12.658 → casi 7.500; y es 63 % más probabilidad de tomarse un día, no 63 % más días |
 
 Las correcciones de la revisión anterior siguen pendientes: la lámina 5 dice que el sistema «no es para
 transporte», pero la demo tiene una empresa de transporte; la lámina 9 dice «60 personas», pero son 50
@@ -275,7 +275,7 @@ a 10 minutos después de los 30 (Francisco, 9/11/2026); confirmar con la docente
 | Parte | Min. | Qué responde | Contenido |
 | --- | --- | --- | --- |
 | 1. Apertura, Francisco | 7 | ¿Qué es, por qué importa, funciona? | Qué es Nexo en una frase, el equipo, Diego, el problema con sus cifras, los datos en pedazos, cómo funciona, la demo declarada como demo, el adelanto de Sofía, la hoja de ruta y el anuncio del pedido |
-| 2. El problema en plata | 5 | ¿A quién le duele y quién paga? | Quién compra (RR. HH. u operaciones de empresas medianas), el costo de no actuar (Gallup: 63 % más días por enfermedad, 2,6 veces más búsqueda de empleo), por qué cada rubro, qué usan hoy (planillas, suites de RR. HH., Viva Insights) y qué no hacen |
+| 2. El problema en plata | 5 | ¿A quién le duele y quién paga? | Quién compra (RR. HH. u operaciones de empresas medianas), el costo de no actuar (Gallup: 63 % más probabilidad de tomarse un día por enfermedad y 2,6 veces más de estar buscando otro trabajo), por qué cada rubro, qué usan hoy (planillas, suites de RR. HH., Viva Insights) y qué no hacen |
 | 3. La idea que nos distingue | 5 | ¿Por qué esto y no otra cosa? | Las cuatro variables, «dos semanas y dos factores», reglas por rubro, cada punto explicable, no diagnostica (OMS), privacidad (Ley 25.326) |
 | 4. Funcionando | 7 | ¿Es real? | El único momento cumbre. Pedir la predicción («¿qué creen que pasa con Sofía?»), su semana, la alerta con causas, el archivo con un error |
 | 5. Mercado, modelo, equipo y pedido | 4:30 | ¿Es un negocio? ¿Son ellos? ¿Qué quieren? | 1.760 empresas y 161.581 puestos; 2,5 dólares por empleado por mes contra 4 a 8 de una suite; quién hizo qué y en cuánto tiempo; el pedido; vuelta a Diego: «los datos ya estaban» |
