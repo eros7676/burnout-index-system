@@ -608,7 +608,7 @@ pasa al video sin comentarlo.
 | ¿Por qué esos pesos y umbrales? | Reglas | Mostrar el criterio por rubro (horas sobre la semana normal, rachas de turnos); son la v1, se versionan y se cambian desde el sistema. |
 | ¿No es vigilancia? | Ética | Solo datos que la empresa ya registra, sin contenido, ubicación ni salud; la alerta va al líder con sus causas; la persona no ve su índice, para no etiquetarla. |
 | ¿Cumple la Ley 25.326? | Ética | Finalidad acotada y datos mínimos (art. 4); faltan el aviso al empleado, el consentimiento y la política de privacidad de un uso real. No afirmar cumplimiento. |
-| ¿Es un dato de salud? | Ética | No: no diagnostica ni usa datos de salud; por eso se dice «sobrecarga» y no «burnout». |
+| ¿Es un dato de salud? | Ética | No: no diagnostica ni usa datos de salud. El nombre dice burnout por lo que se quiere evitar; lo que mide es sobrecarga. |
 | ¿Las encuestas prueban que funciona? | Problema | No: muestran el problema. Que funcione lo muestra el prototipo, y que sirva lo diría un piloto. |
 | ¿Por qué 92 % y 19,9 %? | Problema | 92 % es autodeclarado (Bumeran, cinco países); 19,9 % es Maslach con 1.050 personas en Argentina (Insight 21). |
 | ¿Qué pasa con datos malos o incompletos? | Técnica | Un error rechaza el archivo entero con fila, campo y causa; la primera semana queda incompleta porque no hay con qué comparar. |
@@ -620,6 +620,58 @@ pasa al video sin comentarlo.
 | ¿Por qué ahora? | Mercado | La OMS lo define como fenómeno ocupacional; el banco de horas de la reforma de 2026 mueve más horas; los datos ya están en la empresa. |
 | ¿Qué harían con un piloto? | Equipo | Ocho semanas con datos reales, contrastar el índice con una medición validada y ajustar los umbrales; el éxito es que el líder actúe antes de una licencia. |
 | ¿Y un falso positivo? | Reglas | La alerta no decide nada: el líder ve las causas y actúa; dos semanas y dos factores evitan reaccionar a un pico. |
+
+## Guiones de los cinco (quinta ronda, 9/11/2026)
+
+Francisco pidió terminar los guiones de todos, sincronizados con las láminas y con recomendaciones para
+cada uno, y llamar al proyecto con el nombre del repositorio en español: **Sistema de Índice de Burnout**.
+El PDF para el grupo se arma fuera del repositorio; acá queda lo que lo sostiene.
+
+**Reparto propuesto** [inferred · `git log origin/main --author` · 2026-11-09]: parte 2 Santiago (datos de
+prueba y la primera presentación del problema), parte 3 Gonzalo (reglas versionadas, informe y alerta),
+parte 4 Eros (importación, API, permisos por rol y auditoría), parte 5 Alfonso (sin commits en el
+repositorio; la parte de negocio no depende del código). Lo confirma el equipo.
+
+| Parte | Quién | Guion | Tope | Láminas |
+| --- | --- | --- | --- | --- |
+| 1. Apertura | Francisco | 4:50 | 5:30 | 1–11 |
+| 2. El problema en plata | Santiago | 3:48 | 10:00 | 12–17 |
+| 3. La idea que nos distingue | Gonzalo | 4:36 | 15:00 | 18–24 |
+| 4. Funcionando, en vivo | Eros | 4:59 | 22:00 | 25–29 |
+| 5. Mercado, modelo, equipo y pedido | Alfonso | 4:41 | 27:00 | 30–38 |
+| Total | | 22:54 | 30:00 | 39 con el anexo |
+
+Guion = 200 palabras por minuto al articular, 170 en los tramos lentos, más pausas, clics de la demo y 12 s
+por relevo: unas 130 por minuto en total [inferred]. Es una estimación; manda el primer ensayo con
+cronómetro.
+
+- **Velocidad**: el español leído va a unas 7,8 sílabas por segundo, de las más rápidas, pero transmite la
+  misma información por segundo que otras lenguas [snippet · Pellegrino, Coupé y Marsico 2011; Coupé y
+  otros 2019]. No hay datos de cuánto baja al decir cifras o al narrar una demo, ni del tiempo de un
+  relevo [snippet · búsqueda sin resultado]. Para un pitch en vivo, entre 130 y 145 por minuto [inferred].
+- **Margen**: la regla práctica es ensayar entre 5 y 15 % por debajo del tiempo [snippet · guías de
+  competencias de pitch]; no hay estudio. No se encontró evidencia de que los nervios aceleren el habla.
+- **Relevos**: nombrar a quien sigue y su tema; quien termina retrocede mientras el otro avanza al mismo
+  paso: «A smooth verbal and nonverbal handoff is a winning combination» [read · gvsu.edu/speechlab/oral-transitions-12 · 2026-11-09].
+- **Predicción antes de la demo**: mirar una demostración enseñó lo mismo que no verla; predecir antes la
+  mejoró [read del resumen · Crouch, Fagen, Callan y Mazur 2004, Am. J. Phys. 72(6)]. Explicaciones
+  correctas: 22 % sin demo, 24 % mirando, 30 % prediciendo, a cambio de unos dos minutos más [snippet ·
+  tabla I, leída por un asistente]. Como Francisco ya adelanta que a 72 no avisa, la pregunta pasa a ser
+  «¿qué tiene que pasar la semana siguiente para que avise?», que obliga a usar la regla de la parte 3.
+- **Demo en vivo**: «investors are there to judge you and therefore want to see you perform live»; un
+  video, «almost never a good idea» [read · Ralston, Y Combinator, 25/7/2016]. Llevar el servidor en la
+  propia computadora [read · Graham, «How to Present to Investors»]. El video queda solo como respaldo.
+- **Pedido y mercado**: «I prefer the bottom up method» y «There's no need to dance around the ask»
+  [read · Seibel, Y Combinator, 19/7/2016, vía asistente; el texto está citado en la tercera ronda].
+- **Por qué carga**: «Work overload contributes to burnout by depleting the capacity of people to meet the
+  demands of the job», una de seis áreas (carga, control, recompensa, comunidad, equidad, valores)
+  [snippet · cita textual devuelta por la herramienta · Maslach y Leiter 2016, World Psychiatry, PMC4911781].
+- **Transporte verificado**: 995 empresas de 50 a 200 empleados y 359 de más de 200 en transporte,
+  almacenamiento y comunicaciones, 2024 [tested · cuadro 7 de nacional_serie_empresas_2.xlsx · 2026-11-09].
+  Las 1.760 empresas de la lámina quedan verificadas.
+
+Láminas nuevas: cuando actúan (21, 15 y 12 %), quién paga y quién usa, por qué medimos carga, reglas por
+rubro, cómo está construido (1.000 filas en 53,75 s; 80 archivos de pruebas), riesgos y qué sigue.
 
 ## Sospecha y segunda ronda
 
@@ -646,6 +698,12 @@ pasa al video sin comentarlo.
   como argumento. Y una sorpresa: lo que más hunde un pitch ante inversores es lo mismo que hunde una
   defensa, exagerar o esconder. La sospecha de que el pitch obligaba a prometer de más **se descarta**: los
   inversores castigan eso más que nadie (Maxwell y Lévesque).
+
+- **Quinta ronda, los guiones de los cinco:** ¿alcanzan los guiones para 30 minutos? No: la primera
+  versión daba 17:44. Se sumaron reglas por rubro, el porqué de medir carga (Maslach y Leiter), cómo está
+  construido, riesgos y próximos pasos, y la demo con los roles: 22:54. La sospecha de que las partes 2 a
+  5 iban más lentas que la apertura **queda abierta**: no hay datos de velocidad al narrar una demo, y lo
+  resuelve el primer ensayo.
 
 ## Lo que falta
 
