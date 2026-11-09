@@ -119,9 +119,9 @@ queda cerca del art. 7 [inferred].
 | Cifra en las láminas | Qué dice la fuente | Cambio |
 | --- | --- | --- |
 | 9 de cada 10 se sienten quemados | 92 %, 2.750 personas de cinco países, autodeclarado [read · iProfesional, 2/11/2025; Canal 26, 5/11/2025] | Ninguno |
-| 72 % de las áreas de RRHH admite que «no se hace nada» | «El 72 % de las empresas encuestadas no aplica ningún tipo de acción cuando detecta casos» [read · iProfesional, 2/11/2025] | Decir «de las empresas», sin comillas |
+| 72 % de las áreas de RRHH admite que «no se hace nada» | «un 72 % admitió que "No se hace nada"», sobre las áreas de RRHH [read · iProfesional, Krizanovic, 3/11/2025]; la nota del 2/11 lo dice sin comillas, «de las empresas» | Ninguno: la lámina tiene respaldo |
 | 88 % no aplica medidas de prevención | «El 88 % reconoce no contar con estrategias específicas para prevenirlo» [read · iProfesional] | Ninguno |
-| 21 % apoyo emocional, 15 % flexible, 12 % reasigna tareas, 7 % bienestar | 21, 15, 12 y **9 %** [read · iProfesional] | 7 → 9 % |
+| 21 % apoyo emocional, 15 % flexible, 12 % reasigna tareas, 7 % bienestar | 21, 15 y 12 coinciden; el último es 7 % en la nota del 3/11 y 9 % en la del 2/11 [read · iProfesional, ambas] | Decir 21, 15 y 12; el último no se dice hasta ver el informe de Bumeran |
 | 1 de cada 5, 19,9 % por Maslach | 19,9 %, cuarto trimestre de 2025, el valor más bajo desde 2018 [snippet · Los Andes, 16/1/2026; mercado.com.ar] | Ninguno; en 2026 subió a 23,8 %, en otra medición: tenerlo para preguntas |
 | Gallup, 12.658 empleados: 63 % más días por enfermedad y 2,6 veces más búsqueda de empleo | 63 % y 2,6 veces, en «casi 7.500 empleados de tiempo completo», 2018 [read · gallup.com/workplace/237059 · 2026-11-09] | 12.658 → casi 7.500 |
 
@@ -369,10 +369,14 @@ criterio [inferred].
   más citado manipuló grabaciones, no entrenó a nadie [read del resumen · PubMed 22418254, Klofstad y
   otros 2012].
 - **Pausas**: medio segundo entre frases y un silencio más largo antes y después de cada cifra. En el
-  análisis acústico de dos presentaciones, Jobs hacía pausas más cortas que Zuckerberg (0,56 s frente a
-  0,83 s), hablaba más lento (5,0 frente a 6,2 sílabas por segundo) y remarcaba unas 5 palabras por minuto
-  frente a menos de 2 [read · cadernos.abralin.org, Niebuhr y otros 2020 · 2026-11-09]. Probable: son dos
-  oradores.
+  análisis acústico de dos presentaciones (iPhone 4 e iPad 2, 22 minutos), Jobs cambiaba de registro según
+  el público. En la parte de producto, para clientes: 5,04 sílabas por segundo, pausas de 0,56 s y 70
+  palabras remarcadas. En la parte para inversores (resultados, cifras de la empresa): más lento, 4,3
+  sílabas por segundo; pausas más largas, 0,62 s; frases más largas; tono y volumen más bajos; 49 palabras
+  remarcadas. Zuckerberg hizo lo contrario y fue el menos carismático para los oyentes [read ·
+  cadernos.abralin.org/index.php/cadernos/article/download/272/26, Niebuhr y otros 2020, tabla 1 ·
+  2026-11-09]. Aplicado: Diego y el producto con energía; cifras, mercado y pedido más lentos y graves.
+  Probable: son dos oradores.
 - **Muletillas**: con 12 por minuto bajó la credibilidad en un experimento [snippet · Laske y DiGennaro
   Reed 2024]; un relleno a mitad de frase pesa más que al principio [snippet · Kirkland 2022]. Objetivo: un
   silencio en vez de cada «eh», «este», «bueno», «o sea», «básicamente», «digamos», «tipo», «¿no?»,
@@ -493,7 +497,8 @@ pasa al video sin comentarlo.
   brillo, y el tribunal penaliza las afirmaciones sin prueba.
 - **Segunda ronda:** ¿las cifras que vamos a decir en la apertura resisten a un jurado? Las revisamos en
   las notas originales. Dos estaban mal: la muestra de Gallup (casi 7.500 personas, no 12.658) y los
-  programas de bienestar (9 %, no 7 %). Una cita estaba entre comillas sin serlo (el 72 %).
+  programas de bienestar, que una nota de iProfesional da en 9 % y otra en 7 %: no se dice. La cita del
+  72 % sí tiene respaldo: la nota del 3/11/2025 la trae entre comillas; la corrección anterior era un error.
 - **Sospecha de la entrega:** la voz y la primera impresión pesan más que los gestos estudiados, y la
   postura de poder no aguanta las réplicas. **Confirmada en parte:** la postura de poder no se sostiene y la
   primera impresión sí pesa; los gestos también ayudan (metaanálisis), así que no pesan menos. En la voz,
