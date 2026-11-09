@@ -673,6 +673,14 @@ cronómetro.
 Láminas nuevas: cuando actúan (21, 15 y 12 %), quién paga y quién usa, por qué medimos carga, reglas por
 rubro, cómo está construido (1.000 filas en 53,75 s; 80 archivos de pruebas), riesgos y qué sigue.
 
+**Revisión del 9/11, a pedido de Francisco: lenguaje llano.** Los guiones de las partes 2 a 5 sonaban
+técnicos. Se sacó la lámina «Cómo está construido» y toda mención de tecnologías (quedan solo como respuesta
+si preguntan). Eros explica el cálculo con la semana real de Sofía del 7/9: horas 22 (100 puntos, aporta
+30), días seguidos 7 (58,33; 17,50), tareas 0,6 × 5/11 + 0,4 × 8/11 = 0,56 (80,52; 20,13), vacaciones 6
+(30; 4,50), total 72,13 [tested · cuentas con `templates/empresas/conecta/indicadores.csv` y la fórmula de
+`Docs/cu02-reglas.md` · 2026-11-09]. Gonzalo explica la idea sin cuentas. Guion total: 21:52; tiempos
+por parte: Francisco 4:50, Santiago 3:33, Gonzalo 3:42, Eros 5:10, Alfonso 4:38.
+
 ## Sospecha y segunda ronda
 
 - **Sospecha inicial:** la apertura se gana con un problema concreto y humano antes que con el producto, y
