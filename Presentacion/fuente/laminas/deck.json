@@ -1,0 +1,86 @@
+{
+ "v": 4,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-09T06:30:00Z"
+ },
+ "lists": "css",
+ "title": "Sistema de Índice de Burnout — defensa",
+ "order": [
+  "cover",
+  "diego",
+  "nueve",
+  "siete",
+  "pedazos",
+  "nexo",
+  "como",
+  "demo3",
+  "sofia",
+  "ruta",
+  "cierre1",
+  "p2",
+  "costo",
+  "actuan",
+  "rubros",
+  "usuarios",
+  "hoy",
+  "p3",
+  "teoria",
+  "variables",
+  "porrubro",
+  "regla",
+  "limites",
+  "p4",
+  "calculo",
+  "prediccion",
+  "envivo",
+  "respuesta",
+  "p5",
+  "mercado",
+  "modelo",
+  "ahora",
+  "equipo",
+  "riesgos",
+  "sigue",
+  "pedido",
+  "final",
+  "anexo"
+ ],
+ "sections": {
+  "s1": {
+   "description": "Apertura, Francisco: qué es el sistema, Diego, el problema, cómo funciona y Sofía.",
+   "start": "cover"
+  },
+  "s2": {
+   "description": "El problema en plata, Santiago: cuánto cuesta, quién paga y qué se usa hoy.",
+   "start": "p2"
+  },
+  "s3": {
+   "description": "La idea que nos distingue, Gonzalo: cómo decide el índice y qué no hace.",
+   "start": "p3"
+  },
+  "s4": {
+   "description": "Cómo se calcula y en vivo, Eros: la semana de Sofía.",
+   "start": "p4"
+  },
+  "s5": {
+   "description": "Mercado, modelo, riesgos y pedido, Alfonso; cierre con Diego.",
+   "start": "p5"
+  },
+  "s6": {
+   "description": "Anexo para las preguntas: cifras y fuentes.",
+   "start": "anexo"
+  }
+ },
+ "faces": {
+  "space-grotesk": {
+   "family": "Space Grotesk",
+   "href": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
+  },
+  "inter": {
+   "family": "Inter",
+   "href": "https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+  }
+ },
+ "designSystems": []
+}
