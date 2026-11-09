@@ -452,7 +452,8 @@ pasa al video sin comentarlo.
 - Una idea por lámina, título en oración y que se entienda en 3 segundos.
 - La cifra protagonista en 80 puntos o más; el resto, en 24 o más. La fuente va abajo, chica pero
   legible.
-- La primera lámina es solo «26 días». Las tres cajas que se unen son la única animación.
+- La primera lámina es el nombre y los cinco integrantes; la segunda, solo «26 días». Las tres cajas que se
+  unen son la única animación.
 - Ninguna lámina repite lo que se dice: si está escrito, no se lee.
 
 ## Plan de ensayo
