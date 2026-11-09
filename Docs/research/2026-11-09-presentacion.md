@@ -662,7 +662,7 @@ cronómetro.
   video, «almost never a good idea» [read · Ralston, Y Combinator, 25/7/2016]. Llevar el servidor en la
   propia computadora [read · Graham, «How to Present to Investors»]. El video queda solo como respaldo.
 - **Pedido y mercado**: «I prefer the bottom up method» y «There's no need to dance around the ask»
-  [read · Seibel, Y Combinator, 19/7/2016, vía asistente; el texto está citado en la tercera ronda].
+  [read · ycombinator.com/blog/how-to-pitch-your-company, Seibel, 19/7/2016 · 2026-11-09].
 - **Por qué carga**: «Work overload contributes to burnout by depleting the capacity of people to meet the
   demands of the job», una de seis áreas (carga, control, recompensa, comunidad, equidad, valores)
   [snippet · cita textual devuelta por la herramienta · Maslach y Leiter 2016, World Psychiatry, PMC4911781].
