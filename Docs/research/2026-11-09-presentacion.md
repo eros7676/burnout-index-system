@@ -106,6 +106,62 @@ Decirse «estoy entusiasmado» antes de hablar rindió más que «calmate»: en 
 quienes reinterpretaron la ansiedad como entusiasmo fueron evaluados como más persuasivos (Brooks, 2014)
 [snippet · eurekalert.org; el artículo no se abrió].
 
+- **Hablarse en tercera persona** («Francisco, vas a estar bien») antes de un discurso de 5 minutos ante
+  evaluadores: jueces ciegos puntuaron mejor el desempeño, F(1,83)=5,43, p=.022, ηp²=.061, con menos
+  vergüenza y menos rumiación después; 89 universitarios, un laboratorio [read · rascl.berkeley.edu, Kross y
+  otros 2014, estudio 3 · 2026-11-09]. Efecto chico a mediano.
+- **El miedo a hablar en público baja con entrenamiento**: 30 ensayos, 1.355 personas, g=0,74; la realidad
+  virtual no rinde distinto que el ensayo frente a personas [read · frontiersin.org, Ebrahimi y otros 2019 ·
+  2026-11-09]. Son semanas de práctica, no un truco del día: ensayar frente a gente.
+- **Escribir las preocupaciones 10 minutos antes** mejoró a los ansiosos en un examen [read del resumen ·
+  Ramirez y Beilock 2011]; es un examen, no una charla. **Exhalación larga** («suspiro cíclico») 5 minutos
+  por día durante un mes mejoró el ánimo [read del resumen · Balban y otros 2023]; no se probó como recurso
+  de un día.
+- **Protocolo**: la noche anterior, un ensayo completo con cronómetro [inferred]; esa mañana, 10 minutos de
+  escribir preocupaciones; antes de entrar, unos minutos de exhalación larga; al pararse, «Francisco, estás
+  listo» y «estoy entusiasmado»; la primera frase, memorizada palabra por palabra [inferred].
+
+### Relato y curiosidad
+
+- **Que Diego sea un personaje no le quita fuerza**: en cuatro experimentos (N=97, 69, 274 y 258), un relato
+  etiquetado como ficción persuadió casi igual que una noticia, «all Fs < 3, all ps > .05»; lo que
+  persuade es que el relato «transporte» [read · gwern.net, Green y Brock 2000 · 2026-11-09]. Por eso se
+  puede decir «Diego es un personaje de nuestra demo» sin perder el efecto.
+- **La pregunta antes de la demo funciona si el jurado duda**: la curiosidad fue máxima cuando la confianza
+  en la respuesta rondaba el 50 %, y con más curiosidad se recordó mejor 1 a 2 semanas después (d=1,11 alta
+  frente a baja, n=12) [read · cmu.edu, Kang y otros 2009 · 2026-11-09]. Muestras chicas y trivia, no
+  defensas. Aplicado a Sofía: «72 puntos y el sistema no avisa» deja la duda abierta; la respuesta llega en
+  la demo.
+
+### Lo que se evalúa en una defensa
+
+- **Siglo 21**, Seminario Final: la nota promedia tres etapas (director o tutor, comisión y defensa oral). En
+  la defensa oral, la grilla del anuario pide: «Demuestra solvencia en su exposición», «utiliza un adecuado
+  soporte para la presentación», «demuestra capacidad de respuesta frente a los interrogantes del docente»,
+  «capacidad para fundamentar con contenidos teóricos pertinentes» y «evidencia coherencia entre todos los
+  apartados» [read · Anuario de Investigación Siglo 21 2022-23, capítulo de Educación, Londero y Soria ·
+  2026-11-09]. Es la carrera de Educación; la de Analista puede usar otra grilla.
+- **UTN FRSN**: tribunal de tres, todos participan; pesan originalidad, dominio del tema, objetivos
+  cumplidos, conclusiones y capacidad de exposición [read · reglamento UTN FRSN · 2026-11-09].
+- **UNER**: la rúbrica puntúa el manejo del tiempo y descuenta por desvíos de ±10, 20 y 30 % [snippet].
+  En 30 minutos, el 10 % son 3 minutos.
+- **Cercanía con el público**: las conductas docentes que más acercan son gesticular, variar la voz, mirar a
+  la clase, sonreír, postura relajada, «Moves around the classroom while teaching», «Looks very little at
+  board or notes» y «Removes barriers» [read · SERC Carleton, lista de inmediatez no verbal · 2026-11-09].
+  El beneficio medido es más afectivo que de aprendizaje. Aplicado: sin atril ni notebook delante, moverse
+  solo al cambiar de idea, y no leer la lámina.
+
+### Lo que se recuerda
+
+- La experiencia se recuerda por su pico y su final: r=0,581 entre 174 tamaños de efecto [read del resumen ·
+  Alaybek y otros 2022]. Un solo pico (la demo de Sofía) y un final fuerte (Diego y la frase), sin un
+  agradecimiento largo que lo tape.
+- Pedir una predicción antes de mostrar mejora la comprensión de una demostración [snippet · Crouch y otros
+  2004] y la curiosidad sube cuando el público duda (Kang 2009, arriba): «¿qué creen que pasa con Sofía?».
+- Volver a una frase dicha al principio («los datos ya estaban») ata el cierre a la apertura [inferred].
+- Una imagen o una cifra por lámina; lo que compite con el pico se corta [inferred, con Garner y Alley].
+- La cifra de Heath «63 % recuerda historias y 5 % cifras» circula sin estudio publicado: no se cita.
+
 ### Privacidad (Ley 25.326)
 
 Datos ciertos, adecuados, pertinentes y no excesivos para su finalidad (art. 4); consentimiento libre,
