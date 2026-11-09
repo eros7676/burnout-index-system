@@ -19,10 +19,12 @@ en las cifras de entrega (velocidad, letra), que vienen de resúmenes.
 
 ## Por qué un pitch y una defensa no son lo mismo
 
-Un inversor perdona el entusiasmo y castiga la confusión. Un tribunal ya leyó el trabajo, «presta especial
-atención a los errores» y evalúa cada momento de la defensa: claridad conceptual, seguridad, uso de los
-recursos visuales y cómo se responde [read · revistaelfaro.uflo.edu.ar, Ibachuta y Género, UFLO 2025 ·
-2026-11-09]. Lo que en un pitch pasa por convicción («detectamos el burnout»), en un tribunal es una
+Un inversor perdona el entusiasmo y castiga la confusión. Un tribunal «presta especial atención a los
+errores» y evalúa cada momento de la defensa: claridad conceptual, seguridad, uso de los recursos visuales
+y cómo se responde [read · revistaelfaro.uflo.edu.ar, Ibachuta y Género, UFLO 2025 · 2026-11-09]. Esa
+fuente supone un tribunal que ya leyó el trabajo; el nuestro no sabe nada del proyecto (Francisco,
+9/11/2026), así que la apertura tiene que hacer lo que hace un pitch ante un inversor que no nos conoce:
+quiénes somos, qué hicimos, por qué importa y qué van a ver. Lo que en un pitch pasa por convicción («detectamos el burnout»), en un tribunal es una
 afirmación sin prueba. Lo que los une: los dos premian la preparación. En inversores de riesgo, la
 preparación pesó en la decisión y la pasión no (Chen, Yao y Kotha, 2009) [snippet · resumen de AMJ 52:199-214], y
 la calidad de la presentación oral movió el interés de inversores ángeles aunque ellos dijeran decidir por
@@ -140,45 +142,63 @@ qué es la idea que nos distingue («un pico aislado no basta»).
 
 [inferred; confirmar con la docente si las preguntas entran en los 30 minutos y quién habla en cada parte]
 
+El tribunal no conoce el proyecto, así que la apertura carga con la presentación del equipo, qué hicimos y
+cómo funciona: 6 minutos, el promedio de cinco expositores en 30. Si las preguntas quedan fuera de los 30
+minutos, cada parte gana un poco; la apertura no pasa de 7.
+
 | Parte | Min. | Qué tiene que lograr | Láminas actuales |
 | --- | --- | --- | --- |
-| 1. Apertura | 3 | Escena, problema en dos cifras, qué es Nexo en dos oraciones, prueba de que funciona, hoja de ruta | 1, 2, 3 y 8, nuevas |
-| 2. Por qué importa | 3 | Costo de no actuar; por qué ahora; sin el caso de los choferes como «extremo», porque ahora es un rubro | 4 y 5 |
-| 3. Cómo decide | 5 | Las cuatro variables, el umbral, «dos semanas y dos factores», reglas por rubro; qué no afirmamos | 6 y 7 |
+| 1. Apertura | 6 | Saludo y equipo, la escena de Diego, el problema con sus cifras, qué es Nexo en dos oraciones, cómo funciona en tres pasos, qué hicimos, el adelanto de Sofía y la hoja de ruta con los nombres | 1, 2, 3, 7 y 8, nuevas |
+| 2. Por qué le importa a una empresa | 3 | Costo de no actuar; por qué cada rubro; sin el caso de los choferes como «extremo», porque ahora es un rubro | 4 y 5 |
+| 3. Cómo decide | 5 | Las cuatro variables, el umbral, «dos semanas y dos factores», reglas por rubro; qué no afirmamos | 6 |
 | 4. Funcionando | 6 | Archivo con errores, archivo corregido, la semana de Sofía, la alerta con sus causas | 10 |
-| 5. Por qué nosotros y qué sigue | 3 | Alternativas sin descalificarlas, privacidad, el pedido: un piloto con una empresa real; cierre | 9 y 11 |
-| Margen | 2 | Relevos y demoras | |
-| Preguntas | 8 | Un responsable por tema | 12, anexo |
+| 5. Por qué nosotros, qué sigue y cierre | 3 | Alternativas sin descalificarlas, privacidad, el pedido: un piloto con una empresa real; vuelta a Diego | 9 y 11 |
+| Margen | 1 | Relevos y demoras | |
+| Preguntas | 6 | Un responsable por tema | 12, anexo |
 
 El cierre vuelve a la apertura: Diego, esta vez visto en la segunda semana. «Los datos ya estaban. Falta
 mirarlos.»
 
-## Guion de la apertura (3 minutos)
+## Guion de la apertura (6 minutos)
 
-Unas 330 palabras: con las pausas marcadas, entre dos minutos y medio y tres. Medirlo grabado, no estimarlo. Lo que está
+Unas 620 palabras: con las pausas marcadas, entre 5 y 6 minutos. Medirlo grabado, no estimarlo. Lo que está
 en *cursiva* entre corchetes no se dice.
 
+> *[Lámina: «Nexo Laboral» y los cinco nombres.]*
+>
+> Buenas tardes. Somos el Grupo 8 del Seminario de Analista de Software: Eros, Gonzalo, Santiago, Alfonso
+> y yo, Francisco. *[Mirar a cada uno al nombrarlo.]* En este seminario construimos un sistema, y en la
+> próxima media hora les vamos a mostrar qué hace y por qué lo hicimos. *[pausa]* Pero antes, quiero
+> presentarles a alguien.
+>
 > *[Lámina negra. Una sola cifra, enorme: «26 días».]*
 >
 > Imaginen a Diego. Es chofer en una empresa de logística. *[pausa]* Hoy cumple veintiséis días seguidos
-> sin un franco. La semana pasada trabajó sesenta y nueve horas: veinticinco más que su semana normal.
-> *[pausa]*
+> sin un franco. La semana pasada trabajó sesenta y nueve horas: veinticinco más que su semana normal. Y
+> tiene quince días de vacaciones que no se tomó. *[pausa]*
 >
 > ¿Su jefe lo sabe? *[pausa]* No. Y no porque no le importe.
 >
 > Las horas de Diego están en el sistema de fichaje. Sus viajes atrasados, en una planilla. Sus
-> vacaciones pendientes, en Recursos Humanos. *[pausa]* Los datos existen. Nadie los mira juntos.
+> vacaciones, en Recursos Humanos. Cada área ve su pedazo. *[pausa]* Los datos existen. Nadie los mira
+> juntos.
 >
 > *[Lámina: «9 de cada 10». Abajo, chico: Bumeran, Burnout 2025, autodeclarado.]*
 >
 > Diego es un personaje de nuestra demo. Lo que le pasa, no lo es. En Argentina, nueve de cada diez
-> trabajadores dicen sentirse quemados por su trabajo. *[pausa]* Pero el dato que más nos marcó es otro:
-> de las empresas que detectan un caso, el setenta y dos por ciento... no hace nada. *[pausa larga]*
+> trabajadores dicen sentirse quemados por su trabajo. Es una encuesta donde cada uno responde por sí
+> mismo, así que no es un diagnóstico, pero marca el clima. Cuando se mide con un instrumento validado, el
+> inventario de Maslach, el número baja: uno de cada cinco. *[pausa]* Sigue siendo uno de cada cinco.
+>
+> *[Lámina: «72 %».]*
+>
+> Y el dato que más nos marcó es otro. De las empresas que detectan un caso, el setenta y dos por
+> ciento... no hace nada. *[pausa larga]*
 >
 > *[Lámina: tres cajas separadas —fichaje, tareas, RR. HH.— que se unen en una línea.]*
 >
-> No es por falta de información. Es que la información llega en pedazos, y llega tarde. Cuando alguien
-> se da cuenta, ya hay una licencia, una renuncia o un accidente.
+> No creemos que sea falta de voluntad. Es que la información llega en pedazos, y llega tarde. Cuando
+> alguien se da cuenta, ya hay una licencia, una renuncia o un accidente.
 >
 > *[Lámina: «Nexo Laboral». Debajo, la frase.]*
 >
@@ -189,30 +209,52 @@ en *cursiva* entre corchetes no se dice.
 > No diagnostica a nadie. No reemplaza al jefe. Le da un número que se puede explicar, para que actúe a
 > tiempo.
 >
+> *[Lámina: datos → índice → alerta.]*
+>
+> ¿Cómo funciona? En tres pasos. Una vez por semana, Recursos Humanos sube un archivo con lo que ya
+> registra. El sistema lo revisa fila por fila: si algo está mal, no guarda nada y dice exactamente qué y
+> dónde. Después calcula, para cada persona, un índice de cero a cien. Y si el riesgo es alto, le avisa a
+> su líder, con las causas y con acciones concretas: redistribuir tareas, dar un descanso, frenar nuevas
+> asignaciones.
+>
+> Cada perfil ve lo suyo. El líder, su equipo. Recursos Humanos, toda la empresa. La gerencia, el
+> panorama. Y la persona no ve su índice: el sistema está para que alguien la cuide, no para ponerle una
+> etiqueta.
+>
 > *[Lámina: las tres empresas, una al lado de la otra.]*
 >
-> Y no es una idea en una diapositiva: está funcionando. Hoy van a ver tres empresas de rubros distintos
-> —un servicio técnico, una empresa de transporte y un sanatorio—, cada una con sus personas, sus propias
-> reglas y ocho semanas de datos.
+> Y no es una idea en una diapositiva: está funcionando. Antes de escribir código investigamos el
+> problema, las normas laborales y lo que ya existe en el mercado. Y aprendimos algo: la sobrecarga no se
+> ve igual en todos lados. La semana normal de un chofer no es la de una enfermera. Por eso cada empresa
+> tiene sus propias reglas. Hoy van a ver tres: un servicio técnico, una empresa de transporte y un
+> sanatorio, cada una con cincuenta personas y ocho semanas de datos.
 >
-> Les adelanto algo. Una de esas semanas, Sofía, técnica de mantenimiento, llega a setenta y dos puntos.
-> *[pausa]* Y el sistema no avisa. *[pausa]* Les vamos a mostrar por qué.
+> *[Lámina: «72», enorme.]*
 >
-> *[Lámina: hoja de ruta, tres palabras.]*
+> Les adelanto algo. Una de esas semanas, Sofía, técnica de mantenimiento, llega a setenta y dos puntos
+> sobre cien. *[pausa]* Y el sistema no avisa. *[pausa]* Les vamos a mostrar por qué, y por qué creemos que
+> es lo más importante que diseñamos.
 >
-> En los próximos veinte minutos, tres cosas: por qué este problema le cuesta a una empresa, cómo se
-> calcula el índice y por qué cada punto se puede explicar, y el sistema funcionando en vivo.
+> *[Lámina: hoja de ruta, con los nombres.]*
 >
-> *[Mirar a quien sigue.]* [Nombre] les va a mostrar cuánto cuesta no ver a Diego a tiempo.
+> En los próximos veinte minutos, [Nombre 2] les va a mostrar cuánto le cuesta a una empresa no ver a
+> Diego a tiempo. [Nombre 3], cómo se calcula el índice y por qué cada punto se puede explicar. [Nombre 4],
+> el sistema funcionando, en vivo. Y [Nombre 5] va a cerrar con por qué esto, por qué nosotros y qué sigue.
+>
+> *[Mirar a quien sigue.]* [Nombre 2].
 
 ### Por qué está armado así
 
-La escena va antes que la cifra porque una persona se recuerda y un porcentaje no; Diego es ficticio y se
-dice a los 40 segundos, antes de que alguien lo pregunte. Las dos cifras son las que resisten una pregunta:
-la primera aclara que es autodeclarada y la segunda es la que justifica un sistema, no un taller. La frase de
-Nexo es la regla de Seibel: qué hace, en palabras simples, y su límite en la oración siguiente, porque ante
-un tribunal el límite dicho a tiempo suma. Sofía a 72 sin alerta deja una pregunta abierta que la demo
-responde: es el momento de la presentación. La hoja de ruta anuncia tres partes, como Stanford 2005.
+El saludo dura diez segundos y nombra a los cinco: el tribunal no nos conoce, pero un pitch no se abre con
+currículums. Los nombres vuelven en la hoja de ruta, cada uno atado a su parte, que es cuando importan. La
+escena va antes que la cifra porque una persona se recuerda y un porcentaje no; Diego es ficticio y se dice
+al minuto, antes de que alguien lo pregunte. Las cifras son las que resisten una pregunta: la primera
+aclara que es autodeclarada, la de Maslach la corrige, y el 72 % justifica un sistema, no un taller. La
+frase de Nexo es la regla de Seibel: qué hace, en palabras simples, y su límite en la oración siguiente,
+porque ante un tribunal el límite dicho a tiempo suma. «Cómo funciona» y «qué hicimos» son lo que un
+tribunal que no leyó el trabajo necesita para seguir el resto; las reglas por rubro son la idea propia que
+pide Seibel. Sofía a 72 sin alerta deja una pregunta abierta que la demo responde: es el momento de la
+presentación. La hoja de ruta anuncia las partes, como Stanford 2005.
 
 ## Qué decir y qué no
 
