@@ -10,31 +10,31 @@ que corrimos sobre los datos de la demo.
 
 ## Recomendación
 
-Estructura de pitch y contenido de defensa. La apertura vende: una escena concreta, el problema en dos
-cifras con su fuente, la frase de dos oraciones que dice qué es Nexo y una prueba de que funciona. Todo lo
-que sigue defiende: cómo se calcula el índice, por qué cada punto se puede explicar, qué no afirmamos y el
-sistema funcionando. De Jobs se copia la estructura y el ensayo, no el espectáculo. Firmeza: alta en la
-estructura (Sequoia, YC y los tribunales coinciden en claridad, progreso y límites dichos a tiempo); media
-en las cifras de entrega (velocidad, letra), que vienen de resúmenes.
+Tratar al jurado como inversores: un pitch completo, con el orden que piden YC y Sequoia, y con la honestidad
+que un jurado académico exige. Las dos cosas empujan para el mismo lado: lo que más decide a un inversor es
+el equipo y su preparación, y lo que más rápido lo hace decir que no es una sola falla, sobre todo exagerar
+o esconder algo. Los 30 minutos van así: qué es Nexo en la primera frase, Diego, el problema con cifras que
+resisten una pregunta, el sistema funcionando como único momento cumbre, por qué cada punto se puede
+explicar, el mercado contado de abajo hacia arriba, una hipótesis de precio, el equipo y un pedido concreto
+al final. Firmeza: alta en el orden y en lo que no hay que hacer (encuestas a inversores, 602 pitches
+codificados, YC, Sequoia); media en el mercado y el precio, que son hipótesis nuestras sobre datos oficiales.
 
 En la entrega, lo que más pesa según los estudios: los primeros segundos, antes de hablar; el volumen y sus
 cambios, más que el tono; bajar la voz al final de cada afirmación; gestos que dibujan la idea; no
-encogerse; mirar al tribunal unos tres segundos por persona; cambiar cada muletilla por un silencio. Firmeza:
+encogerse; mirar al jurado unos tres segundos por persona; cambiar cada muletilla por un silencio. Firmeza:
 media. Hay metaanálisis para gestos y posturas, y estudios sueltos para voz y mirada; nada está medido en
 un tribunal.
 
-## Por qué un pitch y una defensa no son lo mismo
+## El jurado como inversor
 
-Un inversor perdona el entusiasmo y castiga la confusión. Un tribunal «presta especial atención a los
-errores» y evalúa cada momento de la defensa: claridad conceptual, seguridad, uso de los recursos visuales
-y cómo se responde [read · revistaelfaro.uflo.edu.ar, Ibachuta y Género, UFLO 2025 · 2026-11-09]. Esa
-fuente supone un tribunal que ya leyó el trabajo; el nuestro no sabe nada del proyecto (Francisco,
-9/11/2026), así que la apertura tiene que hacer lo que hace un pitch ante un inversor que no nos conoce:
-quiénes somos, qué hicimos, por qué importa y qué van a ver. Lo que en un pitch pasa por convicción («detectamos el burnout»), en un tribunal es una
-afirmación sin prueba. Lo que los une: los dos premian la preparación. En inversores de riesgo, la
-preparación pesó en la decisión y la pasión no (Chen, Yao y Kotha, 2009) [snippet · resumen de AMJ 52:199-214], y
-la calidad de la presentación oral movió el interés de inversores ángeles aunque ellos dijeran decidir por
-el contenido (Clark, 2008; 24 inversores, Reino Unido) [snippet · ideas.repec.org].
+El jurado no conoce el proyecto y va a ver todo (Francisco, 9/11/2026): se lo trata como a un inversor que
+escucha por primera vez, que además es docente. Un inversor pregunta qué hace, para quién, por qué ahora,
+cuánto vale el mercado, cómo se gana plata, quiénes somos y qué pedimos; un docente, si está bien hecho y
+fundamentado. El pitch responde las dos listas si cada afirmación lleva su prueba. Donde chocan, gana la
+honestidad: «no diagnostica», «los datos de la demo los generamos nosotros» y «el precio es una hipótesis»
+son, para un inversor, lo que construye confianza, y para un docente, rigor. Un tribunal «presta especial
+atención a los errores» [read · revistaelfaro.uflo.edu.ar, Ibachuta y Género, UFLO 2025 · 2026-11-09]; un
+inversor ángel también, y descarta por una sola (Maxwell, abajo).
 
 ## Lo que dicen las fuentes
 
@@ -59,6 +59,73 @@ el contenido (Clark, 2008; 24 inversores, Reino Unido) [snippet · ideas.repec.o
   [snippet · blogs de inversores]. Leer las láminas en voz alta es además lo que el principio de redundancia
   de Mayer desaconseja [snippet · Cambridge Handbook of Multimedia Learning, cap. 12].
 
+### Qué decide a un inversor
+
+- **El equipo, primero.** 889 inversores de riesgo de 681 fondos: el equipo fue un factor importante para
+  el 95 % de los fondos y el más importante para el 47 %; el modelo de negocio, el producto y el mercado
+  vienen después [read · ecgi.global, Gompers, Gornall, Kaplan y Strebulaev, documento de trabajo 2016,
+  publicado en JFE 2020 · 2026-11-09]. Mide lo que dicen, no lo que rinde: con 50 empresas seguidas en el
+  tiempo, el negocio fue más estable que el equipo [snippet · Kaplan, Sensoy y Strömberg 2009]. Aplicado: el
+  equipo no va en un currículum al principio, va en «quién hizo qué» al final, con lo construido como prueba.
+- **Preparación, no entusiasmo.** 72 inversores ángeles, 1.995 evaluaciones de 133 pitches en vivo: la
+  preparación percibida subió la evaluación; el entusiasmo no tuvo efecto propio [read · effectuation.org,
+  Cardon y otros 2016 · 2026-11-09]. Lo mismo en Chen, Yao y Kotha 2009 [snippet].
+- **Una falla alcanza para quedar afuera.** 602 pitches ante inversores ángeles en la televisión de
+  Canadá (*Dragons' Den*): 436 se descartaron rápido por una «falla fatal» y 112 por riesgo; de los 54 que
+  llegaron a la etapa de confianza, cada conducta que construía confianza casi duplicó la chance de oferta
+  (OR 1,97), cada una que la dañaba la dividió por 20 y mentir a propósito, por 500 [read · effectuation.org,
+  Maxwell y Lévesque 2014, ETP · 2026-11-09]. Aplicado: decir que los datos de la demo son nuestros antes de
+  que alguien lo pregunte.
+- **Los primeros minutos clasifican.** En reuniones de pitch de Hollywood, cuatro señales hacían descartar
+  al que presentaba y no se recuperaban después: desgano por la propia idea, sonar aprendido de memoria
+  («You can tell it in the room if somebody's learned pitching by rote. It doesn't work»), ser demasiado
+  pulido y parecer desesperado [read · leeds-faculty.colorado.edu, Elsbach y Kramer 2003, AMJ · 2026-11-09].
+  Aplicado: la estructura y la primera y la última frase se memorizan; el resto, por bloques, en palabras
+  propias.
+- **Responder hacia lo que se gana.** Con 189 emprendedores y 140 inversores, las preguntas sobre riesgos
+  («¿qué puede salir mal?») se asociaron con menos fondos, y responderlas hablando de lo que se gana subió
+  lo obtenido en un experimento [snippet · lbsresearch.london.edu, Kanze y otros 2018]. Aplicado: a «¿y si
+  el índice se equivoca?», responder con lo que el piloto va a medir, no defenderse.
+- **La intuición del inversor es sobre la persona.** 90 inversores ángeles: su juicio del emprendedor
+  predijo los grandes éxitos a cuatro años; su juicio de la viabilidad, no [read · escholarship.org, Huang y
+  Pearce 2015, ASQ · 2026-11-09].
+- **Práctica de los grandes.** YC: tres o cuatro ideas clave, exagerar es fatal, sin videos [read ·
+  ycombinator.com/blog/guide-to-demo-day-pitches · 2026-11-09]. Un estudio de DocSend sobre 320 presentaciones
+  encontró unos 3 minutos de lectura por presentación y que la lámina de equipo estaba en todas [snippet ·
+  techcrunch.com, 22/9/2022]. La tracción sin ingresos que se suele aceptar (entrevistas con clientes,
+  empresas que prueban gratis con nombre propio, cartas de intención) viene de blogs, no de estudios
+  [snippet].
+
+### Mercado, precio y por qué ahora
+
+- **Mercado.** Empresas privadas con empleo registrado, 2024 (OEDE, Ministerio de Trabajo) [read · tablas
+  de nacional_serie_empresas_2.xlsx y nacional_serie_empleo_anual_2.xlsx, argentina.gob.ar · 2026-11-09]:
+
+  | Segmento | Empresas de 50 a 200 | Puestos en ellas | Empresas de más de 200 | Puestos en ellas |
+  | --- | --- | --- | --- | --- |
+  | Transporte, almacenamiento y comunicaciones | 995 | 92.625 | 359 | 270.561 |
+  | Servicios sociales y de salud | 765 | 68.956 | 264 | 178.994 |
+  | Todo el sector privado | 16.111 | 1.493.167 | 3.908 | 2.506.357 |
+
+  Los puestos y las empresas de salud y del total los comprobamos en la planilla; las 995 y 359 de
+  transporte, no (la extracción de esa hoja quedó cortada) [snippet]. El tramo oficial es 50 a 200; no hay
+  200 a 500. El servicio técnico no tiene rama propia, así que no está contado. El número de empresas con
+  empleo registrado bajó entre 2023 y 2025 [read · cronista.com, con datos de OEDE].
+- **Precio de referencia.** Sesame HR, 4,75 a 8 euros por empleado por mes con pago anual [read ·
+  sesamehr.es/precios]; Factorial «starts at $8 per month, per user» [read · factorial.com/pricing-plans]; Runa
+  HR, ARS 4.673 a 7.738 por empleado por mes más IVA [read · runahr.com/ar/precios]. Humand, «desde USD 4»,
+  solo en comparadores [snippet]; Buk, Fichap, Bizneo y Rankmi no publican precio.
+- **Hipótesis de precio** [inferred]: un módulo de un solo propósito, 2,5 dólares por empleado por mes,
+  menos que una suite. Con eso, las 1.760 empresas medianas de transporte y salud son unos 4,8 millones de
+  dólares por año; las de 50 o más empleados de todo el sector privado, unos 120 millones. Es un nicho para
+  entrar, no un mercado de miles de millones, y se dice así.
+- **Por qué ahora.** La OMS define el burnout como «an occupational phenomenon» y no como una enfermedad
+  [read · who.int, 28/5/2019], que es exactamente lo que Nexo no diagnostica. Trabajar 55 horas o más por
+  semana se asoció a 745.000 muertes en 2016 por ACV y cardiopatía [read · who.int, OMS y OIT, 17/5/2021].
+  La reforma laboral de 2026 (Ley 27.802) crea el banco de horas y los francos compensatorios [read ·
+  marval.com]: más horas que se mueven, más razón para sumarlas. El tope de horas extra del Decreto 484/2000
+  es 30 por mes y 200 por año [read · justia.com]; no confirmamos si la reforma lo cambió.
+
 ### Jobs
 
 - **Qué se copia**: anunciar el número de partes en la primera frase («Today I want to tell you three
@@ -72,7 +139,7 @@ el contenido (Clark, 2008; 24 inversores, Reino Unido) [snippet · ideas.repec.o
   encontramos fuente para «dos días de ensayos completos» ni para un número de repeticiones: no lo
   afirmamos.
 - **Qué no se copia**: el estilo de lanzamiento masivo no se traslada a una sala chica [snippet ·
-  brightcarbon.com]. Ante un tribunal, «revolucionario» o «reinventar» restan [inferred].
+  brightcarbon.com]. Ante un jurado, «revolucionario» o «reinventar» restan [inferred].
 
 ### Láminas
 
@@ -202,42 +269,42 @@ qué es la idea que nos distingue («un pico aislado no basta»).
 
 ## Estructura propuesta para los 30 minutos
 
-[inferred; los cinco hablan. Las preguntas van aparte, unos 5 a 10 minutos después de los 30 (Francisco,
-9/11/2026); confirmar con la docente.]
+[inferred, con el orden de Sequoia y YC y lo de arriba. Los cinco hablan; las preguntas van aparte, unos 5
+a 10 minutos después de los 30 (Francisco, 9/11/2026); confirmar con la docente.]
 
-El tribunal no conoce el proyecto, así que la apertura carga con la presentación del equipo, el problema,
-qué hicimos y cómo funciona, sin mostrar el sistema: el programa aparece en la parte 4. El guion dura cerca
-de 5 minutos con sus silencios y la parte tiene 7.
-
-| Parte | Min. | Qué tiene que lograr | Láminas actuales |
+| Parte | Min. | Qué responde | Contenido |
 | --- | --- | --- | --- |
-| 1. Apertura | 7 | Saludo y equipo, la escena de Diego, el problema con sus cifras, qué es Nexo en dos oraciones, cómo funciona en tres pasos, qué hicimos, el adelanto de Sofía y la hoja de ruta con los nombres | 1, 2, 3, 7 y 8, nuevas |
-| 2. Por qué le importa a una empresa | 5 | Costo de no actuar; por qué cada rubro (servicio técnico, transporte, salud); sin el caso de los choferes como «extremo», porque ahora es un rubro | 4 y 5 |
-| 3. Cómo decide | 6 | Las cuatro variables, el umbral, «dos semanas y dos factores», reglas por rubro; qué no afirmamos | 6 |
-| 4. Funcionando | 7 | Archivo con errores, archivo corregido, la semana de Sofía, la alerta con sus causas | 10 |
-| 5. Por qué nosotros, qué sigue y cierre | 4 | Alternativas sin descalificarlas, privacidad, el pedido: un piloto con una empresa real; vuelta a Diego | 9 y 11 |
-| Margen | 1 | Relevos y demoras | |
-| Preguntas | 5 a 10, aparte | Un responsable por tema | 12, anexo |
+| 1. Apertura, Francisco | 7 | ¿Qué es, por qué importa, funciona? | Qué es Nexo en una frase, el equipo, Diego, el problema con sus cifras, los datos en pedazos, cómo funciona, la demo declarada como demo, el adelanto de Sofía, la hoja de ruta y el anuncio del pedido |
+| 2. El problema en plata | 5 | ¿A quién le duele y quién paga? | Quién compra (RR. HH. u operaciones de empresas medianas), el costo de no actuar (Gallup: 63 % más días por enfermedad, 2,6 veces más búsqueda de empleo), por qué cada rubro, qué usan hoy (planillas, suites de RR. HH., Viva Insights) y qué no hacen |
+| 3. La idea que nos distingue | 5 | ¿Por qué esto y no otra cosa? | Las cuatro variables, «dos semanas y dos factores», reglas por rubro, cada punto explicable, no diagnostica (OMS), privacidad (Ley 25.326) |
+| 4. Funcionando | 7 | ¿Es real? | El único momento cumbre. Pedir la predicción («¿qué creen que pasa con Sofía?»), su semana, la alerta con causas, el archivo con un error |
+| 5. Mercado, modelo, equipo y pedido | 4:30 | ¿Es un negocio? ¿Son ellos? ¿Qué quieren? | 1.760 empresas y 161.581 puestos; 2,5 dólares por empleado por mes contra 4 a 8 de una suite; quién hizo qué y en cuánto tiempo; el pedido; vuelta a Diego: «los datos ya estaban» |
+| Margen | 1:30 | | Relevos y demoras |
+| Preguntas | 5 a 10, aparte | | Un responsable por tema; anexo con las cifras |
 
-El cierre vuelve a la apertura: Diego, esta vez visto en la segunda semana. «Los datos ya estaban. Falta
-mirarlos.»
+**El pedido.** Un pitch sin pedido es una falla [read · Seibel]. Ante este jurado, el pedido honesto no es
+plata: es lo que el proyecto necesita para dejar de ser una demo. Propuesta: «Buscamos tres empresas, una
+por rubro, para un piloto de ocho semanas con sus datos reales. Si conocen a quien dirige personal en una,
+preséntennos.» Es concreto, se puede medir y no inventa una ronda [inferred].
 
 ## Guion de la apertura (5 minutos)
 
-Unas 670 palabras. A un ritmo normal de articulación y con los silencios marcados dura cerca de 4:50, de
-los cuales 1:30 son silencios. La parte tiene 7 minutos: el margen absorbe los nervios, que aceleran o
-traban, y una pregunta del tribunal a mitad de camino. Medirlo grabado. Lo que está en *cursiva* entre
-corchetes no se dice.
+Unas 630 palabras. A un ritmo normal de articulación, con la parte de las cifras más lenta y los silencios
+marcados, dura cerca de 4:45, de los cuales 1:36 son silencios. La parte tiene 7 minutos: el margen absorbe
+los nervios y una pregunta a mitad de camino. Medirlo grabado. Lo que está en *cursiva* entre corchetes no
+se dice. Se memorizan la primera y la última frase; el resto, por bloques y en palabras propias, nunca
+recitado (Elsbach y Kramer, arriba).
 
-> *[Antes de hablar: caminar al frente a paso normal, pararse con los dos pies apoyados, mirar al tribunal y
-> contar tres en silencio.]*
+> *[Antes de hablar: caminar al frente a paso normal, sin atril ni notebook delante, pararse con los dos pies
+> apoyados, mirar al jurado y contar tres en silencio.]*
 >
-> *[Lámina: «Nexo Laboral» y los cinco nombres.]*
+> *[Lámina: «Nexo Laboral». Debajo, chico: los cinco nombres.]*
 >
-> Buenas tardes. Somos el Grupo 8 del Seminario de Analista de Software: Eros, Gonzalo, Santiago, Alfonso
-> y yo, Francisco. *[Mirar a cada uno al nombrarlo.]* En este seminario construimos un sistema, y en la
-> próxima media hora les vamos a contar qué problema resuelve, cómo lo resuelve y por qué creemos que
-> importa. *[pausa]* Pero antes, quiero presentarles a alguien.
+> Buenas tardes. Somos Nexo Laboral. *[pausa]* Nexo le avisa a un jefe, cada semana, qué persona de su
+> equipo está sobrecargada y por qué, con datos que la empresa ya tiene. *[pausa]* Somos cinco: Eros,
+> Gonzalo, Santiago, Alfonso y yo, Francisco. *[Mirar a cada uno al nombrarlo.]* En la próxima media hora
+> les vamos a mostrar el problema, el sistema funcionando, y al final les vamos a pedir algo concreto.
+> *[pausa]* Pero antes, quiero presentarles a alguien.
 >
 > *[Lámina negra. Una sola cifra, enorme: «26 días».]*
 >
@@ -251,7 +318,8 @@ corchetes no se dice.
 > vacaciones, en Recursos Humanos. Cada área ve su pedazo. *[pausa]* Los datos existen. Nadie los mira
 > juntos.
 >
-> *[Lámina: «9 de cada 10». Abajo, chico: Bumeran, Burnout 2025, autodeclarado.]*
+> *[Lámina: «9 de cada 10». Abajo, chico: Bumeran, Burnout 2025, autodeclarado. Desde acá, más lento y
+> más grave.]*
 >
 > Diego es un personaje de nuestra demo. Lo que le pasa, no lo es. En Argentina, nueve de cada diez
 > trabajadores dicen sentirse quemados por su trabajo. Es una encuesta donde cada uno responde por sí
@@ -259,7 +327,7 @@ corchetes no se dice.
 > Maslach, el número baja: uno de cada cinco. *[pausa]* Uno de cada cinco. En una empresa de cincuenta
 > personas, son diez.
 >
-> *[Lámina: «7 de cada 10». Abajo, chico: empresas que detectan un caso, Bumeran 2025.]*
+> *[Lámina: «7 de cada 10». Abajo, chico: áreas de RR. HH. que detectan un caso, Bumeran 2025.]*
 >
 > Y el dato que más nos marcó es otro. De cada diez empresas que detectan un caso, siete... no hacen
 > nada. *[pausa larga]*
@@ -269,10 +337,10 @@ corchetes no se dice.
 > No creemos que sea falta de voluntad. Es que la información llega en pedazos, y llega tarde. Cuando
 > alguien se da cuenta, ya hay una licencia, una renuncia o un accidente.
 >
-> *[Lámina: «Nexo Laboral». Debajo, la frase.]*
+> *[Lámina: «Nexo Laboral». Debajo, la frase. Vuelve la energía.]*
 >
-> Por eso hicimos Nexo Laboral. *[pausa]* Nexo junta los datos que la empresa ya tiene —horas extra, días
-> sin descanso, tareas atrasadas y vacaciones pendientes— y cada semana le dice al líder qué persona está
+> Por eso hicimos Nexo. *[pausa]* Junta los datos que la empresa ya tiene —horas extra, días sin
+> descanso, tareas atrasadas y vacaciones pendientes— y cada semana le dice al líder qué persona está
 > sobrecargada, y por qué. *[pausa]*
 >
 > No diagnostica a nadie. No reemplaza al jefe. Le da un número que se puede explicar, para que actúe a
@@ -286,20 +354,15 @@ corchetes no se dice.
 > avisa a su líder, con las causas y con acciones concretas: redistribuir tareas, dar un descanso, frenar
 > nuevas asignaciones.
 >
-> Cada perfil ve lo suyo. El líder, su equipo. Recursos Humanos, toda la empresa. La gerencia, el
-> panorama. Y la persona no ve su índice: el sistema está para que alguien la cuide, no para ponerle una
-> etiqueta.
+> Y la persona no ve su índice. El sistema está para que alguien la cuide, no para ponerle una etiqueta.
 >
-> *[Lámina: las tres empresas, una al lado de la otra.]*
+> *[Lámina: las tres empresas, una al lado de la otra, con la palabra «demo».]*
 >
-> Antes de escribir una línea de código investigamos el problema, las normas laborales y lo que ya existe
-> en el mercado. Y aprendimos algo: la sobrecarga no se ve igual en todos lados. Un chofer tiene una
-> semana de cuarenta y cuatro horas. Una enfermera hace turnos de doce. Lo que es normal para uno es una
-> alarma para el otro. Por eso cada empresa tiene sus propias reglas.
->
-> Y no es una idea en una diapositiva: está funcionando. Hoy van a ver tres empresas —un servicio
-> técnico, una empresa de transporte y un sanatorio—, cada una con cincuenta personas y ocho semanas de
-> datos.
+> No es una idea en una diapositiva: está funcionando. Lo probamos con tres empresas de demostración —un
+> servicio técnico, una de transporte y un sanatorio—, de cincuenta personas cada una y ocho semanas de
+> datos. Los datos los generamos nosotros. Las reglas salen de investigar cada rubro: un chofer tiene una
+> semana de cuarenta y cuatro horas; una enfermera hace turnos de doce. *[pausa]* Lo que es normal para
+> uno es una alarma para el otro.
 >
 > *[Lámina: «72», enorme.]*
 >
@@ -309,9 +372,10 @@ corchetes no se dice.
 >
 > *[Lámina: hoja de ruta, con los nombres.]*
 >
-> En lo que sigue, [Nombre 2] les va a mostrar cuánto le cuesta a una empresa no ver a Diego a tiempo.
-> [Nombre 3], cómo se calcula el índice y por qué cada punto se puede explicar. [Nombre 4], el sistema
-> funcionando, en vivo. Y [Nombre 5] va a cerrar con por qué esto, por qué nosotros y qué sigue.
+> En lo que sigue, [Nombre 2] les va a mostrar cuánto le cuesta a una empresa no ver a Diego a tiempo, y
+> quién pagaría por verlo. [Nombre 3], cómo decide el índice y por qué cada punto se puede explicar.
+> [Nombre 4], el sistema funcionando, en vivo. Y [Nombre 5], el mercado, el modelo y lo que les vamos a
+> pedir.
 >
 > *[Lámina negra.]*
 >
@@ -321,45 +385,46 @@ corchetes no se dice.
 ### Tiempos, con los silencios
 
 Cuenta hecha sobre el guion, a 200 palabras por minuto de articulación (lo normal en español está entre
-188 y 198 [read · Schwab 2015]) y con estos silencios: 0,6 s entre oraciones, 1,5 s por cada *[pausa]*, 3 s
-la pausa larga, 1 s después de cada pregunta, 1,5 s para que cada lámina aparezca antes de hablar, 3 s al
-llegar al frente y 4 s para mirar a cada compañero al nombrarlo. Da 137 palabras por minuto con los
-silencios incluidos, dentro de lo que se percibe como normal (126 a 179) [read · Schwab 2015, tabla de
-Wainschenker y otros 2002] [inferred · la duración de cada silencio].
+188 y 198 [read · Schwab 2015]) y a 170 en la parte de las cifras, que va más lenta como Jobs ante
+inversores (4,3 sílabas por segundo frente a 5,04 con clientes) [read · Niebuhr y otros 2020]. Silencios:
+0,6 s entre oraciones, 1,5 s por cada *[pausa]*, 3 s la pausa larga, 1 s después de cada pregunta, 1,5 s
+para que cada lámina aparezca antes de hablar, 3 s al llegar al frente y 4 s para mirar a cada compañero
+al nombrarlo. Da 133 palabras por minuto con los silencios incluidos, dentro de lo que se percibe como
+normal (126 a 179) [read · Schwab 2015, tabla de Wainschenker y otros 2002] [inferred · la duración de cada
+silencio].
 
 | Empieza | Dura | Bloque |
 | --- | --- | --- |
 | 0:00 | 4 s | Llegar, pararse, silencio |
-| 0:04 | 27 s | Saludo y equipo |
-| 0:31 | 44 s | Diego, 26 días |
-| 1:16 | 29 s | 9 de cada 10 y Maslach |
-| 1:45 | 14 s | 7 de cada 10 |
-| 1:58 | 13 s | Datos en pedazos |
-| 2:11 | 25 s | Qué es Nexo |
-| 2:36 | 44 s | Cómo funciona |
-| 3:20 | 38 s | Qué hicimos, reglas por rubro, tres empresas |
-| 3:58 | 19 s | Sofía, 72 puntos |
-| 4:17 | 22 s | Hoja de ruta |
-| 4:39 | 15 s | Cierre: «Nadie debería llegar al límite…» |
-| 4:53 | | Fin |
+| 0:04 | 34 s | Qué es Nexo en una frase, el equipo, el anuncio del pedido |
+| 0:38 | 44 s | Diego, 26 días |
+| 1:22 | 33 s | 9 de cada 10 y Maslach, más lento |
+| 1:55 | 15 s | 7 de cada 10 |
+| 2:10 | 14 s | Datos en pedazos |
+| 2:24 | 25 s | Qué hace Nexo y qué no |
+| 2:49 | 36 s | Cómo funciona y la persona que no ve su índice |
+| 3:25 | 29 s | Funciona: tres empresas de demo, reglas por rubro |
+| 3:54 | 19 s | Sofía, 72 puntos |
+| 4:13 | 21 s | Hoja de ruta |
+| 4:34 | 11 s | Cierre: «Nadie debería llegar al límite…» |
+| 4:45 | | Fin |
 
 En la grabación, por debajo de 126 palabras por minuto suena lento y por encima de 179, apurado. Si da más
-de 6 minutos, se recorta «Cómo funciona», que la parte 3 vuelve a explicar. Si una pregunta del tribunal
+de 6 minutos, se recorta «Cómo funciona», que la parte 3 vuelve a explicar. Si alguien del jurado
 interrumpe, se responde en una frase y se sigue.
 
 ### Por qué está armado así
 
-El saludo dura veinte segundos y nombra a los cinco: el tribunal no nos conoce, pero un pitch no se abre con
-currículums. Los nombres vuelven en la hoja de ruta, cada uno atado a su parte, que es cuando importan. La
-escena va antes que la cifra porque una historia se sigue mejor que un porcentaje; Diego es ficticio y se
-dice al minuto, antes de que alguien lo pregunte, y ese aviso separa la historia de las cifras. Las cifras
-son las que resisten una pregunta: la primera aclara que es autodeclarada, la de Maslach la corrige y se
-traduce a la empresa de la demo, y el «siete de cada diez» justifica un sistema, no un taller. La frase de
-Nexo es la regla de Seibel: qué hace, en palabras simples, y su límite en la oración siguiente, resuelto.
-«Cómo funciona» y «qué hicimos» son lo que un tribunal que no leyó el trabajo necesita para seguir el
-resto; las reglas por rubro, con el convenio de los choferes y los turnos de doce horas, son la idea propia
-que pide Seibel. Sofía a 72 sin alerta deja una pregunta que la demo responde. La apertura termina en una
-frase de convicción y no en la hoja de ruta, porque lo último es lo que queda.
+La primera frase dice qué es Nexo, para quién y qué cambia, como pide Seibel y como clasifica un inversor en
+los primeros minutos; el equipo va enseguida y en veinte segundos, y vuelve en la hoja de ruta, cada uno
+atado a su parte. El anuncio de que «al final les vamos a pedir algo concreto» abre una expectativa que la
+parte 5 cierra. La escena va antes que la cifra porque una historia se sigue mejor que un porcentaje; que
+Diego sea un personaje se dice al minuto, y no le quita fuerza (Green y Brock). Las cifras son las que
+resisten una pregunta, y van más lentas y graves, como hacía Jobs con los inversores. «Los datos los
+generamos nosotros» está dicho antes de que alguien lo pregunte: esconderlo es la clase de falla que hace
+descartar un pitch. Las reglas por rubro son la idea propia; Sofía a 72 sin alerta deja una duda que la
+demo responde. La apertura termina en una frase de convicción y no en la hoja de ruta, porque lo último es
+lo que queda.
 
 ## Cómo decirlo: cuerpo, voz, mirada y palabras
 
@@ -370,7 +435,7 @@ criterio [inferred].
 
 ### Lo que más pesa
 
-1. **El tribunal te juzga antes de que hables.** Jueces que vieron clips mudos de 10 segundos de 13
+1. **El jurado te juzga antes de que hables.** Jueces que vieron clips mudos de 10 segundos de 13
    docentes predijeron las evaluaciones de sus alumnos a fin de cuatrimestre (r = 0,76; controlando el
    atractivo, 0,74) [read · math.stonybrook.edu, Ambady y Rosenthal 1993 · 2026-11-09]. Una cara alcanza
    para un juicio de competencia en 100 ms [snippet · PubMed, Willis y Todorov 2006]. Probable: la muestra
@@ -416,7 +481,7 @@ criterio [inferred].
   152 de media; 100 es lento [read · Schwab 2015, Revista de Filología y Lingüística de la UCR, tabla de
   Wainschenker y otros 2002 · 2026-11-09]. En radio, el mejor recuerdo fue entre 170 y 190, y 150 rindió
   peor con poco contenido [snippet · Rodero, Media Psychology]. Para la apertura: entre 135 y 150, pausas
-  incluidas, más lento que la radio porque el tribunal escucha todo por primera vez [inferred].
+  incluidas, más lento que la radio porque el jurado escucha todo por primera vez [inferred].
 - **Volumen**: un poco más fuerte que en una charla, más alto en la idea central y más bajo en un aparte
   (punto 2).
 - **Tono**: no forzar una voz grave. La variación media funcionó mejor que poca o mucha en 48 videos tipo
@@ -442,14 +507,14 @@ criterio [inferred].
 
 ### Mirada y cara
 
-- **Mirar al tribunal, no a la pantalla**, desde la primera frase. Lo que está medido es que esquivar la
+- **Mirar al jurado, no a la pantalla**, desde la primera frase. Lo que está medido es que esquivar la
   mirada perjudica, no que mirar mucho ayude [read · eprints.glos.ac.uk, Fullwood y Doherty-Sneddon 2006,
   n = 32 · 2026-11-09] [snippet · Burgoon y otros 1985].
 - **Unos 3 segundos por persona**: la mirada directa que más cómoda resulta dura 3,3 s de media (± 0,7)
   [read · pmc.ncbi.nlm.nih.gov/articles/PMC4968459, Binetti y otros 2016, 428 personas · 2026-11-09].
   Terminar la frase con un jurado y pasar al siguiente; «una idea, una persona» es consejo de oratoria, sin
   estudio [inferred].
-- **Al cambiar de lámina**: callarse, dejar que la lean y seguir mirando al tribunal [inferred].
+- **Al cambiar de lámina**: callarse, dejar que la lean y seguir mirando al jurado [inferred].
 - **Si un jurado frunce el ceño**, no clavarle la vista: con oyentes en desacuerdo, mirar a los ojos bajó
   la persuasión [read · Chen, Minson, Schöne y Heinrichs 2013, n = 20 y 42 · 2026-11-09]. Volver a él más
   tarde.
@@ -503,6 +568,11 @@ criterio [inferred].
 | un piloto con una empresa real valida los umbrales | con el 1 % del mercado argentino… |
 | «no lo sé; lo que sí sabemos es…» | inventar una cifra |
 | la cifra, su fuente y su año | «estudios demuestran» sin decir cuál |
+| 1.760 empresas medianas de transporte y salud (OEDE 2024) | un mercado de miles de millones, cifras de América Latina |
+| 2,5 dólares por empleado por mes, como hipótesis | un precio validado, ingresos proyectados |
+| los datos de la demo los generamos nosotros | datos reales, nuestros clientes |
+| la OMS lo llama un fenómeno ocupacional | la ley obliga a medirlo, la SRT lo exige |
+| un piloto de ocho semanas con una empresa por rubro | una ronda de inversión inventada |
 
 En la demo tampoco se dice «esto debería andar», ni se pide perdón ni se culpa a la máquina: si falla, se
 pasa al video sin comentarlo.
@@ -521,13 +591,13 @@ pasa al video sin comentarlo.
 | Sesión | Qué | Cómo se mide |
 | --- | --- | --- |
 | 1 | Leer el guion en voz alta, de pie, con cronómetro | Duración real; marcar las frases que se traban |
-| 2 | Reescribir en palabras propias lo que se trabó; memorizar los primeros y los últimos 30 segundos | Decirlos sin mirar |
+| 2 | Reescribir en palabras propias lo que se trabó; memorizar palabra por palabra solo la primera y la última frase; el resto, por bloques | Decir la apertura dos veces seguidas con palabras distintas y el mismo orden: si sale igual, está recitada |
 | 3 | Ensayo completo grabado en video, con tarjetas de 5 ideas en vez del guion | Palabras por minuto (entre 126 y 179, idealmente 135 a 150); muletillas por minuto (objetivo cero, nunca más de 5); finales de frase que suben |
-| 3 bis | Mirar ese video sin sonido, solo los primeros 30 segundos y las transiciones | Llegada, postura, manos, si se encoge o se balancea: lo que ve el tribunal antes de oír |
+| 3 bis | Mirar ese video sin sonido, solo los primeros 30 segundos y las transiciones | Llegada, postura, manos, si se encoge o se balancea: lo que ve el jurado antes de oír |
 | 4 | Decirle las dos oraciones de Nexo a alguien que no conoce el proyecto y pedirle que las repita (prueba de Seibel) | Si las repite sin preguntar |
 | 5 | Ensayo con el equipo: apertura, relevo y las primeras láminas de la parte 2 | El relevo no tiene silencio ni «bueno…» |
 | 6 | Ensayo general en la máquina y el proyector del día, con la demo y su video | Los 30 minutos cierran con 2 de margen |
-| 7 | Simulacro de preguntas: el equipo ataca con la lista de abajo | Cada uno sabe qué temas responde |
+| 7 | Simulacro de preguntas como inversores: el equipo ataca con la lista de abajo | Cada uno sabe qué temas responde; cada respuesta, en 30 segundos o menos, con un dato |
 | Antes de hablar | Una sola pasada liviana; «estoy entusiasmado», no «calmate» | |
 
 ## Preguntas probables
@@ -543,7 +613,12 @@ pasa al video sin comentarlo.
 | ¿Por qué 92 % y 19,9 %? | Problema | 92 % es autodeclarado (Bumeran, cinco países); 19,9 % es Maslach con 1.050 personas en Argentina (Insight 21). |
 | ¿Qué pasa con datos malos o incompletos? | Técnica | Un error rechaza el archivo entero con fila, campo y causa; la primera semana queda incompleta porque no hay con qué comparar. |
 | ¿Por qué no usar Viva Insights o Workday? | Mercado | Hacen bien otras cosas; Nexo usa lo que una pyme ya tiene y explica cada punto. |
-| ¿Quién paga y cuánto? | Mercado | Hipótesis: RR. HH. de empresas medianas; no hay validación comercial y no inventamos un mercado. |
+| ¿Quién paga y cuánto? | Mercado | RR. HH. u operaciones de empresas medianas; hipótesis de 2,5 dólares por empleado por mes, debajo de una suite (4 a 8). No está validado: es lo que mide el piloto. |
+| ¿Qué tan grande es el mercado? | Mercado | 1.760 empresas de 50 a 200 empleados en transporte y salud, 161.581 puestos (OEDE 2024); a 2,5 dólares, unos 4,8 millones por año. Es un nicho para entrar. |
+| ¿Qué tracción tienen? | Mercado | Ninguna comercial todavía: un prototipo completo en tres rubros y [las entrevistas que se hagan antes de la defensa]. No inventar cartas de intención. |
+| ¿Por qué ustedes? | Equipo | Quién hizo qué, en cuánto tiempo, y lo que ya funciona. |
+| ¿Por qué ahora? | Mercado | La OMS lo define como fenómeno ocupacional; el banco de horas de la reforma de 2026 mueve más horas; los datos ya están en la empresa. |
+| ¿Qué harían con un piloto? | Equipo | Ocho semanas con datos reales, contrastar el índice con una medición validada y ajustar los umbrales; el éxito es que el líder actúe antes de una licencia. |
 | ¿Y un falso positivo? | Reglas | La alerta no decide nada: el líder ve las causas y actúa; dos semanas y dos factores evitan reaccionar a un pico. |
 
 ## Sospecha y segunda ronda
@@ -565,6 +640,12 @@ pasa al video sin comentarlo.
   silencios marcados: 670 palabras en 4:53, 137 por minuto. Se agregaron el convenio de 44 horas, «en una
   empresa de cincuenta personas, son diez», las reglas por rubro y una frase de cierre, y el 72 % pasó a
   «siete de cada diez».
+
+- **Cuarta ronda, el jurado como inversor:** ¿qué cambia si se los trata como inversores? Más de lo que
+  parecía: falta un pedido, un mercado contado de abajo hacia arriba, una hipótesis de precio y el equipo
+  como argumento. Y una sorpresa: lo que más hunde un pitch ante inversores es lo mismo que hunde una
+  defensa, exagerar o esconder. La sospecha de que el pitch obligaba a prometer de más **se descarta**: los
+  inversores castigan eso más que nadie (Maxwell y Lévesque).
 
 ## Lo que falta
 
