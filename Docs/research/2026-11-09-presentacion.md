@@ -244,6 +244,31 @@ en *cursiva* entre corchetes no se dice.
 >
 > *[Mirar a quien sigue.]* [Nombre 2].
 
+### Tiempos, con los silencios
+
+Cuenta hecha sobre el guion, a 135 palabras por minuto de habla y con estos silencios: medio segundo
+entre oraciones, 1,5 s por cada *[pausa]*, 3 s la pausa larga, 1 s después de cada pregunta, 1,5 s para
+que cada lámina aparezca antes de hablar, 3 s de silencio al llegar al frente antes de la primera
+palabra y 4 s para mirar a cada compañero al nombrarlo [inferred · el ritmo se ajusta con la grabación].
+
+| Empieza | Dura | Bloque |
+| --- | --- | --- |
+| 0:00 | 35 s | Saludo y equipo |
+| 0:35 | 54 s | Diego, 26 días |
+| 1:29 | 38 s | 9 de cada 10 y Maslach |
+| 2:06 | 18 s | 72 % |
+| 2:24 | 17 s | Datos en pedazos |
+| 2:41 | 33 s | Qué es Nexo |
+| 3:14 | 59 s | Cómo funciona |
+| 4:13 | 42 s | Qué hicimos, tres empresas |
+| 4:55 | 25 s | Sofía, 72 puntos |
+| 5:20 | 34 s | Hoja de ruta |
+| 5:54 | | Fin. Quedan 66 s de la parte de 7 minutos |
+
+Si la grabación da más de 6:30, se recorta «Cómo funciona», que es el bloque más largo y el que la
+parte 3 vuelve a explicar. Si una pregunta del tribunal interrumpe, se responde en una frase y se sigue:
+el margen la cubre.
+
 ### Por qué está armado así
 
 El saludo dura diez segundos y nombra a los cinco: el tribunal no nos conoce, pero un pitch no se abre con
