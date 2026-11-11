@@ -7,7 +7,8 @@ uno definitivo, es **Sistema de Índice de Burnout**.
 | Archivo | Qué es |
 | --- | --- |
 | [`guiones-defensa.pdf`](guiones-defensa.pdf) | Los guiones de los cinco, sincronizados con las láminas, con recomendaciones para cada uno, preguntas probables y plan de ensayo. |
-| [`laminas.pdf`](laminas.pdf) | Las 35 láminas, exportadas para consulta. La versión oficial (descargable como .pptx o PDF) está en la presentación que comparte Francisco. |
+| [`laminas.pptx`](laminas.pptx) | Las 35 láminas para proyectar en la defensa, con el guion de cada uno en las notas del orador. Cada lámina es una imagen: se ve igual en cualquier PowerPoint, aunque la notebook no tenga las tipografías, y el texto no se edita ahí. |
+| [`laminas.pdf`](laminas.pdf) | Las mismas 35 láminas en PDF: respaldo si PowerPoint falla. |
 | [`fuente/`](fuente) | Lo que genera los dos PDF: el guion, el reparto, las láminas y los scripts. |
 
 Reemplaza a `Guion_Grupo8 (2).pdf` y a la presentación `.pptx` de la raíz, que quedan como antecedente.
@@ -37,9 +38,19 @@ construyó en el repositorio; si cambia, se edita `fuente/reparto.json` y se reg
 - La investigación detrás de cada recomendación y cada cifra, con sus fuentes, está en
   [`Docs/research/2026-11-09-presentacion.md`](../Docs/research/2026-11-09-presentacion.md).
 
-## Cómo regenerar los PDF
+## Proyectar en la notebook con Windows
 
-Con Python 3 y Google Chrome:
+- Copiar `laminas.pptx` y `laminas.pdf` a la notebook (y a un pendrive, de respaldo).
+- PowerPoint: Presentación con diapositivas → Desde el principio (F5). Con un segundo monitor o proyector,
+  la vista del moderador muestra las notas en la notebook y la lámina en el proyector (Alt+F5 la abre).
+- Avanzar con la flecha derecha, la barra espaciadora o un control remoto; B pone la pantalla en negro.
+- En la lámina 25, Eros pasa al navegador con Alt+Tab: la demo está en
+  https://burnout.franciscogonzalez.com.ar, ya abierta e ingresada antes de empezar. Vuelve con Alt+Tab.
+- Sin PowerPoint: abrir `laminas.pdf` en Edge y pantalla completa con F11.
+
+## Cómo regenerar los PDF y el PowerPoint
+
+Con Python 3, Google Chrome y poppler (pdftoppm):
 
 ```sh
 cd Presentacion/fuente
@@ -48,6 +59,8 @@ python3 pdf.py            # escribe guiones.html
 python3 laminas_pdf.py    # escribe laminas.html
 google-chrome-stable --headless=new --no-pdf-header-footer --print-to-pdf=../guiones-defensa.pdf "file://$PWD/guiones.html"
 google-chrome-stable --headless=new --no-pdf-header-footer --virtual-time-budget=8000 --print-to-pdf=../laminas.pdf "file://$PWD/laminas.html"
+mkdir -p /tmp/laminas && pdftoppm -png -scale-to-x 2560 -scale-to-y 1440 ../laminas.pdf /tmp/laminas/lamina
+python3 laminas_pptx.py /tmp/laminas   # escribe ../laminas.pptx; necesita pip install python-pptx
 ```
 
 En `fuente/guion-equipo.txt`, cada `@parte` abre una parte y cada `@L` una lámina. El texto se dice;
