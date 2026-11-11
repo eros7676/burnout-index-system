@@ -22,9 +22,9 @@ const GRUPOS: { preferencia: Preferencia; titulo: string }[] = [
 /**
  * The display options: text size, contrast and background, applied at once to the whole app and
  * kept in this browser. A native popover, so Escape and a click outside close it.
- * `franja` sits on the dark demo strip; `pagina` on the light login page.
+ * `lateral` closes the sidebar of the signed-in screens; `pagina` sits on the login page.
  */
-export function Accesibilidad({ variante }: { variante: "franja" | "pagina" }) {
+export function Accesibilidad({ variante }: { variante: "lateral" | "pagina" }) {
   const id = useId();
   const actuales = JSON.parse(
     useSyncExternalStore(
@@ -50,6 +50,7 @@ export function Accesibilidad({ variante }: { variante: "franja" | "pagina" }) {
         role="dialog"
         aria-labelledby={`${id}-titulo`}
         className={s.panel}
+        data-variante={variante}
         data-lenis-prevent
       >
         <h2 id={`${id}-titulo`}>Accesibilidad</h2>

@@ -58,7 +58,8 @@ test("Accesibilidad: texto, contraste y fondo se aplican, sobreviven a una recar
   await demo(page, "demo-rrhh");
   await page.goto("/home");
   const html = page.locator("html");
-  await page.getByRole("button", { name: "Accesibilidad" }).click();
+  // Always at hand: the last row of the sidebar.
+  await page.getByRole("complementary").getByRole("button", { name: "Accesibilidad" }).click();
   const panel = page.getByRole("dialog", { name: "Accesibilidad" });
   await panel
     .getByRole("group", { name: "Tamaño del texto" })

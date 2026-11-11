@@ -210,9 +210,10 @@ focus ring, targets ≥ 24 px, `th scope` on every table, `role="status"` for
 progress and results, `role="alert"` only for failures, charts with a text
 alternative.
 
-**Display options («Accesibilidad»).** A button on the demo strip and on the entry
-screen opens a native popover with three choices, applied at once and kept in the
-browser (`localStorage`, key `accesibilidad`):
+**Display options («Accesibilidad»).** A row at the foot of the sidebar (always
+in view, since the sidebar is sticky) and a button on the entry screen open a
+native popover with three choices, applied at once and kept in the browser
+(`localStorage`, key `accesibilidad`):
 
 | Choice | Values | How |
 |---|---|---|

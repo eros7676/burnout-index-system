@@ -103,7 +103,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               </select>
             </label>
           )}
-          <Accesibilidad variante="franja" />
           {errorCambio && (
             <p role="alert" className={s.demoError}>
               {errorCambio}
@@ -166,6 +165,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
+          <Accesibilidad variante="lateral" />
         </aside>
         <main className={s.main} id="contenido">
           {children}

@@ -13,14 +13,25 @@
   font-weight: var(--weight-strong);
   cursor: pointer;
 }
-/* On the dark demo strip, the same box as the company and profile selects beside it. */
-.boton[data-variante="franja"] {
-  border: 1px solid var(--strip-line);
-  background: var(--strip-control);
-  color: var(--on-strip-strong);
+/* At the foot of the sidebar, a row like the section links above it, always at hand. */
+.boton[data-variante="lateral"] {
+  gap: var(--space-3);
+  margin-top: auto;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  color: var(--ink-2);
+  font-size: inherit;
+  font-weight: inherit;
+  text-align: left;
 }
-.boton[data-variante="franja"]:focus-visible {
-  outline-color: var(--on-strip-strong);
+.boton[data-variante="lateral"]:hover {
+  color: var(--ink);
+}
+.boton[data-variante="lateral"]:hover svg {
+  color: var(--accent);
 }
 .boton[data-variante="pagina"] {
   border: 1px solid var(--line-strong);
@@ -32,7 +43,7 @@
   border-color: var(--ink-3);
 }
 
-/* Opens under the top-right corner, where both buttons sit. */
+/* From the login page it opens under the top-right corner, where the button sits. */
 .panel {
   position: fixed;
   inset: var(--space-12) var(--space-6) auto auto;
@@ -46,6 +57,15 @@
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-pop);
+}
+/* From the sidebar it opens beside the button, at the bottom left. */
+.panel[data-variante="lateral"] {
+  inset: auto auto var(--space-5) calc(var(--sidebar) + var(--space-3));
+}
+@media (max-width: 900px) {
+  .panel[data-variante="lateral"] {
+    inset: var(--space-4) var(--space-4) auto auto;
+  }
 }
 .panel:popover-open {
   display: grid;
