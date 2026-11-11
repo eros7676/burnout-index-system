@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
     agentFeedback: true,
   },
   cacheComponents: true,
+  // The development badge defaults to the bottom left, over the sidebar's Accesibilidad row.
+  devIndicators: { position: "bottom-right" },
   // A week's tasks moved into the person page (?semana=); the query (recordId, estado, page, tarea)
   // passes through, so old links and bookmarks still open the same view.
   async redirects() {
