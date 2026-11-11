@@ -8,7 +8,7 @@
 *[Antes de hablar: caminar al frente a paso normal, sin atril ni notebook delante, pararse con los dos pies apoyados, mirar al jurado y contar tres en silencio.]* [espera 3]
 Buenas tardes. Somos el equipo del Sistema de Índice de Burnout. [pausa] Es un sistema que le avisa a un jefe, cada semana, qué persona de su equipo está sobrecargada y por qué, con datos que la empresa ya tiene. [pausa]
 Somos cinco: {P2n}, {P3n}, {P4n}, {P5n} y yo, {P1n}. *[Mirar a cada uno al nombrarlo.]* [espera 4]
-En la próxima media hora les vamos a mostrar el problema, el sistema funcionando, y al final les vamos a pedir algo concreto. [pausa] Pero antes, quiero presentarles a alguien.
+En la próxima media hora les vamos a mostrar el problema, el sistema funcionando, y al final, a quién le sirve y qué falta. [pausa] Pero antes, quiero presentarles a alguien.
 
 @L diego|«Pero antes, quiero presentarles a alguien.»
 Imaginen a Diego. Es chofer en una empresa de logística. [pausa] Hoy cumple veintiséis días seguidos sin un franco. La semana pasada trabajó sesenta y nueve horas: veinticinco más que las cuarenta y cuatro que fija su convenio. Y tiene quince días de vacaciones que no se tomó. [pausa]
@@ -39,9 +39,9 @@ No es una idea en una diapositiva: está funcionando. Lo probamos con tres empre
 Les adelanto algo. Una de esas semanas, Sofía, técnica de mantenimiento, llega a setenta y dos puntos sobre cien. [pausa] Y el sistema no avisa. [pausa] Les vamos a mostrar por qué, y por qué creemos que es lo más importante que diseñamos.
 
 @L ruta|«…lo más importante que diseñamos.»
-En lo que sigue, {P2n} les va a mostrar cuánto le cuesta a una empresa no ver a Diego a tiempo, y quién pagaría por verlo. {P3n}, cómo decide el índice y por qué cada punto se puede explicar. {P4n}, el sistema funcionando, en vivo. Y {P5n}, el mercado, el modelo y lo que les vamos a pedir.
+En lo que sigue, {P2n} les va a mostrar cuánto le cuesta a una empresa no ver a Diego a tiempo, y quién pagaría por verlo. {P3n}, cómo decide el índice y por qué cada punto se puede explicar. {P4n}, el sistema funcionando, en vivo. Y {P5n}, a quién le sirve, por qué ahora y qué falta.
 
-@L cierre1|«…lo que les vamos a pedir.»
+@L cierre1|«…por qué ahora y qué falta.»
 Empezamos este proyecto con una idea. [pausa] Nadie debería llegar al límite por algo que se podía ver a tiempo. [pausa] {P2n}. *[Mirar a quien sigue y dar un paso al costado.]*
 
 @parte 2|P2|El problema en plata|4:30|¿A quién le duele y quién paga?
@@ -122,7 +122,7 @@ Y cada uno ve lo suyo. *[Cambiar al perfil del Team Lead de Sofía desde la fran
 *[Volver a la presentación.]* [espera 3]
 Entonces, ¿por qué a setenta y dos no avisó? Porque la semana anterior había estado en cincuenta y dos coma noventa y cinco. [pausa] Una semana mala no alcanza. Cuando la segunda semana también pasa de setenta, con las mismas causas, el sistema le avisa a su jefe. [pausa]
 {P1n} les dijo al principio que era lo más importante que diseñamos. Es por esto: lo que el jefe necesita ver no es el pico. [pausa] Es lo que se repite.
-Si esto es un negocio, se los cuenta {P5n}. *[Mirar a {P5n} y correrse.]*
+A quién le sirve y qué falta, se los cuenta {P5n}. *[Mirar a {P5n} y correrse.]*
 
 @parte 5|P5|A quién le sirve, por qué ahora y qué falta|5:00|¿A quién le sirve? ¿Qué construimos? ¿Qué falta?
 @L p5|Cuando {P4n} dice su nombre.
