@@ -10,6 +10,13 @@
   display: grid;
   gap: var(--space-3);
 }
+/* The brand, and the display options at the other end of its row. */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
 .brand {
   display: flex;
   align-items: center;
