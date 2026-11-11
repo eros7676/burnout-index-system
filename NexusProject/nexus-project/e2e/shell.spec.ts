@@ -51,3 +51,56 @@ test("Shell: cambiar de usuario desde la franja de demo", async ({ page }) => {
   await expect(page).toHaveURL(/\/my-data$/);
   await expect(page.getByLabel("Usuario de demostración")).toHaveValue("demo-empleado");
 });
+
+test("Accesibilidad: texto, contraste y fondo se aplican, sobreviven a una recarga y se restablecen", async ({
+  page,
+}) => {
+  await demo(page, "demo-rrhh");
+  await page.goto("/home");
+  const html = page.locator("html");
+  // Always at hand: the last row of the sidebar.
+  await page.getByRole("complementary").getByRole("button", { name: "Accesibilidad" }).click();
+  const panel = page.getByRole("dialog", { name: "Accesibilidad" });
+  await panel
+    .getByRole("group", { name: "Tamaño del texto" })
+    .getByRole("radio", { name: "Muy grande" })
+    .check();
+  await panel
+    .getByRole("group", { name: "Contraste" })
+    .getByRole("radio", { name: "Alto" })
+    .check();
+  await panel
+    .getByRole("group", { name: "Fondo" })
+    .getByRole("radio", { name: "Oscuro" })
+    .check();
+  await expect(html).toHaveAttribute("data-texto", "muy-grande");
+  await expect(html).toHaveAttribute("data-contraste", "alto");
+  await expect(html).toHaveAttribute("data-fondo", "oscuro");
+  expect(await html.evaluate((e) => getComputedStyle(e).fontSize)).toBe("24px");
+
+  // The head script restores the choice before the first paint, and the panel shows it.
+  await page.reload();
+  await expect(html).toHaveAttribute("data-fondo", "oscuro");
+  await page.getByRole("button", { name: "Accesibilidad" }).click();
+  await expect(panel.getByRole("radio", { name: "Oscuro" })).toBeChecked();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Resumen" }),
+  ).toBeVisible();
+
+  await panel.getByRole("button", { name: "Restablecer" }).click();
+  for (const atributo of ["data-texto", "data-contraste", "data-fondo"])
+    await expect(html).not.toHaveAttribute(atributo, /.+/);
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+});
+
+test("Accesibilidad: también está en el ingreso", async ({ page }) => {
+  await demo(page, null);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Accesibilidad" }).click();
+  await page
+    .getByRole("dialog", { name: "Accesibilidad" })
+    .getByRole("radio", { name: "Grande", exact: true })
+    .check();
+  await expect(page.locator("html")).toHaveAttribute("data-texto", "grande");
+});

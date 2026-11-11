@@ -116,6 +116,24 @@
     grid-column: span 4;
   }
 }
+/* Larger text (Accesibilidad › Tamaño): the 1100 px stacking point grows with the text, to
+   1375 px at 125 % and 1650 px at 150 % (media queries cannot read the root size). */
+@media (min-width: 1101px) and (max-width: 1375px) {
+  :root[data-texto="grande"] .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root[data-texto="grande"] .columns > * {
+    grid-column: auto;
+  }
+}
+@media (min-width: 1101px) and (max-width: 1650px) {
+  :root[data-texto="muy-grande"] .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root[data-texto="muy-grande"] .columns > * {
+    grid-column: auto;
+  }
+}
 /* Blocks stacked in one column; the last one takes the leftover height. */
 .stack {
   display: flex;

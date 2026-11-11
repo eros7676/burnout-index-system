@@ -17,6 +17,7 @@ const RUTAS = {
   buscar: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4",
   salir: "M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10",
   correo: "M3 6h18v12H3zM3 7l9 6 9-6",
+  accesibilidad: "M12 7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5 9l7 1.5L19 9M12 10.5V14M9 20l3-6 3 6",
   // States (R27): circles, so they never read as the square and diamond marks of the levels.
   exito: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12.5l3 3 5-6",
   info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5.5M12 7.7v.1",

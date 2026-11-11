@@ -19,6 +19,7 @@
   /* The dark demo strip at the top of the shell. */
   --strip: #18212b;
   --on-strip: #e9edf1;
+  --on-strip-strong: #ffffff; /* links, controls and their focus ring on the strip */
   --strip-line: #5b6878;
   --strip-control: #263241;
   --on-strip-error: #ffd2cc;
@@ -99,7 +100,7 @@
   --gutter: var(--space-5);
   --pad-section: var(--space-6); /* the same on all four sides (R9) */
   --plot-h: 13.75rem; /* 220: plot of every weekly chart (R39) */
-  --sidebar: 248px;
+  --sidebar: 15.5rem; /* 248 at the normal text size; grows with Accesibilidad › Tamaño */
   --content-max: 1320px;
 
   /* Motion scale, mirrored in src/shared/motion/motion.ts. */
@@ -109,6 +110,124 @@
   --motion-slow: 240ms;
   --motion-page: 300ms;
   --quiet: 0.6; /* opacity of a past week next to the current one */
+}
+
+/* Accesibilidad (src/shared/accesibilidad.ts): attributes on <html> that redefine the tokens
+   above, so every screen follows. The default of each is the absence of its attribute. Every
+   text pair keeps 4.5:1 or more and every mark 3:1 against its surface; the dark level fills
+   pass the palette validator against the dark surface, with the shapes as secondary encoding. */
+
+/* Tamaño del texto: every size, control and the sidebar are in rem. */
+:root[data-texto="grande"] {
+  font-size: 125%;
+}
+:root[data-texto="muy-grande"] {
+  font-size: 150%;
+}
+
+/* Fondo cálido: a cream paper; inks and accents stay as they are. */
+:root[data-fondo="calido"] {
+  --ink-3: #5f6a79;
+  --paper: #f3eee4;
+  --surface: #fffcf6;
+  --surface-2: #f8f3e9;
+  --line: #e4ddcf;
+  --line-strong: #c9c0ae;
+}
+
+/* Fondo oscuro: its own steps, not an inversion. */
+:root[data-fondo="oscuro"] {
+  color-scheme: dark;
+  --ink: #e6eaee;
+  --ink-2: #b4bdc8;
+  --ink-3: #9aa4b1;
+  --paper: #0f141a;
+  --surface: #161d25;
+  --surface-2: #1c252f;
+  --line: #2a3440;
+  --line-strong: #4f5c6a;
+  --accent: #79b4d4;
+  --accent-hover: #9bc9e2;
+  --accent-soft: #1b3341;
+  --on-accent: #0c1a22;
+  --strip: #0a0e12;
+  --on-strip: #dfe5eb;
+  --strip-line: #4a5868;
+  --strip-control: #1c2632;
+  --level-bajo: #2fa478;
+  --level-bajo-ink: #7fd3ae;
+  --level-bajo-soft: #15301f;
+  --level-medio: #c4861c;
+  --level-medio-ink: #f2c063;
+  --level-medio-soft: #35290f;
+  --level-alto: #e5535f;
+  --level-alto-ink: #ff9ba3;
+  --level-alto-soft: #3d151b;
+  --level-incompleto: #8b96a3;
+  --level-incompleto-soft: #232c36;
+  --tip-ink-2: #46515e;
+  --danger: #ff8db0;
+  --danger-soft: #3a1626;
+  --danger-hover: #ffb0c9;
+  --success: #5fd0c2;
+  --success-soft: #10302c;
+  --notice: #b9a3f2;
+  --notice-soft: #2a2342;
+  --scroll-shade: rgb(0 0 0 / 40%);
+  --shadow-pop: 0 6px 24px rgb(0 0 0 / 50%);
+}
+
+/* Contraste alto: near-black text, visible dividers, darker accents and a thicker focus ring. */
+:root[data-contraste="alto"] {
+  --ink: #0b0f14;
+  --ink-2: #1f2a36;
+  --ink-3: #2e3946;
+  --paper: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f2f3f1;
+  --line: #6b7581;
+  --line-strong: #39434f;
+  --accent: #0d3b54;
+  --accent-hover: #082a3c;
+  --level-bajo-ink: #0b4a33;
+  --level-medio-ink: #5c3c00;
+  --level-alto-ink: #7d0f1e;
+  --level-incompleto: #4a5563;
+  --tip-ink-2: #dde2e8;
+  --danger: #7f0f3b;
+  --danger-hover: #5e0a2b;
+  --success: #064a44;
+  --notice: #3f2875;
+}
+:root[data-contraste="alto"][data-fondo="calido"] {
+  --paper: #fffaf0;
+  --surface: #fffdf8;
+  --surface-2: #f6f0e4;
+}
+:root[data-contraste="alto"][data-fondo="oscuro"] {
+  --ink: #ffffff;
+  --ink-2: #e2e7ec;
+  --ink-3: #cdd4dc;
+  --paper: #000000;
+  --surface: #0a0d11;
+  --surface-2: #151b22;
+  --line: #7d8996;
+  --line-strong: #aab4bf;
+  --accent: #a6d4ec;
+  --accent-hover: #c4e3f3;
+  --on-accent: #000000;
+  --level-bajo-ink: #a6e6c9;
+  --level-medio-ink: #ffd98f;
+  --level-alto-ink: #ffc2c7;
+  --level-incompleto: #a3adb9;
+  --tip-ink-2: #3a4553;
+  --danger: #ffb3cb;
+  --danger-hover: #ffd0df;
+  --success: #8de3d8;
+  --notice: #d4c6fa;
+}
+:root[data-contraste="alto"] :focus-visible {
+  outline-width: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
