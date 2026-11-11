@@ -4,6 +4,7 @@ import { useConsulta } from "@/client/use-consulta";
 import type { UsuarioDemoDTO } from "@/shared/contracts";
 import { usePageEnter } from "@/shared/motion";
 import { ErrorBox, SkeletonRows } from "@/shared/ui";
+import { Accesibilidad } from "../accesibilidad/accesibilidad";
 import { elegirUsuario, leerSesion } from "../shell/sesion";
 import s from "./ingreso.module.css";
 
@@ -42,9 +43,12 @@ export function Ingreso({ empresa: inicial }: { empresa?: string }) {
   return (
     <div className={s.page} ref={pagina}>
       <header className={s.header} data-enter>
-        <p className={s.brand}>
-          <span aria-hidden="true">N</span>Nexo Laboral
-        </p>
+        <div className={s.top}>
+          <p className={s.brand}>
+            <span aria-hidden="true">N</span>Nexo Laboral
+          </p>
+          <Accesibilidad variante="pagina" />
+        </div>
         <h1>Seguimiento semanal de la carga de trabajo</h1>
         <p className={s.lead}>
           Seguimiento de las horas extra, los días sin descanso y las tareas vencidas

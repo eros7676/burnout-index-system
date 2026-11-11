@@ -13,6 +13,7 @@ import {
   leerSesion,
   puedeAbrir,
 } from "./sesion";
+import { Accesibilidad } from "../accesibilidad/accesibilidad";
 import { rutaMiEquipo } from "../organizacion/rutas";
 import s from "./app-shell.module.css";
 
@@ -102,6 +103,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </select>
             </label>
           )}
+          <Accesibilidad variante="franja" />
           {errorCambio && (
             <p role="alert" className={s.demoError}>
               {errorCambio}

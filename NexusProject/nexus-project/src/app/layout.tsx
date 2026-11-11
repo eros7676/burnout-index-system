@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
+import { SCRIPT_INICIAL } from "@/shared/accesibilidad";
 import { LenisProvider } from "@/shared/motion";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -19,7 +20,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-AR" className={plex.variable}>
+    // The head script sets the saved Accesibilidad attributes on <html> before the first paint,
+    // so React finds them there on hydration (Next guide › Preventing flash before hydration).
+    <html lang="es-AR" className={plex.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_INICIAL }} />
+      </head>
       <body>
         <LenisProvider>{children}</LenisProvider>
       </body>
