@@ -147,7 +147,7 @@ QUESTIONS = [
 
 CUTS = {
     1: "Si te pasás: el bloque «Cómo funciona» (lámina {#como}) se dice en dos frases. Si sobra: nada; tu parte es la más ensayada.",
-    2: "Si te pasás: «Quién paga y quién lo usa» (lámina {#usuarios}) se reduce a su última frase. Si sobra: nada.",
+    2: "Si te pasás: en la lámina {#hoy}, la lista de lo que se usa hoy se dice en una frase. Si sobra: nada.",
     3: "Si te pasás: «Por qué medimos carga» (lámina {#teoria}) se reduce a la cita. Si sobra: nada.",
     4: "Si te pasás: saltear el cambio de perfiles (el último tramo de la lámina {#envivo}). Si falla la demo: video, sin comentarlo. "
        "Pantalla al 150 % o más, sin otras pestañas ni notificaciones, probada en el proyector del día.",

@@ -55,20 +55,11 @@ Para una empresa, eso es una licencia, o una renuncia, que se podía ver venir.
 Son datos de otro país, pero acá también pasa: casi seis de cada diez empresas argentinas tienen al menos una falta por mes. [pausa]
 
 @L actuan|«…al menos una falta por mes.»
+Lo llamativo no es solo cuántos están agotados, sino qué hacen las empresas. Según Bumeran 2025, el 72 % de las áreas de RRHH admite que, cuando detecta un caso, no se hace nada, y el 88 % de las organizaciones no aplica ninguna medida de prevención.
 Y cuando una empresa sí hace algo, ¿qué hace? Según la misma encuesta de Bumeran, el veintiuno por ciento ofrece apoyo emocional. El quince, más flexibilidad. [pausa] Y solo el doce por ciento le saca tareas a quien está sobrecargado. [pausa]
 Casi nadie toca lo que a Diego le sobra, que es trabajo. Y para repartir mejor las tareas, primero hay que saber a quién.
 
-@L rubros|«…primero hay que saber a quién.»
-[normal] ¿Quién nos compraría? Recursos Humanos de empresas medianas, de cincuenta a doscientas personas. Son demasiadas personas para que un jefe las vea a todas, y muy pocas para tener a alguien dedicado a cruzar estos datos.
-Empezamos por tres rubros. Transporte, con semanas largas y rachas sin franco en gente que maneja. Salud, con turnos de doce horas en enfermería. Y servicio técnico, con guardias, urgencias y tareas que se acumulan. [pausa]
-Los elegimos porque en los tres el cansancio no lo paga solo el trabajador. [pausa] Lo paga un pasajero, un paciente o un cliente. Y porque en cada uno la sobrecarga se ve distinta.
-Esto todavía es una hipótesis: no lo confirmó ningún jefe de Recursos Humanos. Por eso, al final, les vamos a pedir algo.
-
-@L usuarios|«…les vamos a pedir algo.»
-Adentro de la empresa, cada uno ve lo suyo. Recursos Humanos carga los datos de la semana. El jefe de cada equipo recibe los avisos de su gente. La gerencia ve el resumen de toda la empresa. Y cada empleado ve sus horas y sus tareas, pero no su número. [pausa]
-Paga Recursos Humanos. Lo usa, todas las semanas, el jefe de equipo.
-
-@L hoy|«…el jefe de equipo.»
+@L hoy|«…primero hay que saber a quién.»
 ¿Qué usan hoy estas empresas? Planillas, cada una con lo suyo. Sistemas de Recursos Humanos, que manejan bien los legajos, el fichaje y las vacaciones. Herramientas como Viva Insights, de Microsoft, que miran cómo trabaja la gente dentro de las aplicaciones de Microsoft. Y encuestas de clima, que preguntan cómo se siente la gente. [pausa]
 Todas sirven para lo suyo. Lo que no encontramos es algo que junte estas cuatro señales por persona, todas las semanas, y explique de dónde sale el número. Y sin depender de que alguien conteste una encuesta. [pausa]
 Cómo decide el sistema, se los cuenta {P3n}. *[Mirar a {P3n} y correrse.]*

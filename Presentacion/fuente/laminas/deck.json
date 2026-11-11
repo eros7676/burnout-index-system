@@ -21,8 +21,6 @@
   "p2",
   "costo",
   "actuan",
-  "rubros",
-  "usuarios",
   "hoy",
   "p3",
   "teoria",
@@ -52,7 +50,7 @@
    "start": "cover"
   },
   "s2": {
-   "description": "El problema en plata, Santiago: cuánto cuesta, quién paga y qué se usa hoy.",
+   "description": "El problema en plata, Santiago: cuánto cuesta, qué hacen hoy las empresas y qué se usa.",
    "start": "p2"
   },
   "s3": {
