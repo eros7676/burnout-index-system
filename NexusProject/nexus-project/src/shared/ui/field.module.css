@@ -26,6 +26,15 @@
   flex: 0 0 calc((100% - 5 * var(--space-3)) / 6);
   min-width: 0;
 }
+/* Larger text (Accesibilidad › Tamaño): fewer, wider columns, so a week still fits its field. */
+@media (min-width: 901px) {
+  :root[data-texto="grande"] :is(.toolbar, .filterBar) .field {
+    flex-basis: calc((100% - 3 * var(--space-3)) / 4);
+  }
+  :root[data-texto="muy-grande"] :is(.toolbar, .filterBar) .field {
+    flex-basis: calc((100% - 2 * var(--space-3)) / 3);
+  }
+}
 @media (max-width: 900px) {
   .toolbar .field,
   .filterBar .field {
