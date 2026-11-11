@@ -18,6 +18,7 @@ TITLES["cierre1"] = "Nadie debería llegar al límite…"
 TITLES["diego"] = "26 días seguidos sin un franco"
 TITLES["sofia"] = "72 puntos, y el sistema no avisa"
 TITLES["final"] = "Los datos ya estaban. Falta mirarlos."
+TITLES["logramos"] = "Lo que logramos"
 for i, sid in enumerate(["p2", "p3", "p4", "p5"], start=2):
     TITLES[sid] = f"Parte {i}: portada"
 e = lambda s: html.escape(s, quote=False)
@@ -89,14 +90,16 @@ ADVICE = {
          "en unos 54 segundos, medido en una computadora (hubo una medición de 60,92 s que falló antes de una corrección)."),
     ],
     5: [
-        ("Toda la parte, más lenta", "Es la parte para inversores: más lenta y más grave que el producto (Niebuhr y otros 2020)."),
-        ("El mercado, de abajo hacia arriba", "Empresas reales en un segmento concreto. «Prefiero el método de abajo hacia arriba» "
-         "(Michael Seibel, Y Combinator). Nunca «miles de millones»."),
-        ("El precio es una hipótesis", "Decirlo con esa palabra. Si antes de la defensa hablaron con jefes de RR. HH., contar cuántos y qué dijeron."),
-        ("El pedido, sin rodeos", "«No hace falta dar vueltas con el pedido: pedilo» (Seibel). Después de «preséntennos», silencio "
-         "largo mirando al jurado, y recién ahí Diego."),
-        ("El equipo pesa", "El 47 % de 681 fondos nombra al equipo como lo más importante (Gompers y otros). Se prueba con lo "
-         "construido: una línea por persona. Completá la tuya y la duración del proyecto."),
+        ("Las cifras, en tres tiempos", "Pausa, la cifra, un segundo de silencio y lo que significa. Sobre todo las setecientas "
+         "cuarenta y cinco mil muertes de la lámina {#ahora}: más lento y más grave."),
+        ("Lo que no está probado, se dice así", "Datos de demostración y piloto pendiente. Nunca «validado» ni «probado con "
+         "empresas». Es el mismo criterio de Gonzalo."),
+        ("Cada lámina engancha con otra parte", "Diego, Gonzalo («como les contó»), los tres pasos de Francisco, el ejemplo de "
+         "Sofía y la demostración de Eros. Así tu parte suena a cierre y no a repaso."),
+        ("Tus cifras, de memoria", "50 a 200 personas, 3 rubros, 745.000 muertes (mundo, 2016), 55 horas semanales, 2019 y 2022, "
+         "3 riesgos, 3 pasos, 8 semanas."),
+        ("El cierre, palabra por palabra", "La lámina {#final} es la última frase de toda la defensa: de memoria, mirando al jurado, "
+         "después de la pausa larga."),
     ],
 }
 
@@ -151,7 +154,8 @@ CUTS = {
     3: "Si te pasás: «Por qué medimos carga» (lámina {#teoria}) se reduce a la cita. Si sobra: nada.",
     4: "Si te pasás: saltear el cambio de perfiles (el último tramo de la lámina {#envivo}). Si falla la demo: video, sin comentarlo. "
        "Pantalla al 150 % o más, sin otras pestañas ni notificaciones, probada en el proyector del día.",
-    5: "Si te pasás: «Lo que puede salir mal» (lámina {#riesgos}) pasa a las preguntas. Nunca se corta el pedido ni el cierre.",
+    5: "Si te pasás: en la lámina {#ahora}, sacá «Según la OMS, es el resultado de estrés crónico… se puede gestionar». "
+       "Nunca se corta el cierre.",
 }
 
 

@@ -124,35 +124,37 @@ Entonces, ¿por qué a setenta y dos no avisó? Porque la semana anterior había
 {P1n} les dijo al principio que era lo más importante que diseñamos. Es por esto: lo que el jefe necesita ver no es el pico. [pausa] Es lo que se repite.
 Si esto es un negocio, se los cuenta {P5n}. *[Mirar a {P5n} y correrse.]*
 
-@parte 5|P5|Mercado, modelo, equipo y pedido|5:00|¿Es un negocio? ¿Son ellos? ¿Qué quieren?
+@parte 5|P5|A quién le sirve, por qué ahora y qué falta|5:00|¿A quién le sirve? ¿Qué construimos? ¿Qué falta?
 @L p5|Cuando {P4n} dice su nombre.
-*[Pasar al centro, pies quietos, mirar al jurado. Toda esta parte, más lenta y más grave.]* [espera 12]
-[lento] Vieron un problema y un sistema que funciona. Ahora, la pregunta que se haría un inversor: ¿es un negocio?
+*[Pasar al centro, pies quietos, mirar al jurado.]* [espera 12]
+Vimos un problema y un sistema que funciona. [pausa] Ahora, para cerrar: a quién le sirve, por qué importa ahora, qué construimos y qué falta.
 
-@L mercado|«…¿es un negocio?»
-Empezamos por un grupo de empresas que se puede contar. En Argentina hay mil setecientas sesenta empresas de transporte y de salud con entre cincuenta y doscientos empleados. [pausa] En ellas trabajan ciento sesenta y un mil personas. [pausa]
-Las contamos una por una, con los datos oficiales del Ministerio de Trabajo. Las de servicio técnico no aparecen separadas en esas estadísticas, así que no las sumamos.
+@L sirve|«…qué construimos y qué falta.»
+¿A quién le sirve? A empresas medianas, de cincuenta a doscientas personas: demasiadas para que un jefe vea a todas, y pocas para tener a alguien dedicado a cruzar estos datos. [pausa]
+Para la demostración elegimos tres rubros: servicio técnico, transporte y salud. En los tres, el cansancio no lo paga solo la persona: lo paga un cliente, un pasajero o un paciente. [pausa] Y en cada uno la sobrecarga se ve distinta, como les mostró {P3n}.
 
-@L modelo|«…así que no las sumamos.»
-¿Cómo cobraríamos? Nuestra idea es cobrar dos dólares y medio por empleado por mes. [pausa] Es menos que un sistema completo de Recursos Humanos, que arranca entre cuatro y ocho, porque nosotros hacemos una sola cosa. [pausa]
-En esas mil setecientas sesenta empresas, son unos cuatro coma ocho millones de dólares por año. No es el techo: es por donde empezar. Y el precio todavía es una hipótesis: lo tiene que confirmar una prueba con empresas reales.
+@L ahora|«…como les mostró {P3n}.»
+¿Por qué ahora? Tres razones. [pausa]
+La primera: en 2019 la Organización Mundial de la Salud reconoció el burnout como un fenómeno del trabajo, como les contó {P3n}, y esa clasificación rige desde 2022. Según la OMS, es el resultado de estrés crónico en el lugar de trabajo que no se manejó con éxito. Es decir, algo que se puede gestionar. [pausa]
+La segunda: según la Organización Mundial de la Salud y la Organización Internacional del Trabajo, en el mundo, en 2016, unas setecientas cuarenta y cinco mil muertes por ACV y enfermedades del corazón se asociaron a trabajar cincuenta y cinco horas o más por semana. Y las horas extra y los días sin descanso son dos de las cuatro señales que mira nuestro sistema. [pausa]
+La tercera: este año, la reforma laboral permite acordar por escrito que las horas extra se compensen con descansos más adelante. Con eso, saber quién viene acumulando horas se vuelve más difícil de hacer a mano.
 
-@L ahora|«…una prueba con empresas reales.»
-¿Por qué ahora? Tres razones. [pausa] La Organización Mundial de la Salud y la Organización Internacional del Trabajo calcularon setecientas cuarenta y cinco mil muertes en un solo año por ACV y enfermedades del corazón, asociadas a trabajar cincuenta y cinco horas o más por semana. En dos mil diecinueve, la OMS reconoció el burnout como un fenómeno del trabajo. Y este año, la reforma laboral creó el banco de horas: las horas extra se pueden pasar de una semana a otra, y seguirlas a mano se vuelve más difícil.
+@L construimos|«…se vuelve más difícil de hacer a mano.»
+Con ese contexto, esto es lo que dejamos hecho. [pausa] Un prototipo que funciona y el trabajo de análisis que lo respalda: casi veinte requerimientos, ocho reglas de negocio con sus ejemplos y tres casos de uso, que son los tres pasos que les mostró {P1n}, más el diseño de la arquitectura y de los datos. Todo pensado para que cada número se pueda reproducir y explicar, como vieron con el ejemplo de Sofía. [pausa]
 
-@L equipo|«…seguirlas a mano se vuelve más difícil.»
-¿Y por qué nosotros? Porque ya lo construimos. [pausa] {P4n} hizo {P4w}. {P3n}, {P3w}. {P2n}, {P2w}. {P1n}, {P1w}. Y yo, {P5w}. [pausa] Todo en {MESES}.
+@L riesgos|«…como vieron con el ejemplo de Sofía.»
+El sistema también tiene riesgos, y los tenemos identificados. Son tres. [pausa]
+El primero, datos con errores: que la empresa cargue datos incompletos o con errores. Por eso el sistema revisa fila por fila y no guarda nada si algo está mal, como vieron en la demostración. [pausa]
+El segundo, umbrales: que nuestros umbrales no reflejen la sobrecarga real. Eso lo responde una prueba piloto. [pausa]
+Y el tercero, privacidad: usamos solo datos que la empresa ya registra, sin datos de salud, y el aviso llega solo al responsable, nunca a la persona. [pausa] Aun así, antes de usarlo con personas reales falta: avisarle a cada empleado, pedirle su consentimiento, tener una política de privacidad y registrar la base ante la autoridad de datos personales. [pausa]
 
-@L riesgos|«Todo en {MESES}.»
-Un inversor también pregunta qué puede salir mal. Vemos tres riesgos. [pausa] El primero: que la empresa cargue datos incompletos o con errores. Por eso el sistema revisa fila por fila y no guarda nada si algo está mal. El segundo: que nuestros umbrales no reflejen el cansancio real. Eso lo responde la prueba piloto. Y el tercero: la privacidad. Usamos lo mínimo, pero antes de usarlo con personas reales falta avisarle a cada empleado, pedirle su consentimiento y tener una política de privacidad. [pausa]
+@L sigue|«…autoridad de datos personales.»
+Lo que sigue son tres pasos. [pausa] Primero, una prueba piloto: tres empresas reales, ocho semanas, para validar el índice y ajustar los umbrales. Segundo, completar lo que quedó pendiente en esta versión: el ingreso con cuentas reales, la carga de archivos en formato Excel y la carga manual. Tercero, conectarnos directo con los sistemas de fichaje y de tareas, para que nadie tenga que cargar un archivo. [pausa]
 
-@L sigue|«…una política de privacidad.»
-¿Qué sigue? Tres pasos. [pausa] Primero, una prueba piloto: tres empresas, ocho semanas, con sus datos reales. Segundo, comparar nuestro número con la medición de Maslach en esas mismas personas, y ajustar con lo que aprendamos, también el precio. Tercero, conectarnos directo con los sistemas de fichaje y de tareas, para que nadie tenga que cargar un archivo. [pausa]
-El primer paso no depende solo de nosotros.
-
-@L pedido|«…no depende solo de nosotros.» Más lento, mirando al jurado.
-Para dejar de ser una demo necesitamos una sola cosa. [pausa] Tres empresas, una por rubro, para una prueba de ocho semanas con sus datos reales. [pausa] Si conocen a quien dirige Recursos Humanos en una empresa de transporte, de salud o de servicio técnico... preséntennos. [pausa larga]
+@L logramos|«…para que nadie tenga que cargar un archivo.» Más lento, mirando al jurado.
+[lento] En resumen. [pausa] Nos propusimos desarrollar un sistema que detecte a tiempo el riesgo de sobrecarga y le avise al responsable. En esta versión lo logramos: importa y valida los datos de cada semana, calcula un índice explicable de cero a cien, lo muestra por persona y por equipo, y avisa al responsable cuando la sobrecarga se sostiene. [pausa larga]
 
 @L final|Después del silencio largo.
-Diego, el chofer del principio, llevaba veintiséis días sin franco. Sus horas, sus viajes y sus vacaciones ya estaban en el sistema. [pausa] Los datos ya estaban. Falta mirarlos. [pausa] Gracias. [espera 2]
+*[Memorizar palabra por palabra.]*
+Diego, el chofer del principio, llevaba veintiséis días sin franco. Sus horas, sus viajes y sus vacaciones ya estaban anotados en los registros de la empresa. [pausa] Los datos ya estaban. Falta mirarlos. [pausa] Gracias. [espera 2]
 *[Los cinco al frente, en línea, para las preguntas.]*
