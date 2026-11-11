@@ -210,6 +210,23 @@ focus ring, targets ≥ 24 px, `th scope` on every table, `role="status"` for
 progress and results, `role="alert"` only for failures, charts with a text
 alternative.
 
+**Display options («Accesibilidad»).** A button on the demo strip and on the entry
+screen opens a native popover with three choices, applied at once and kept in the
+browser (`localStorage`, key `accesibilidad`):
+
+| Choice | Values | How |
+|---|---|---|
+| Tamaño del texto | Normal, Grande, Muy grande | the root size goes to 125 % or 150 %; every type step, control height and the sidebar are in rem. The 1100 px stacking point of `Columns` grows with it (1375 / 1650 px), and filter tracks drop to four or three columns |
+| Contraste | Normal, Alto | near-black inks, dividers at 3:1, darker accents and state hues, a 3 px focus ring |
+| Fondo | Claro, Cálido, Oscuro | Cálido: a cream paper. Oscuro: its own steps of every token (not an inversion), with level fills re-validated against the dark surface |
+
+Each is a `data-*` attribute on `<html>` that redefines tokens in `globals.css`;
+the default is the absence of the attribute, so the server renders it. A script
+in `<head>` sets the saved attributes before the first paint, and
+`src/shared/accesibilidad.ts` owns the values, the storage and that script.
+Screens never test the attributes: a new screen built from the tokens follows
+all three.
+
 ## Module map
 
 Roles: RR. HH. = RRHH; reading = RRHH, Gerencia and Team Lead (a Team Lead is
@@ -307,3 +324,4 @@ formula guard.
 - 2026-11-07 — In «En Alto por semana» the first loaded week reads «Primera semana: sin semana anterior para comparar» (readout and hidden table) with an explanatory line, never «Sin dato»; TrendLine takes `sinDato` and other charts keep their default. (held by e2e/tablero.spec.ts)
 - 2026-11-07 — The demo can show several companies, each its own database (same schema and migrations), picked on the entry screen before the profile and switched from the demo strip keeping the profile. The signed session carries the company; every guarded request runs in its company's database, so no query filters by company. With only DATABASE_URL there is one company and no company step (Docs/empresas-demo.md). (held by tests/permisos-demo.test.ts, e2e/empresas.spec.ts)
 - 2026-11-07 — The alerts list shows one row per person (their newest week, «N alertas» and a «Ver las N semanas con alerta» disclosure whose rows link to each alert); counts, paging and the CSV export stay per alert and the screen says so. (held by e2e/seguimiento.spec.ts and tests/seguimiento.test.ts)
+- 2026-11-10 — Display options (text size, contrast, background) are attributes on `<html>` that redefine the tokens, so screens never branch on them; every text pair stays ≥ 4.5:1 and every mark ≥ 3:1 in each mode, and the defaults render on the server. (held by e2e/shell.spec.ts, src/shared/accesibilidad.ts)
