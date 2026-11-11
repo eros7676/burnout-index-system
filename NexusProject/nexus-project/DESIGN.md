@@ -1,12 +1,12 @@
 ---
-name: Nexo Laboral
+name: Sistema de Índice de Burnout
 tokens: src/app/globals.css (:root)
 motion: src/shared/motion (mirrors the --motion-* tokens)
 kit: src/shared/ui
 research: ../../Docs/investigacion-ui.md
 ---
 
-# Nexo Laboral — design record
+# Sistema de Índice de Burnout — design record
 
 The product shows, week by week, who carries sustained work overload and why,
 so a person (RRHH, a Team Lead, management) reviews it in time. It is not a
@@ -90,7 +90,7 @@ strings; separate facts with commas or layout.
 ```
 ┌── demo strip: "Modo demostración…" · Perfil activo [usuario ▾] ───────────┐
 ├─────────────┬──────────────────────────────────────────────────────────────┤
-│ Nexo Laboral│ PageHeader: h1 + one context line                  [primary] │
+│ Índice de B.│ PageHeader: h1 + one context line                  [primary] │
 │ rol, alcance│ FilterBar: [Semana ▾] [other filters]                        │
 │             │                                                              │
 │ Seguimiento │ Sections (white, 10 px radius, 1 px line), one gutter apart  │

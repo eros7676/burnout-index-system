@@ -43,7 +43,7 @@ export function Ingreso({ empresa: inicial }: { empresa?: string }) {
     <div className={s.page} ref={pagina}>
       <header className={s.header} data-enter>
         <p className={s.brand}>
-          <span aria-hidden="true">N</span>Nexo Laboral
+          <span aria-hidden="true">IB</span>Sistema de Índice de Burnout
         </p>
         <h1>Seguimiento semanal de la carga de trabajo</h1>
         <p className={s.lead}>

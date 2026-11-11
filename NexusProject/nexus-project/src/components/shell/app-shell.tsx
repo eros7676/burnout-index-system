@@ -114,9 +114,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             className={s.brand}
           >
             <span className={s.mark} aria-hidden="true">
-              N
+              IB
             </span>
-            Nexo Laboral
+            <span className={s.nombre}>
+              Sistema de
+              <br />
+              Índice de Burnout
+            </span>
           </Link>
           <p className={s.scope}>
             {visible
