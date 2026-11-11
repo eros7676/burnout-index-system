@@ -33,6 +33,18 @@
 .boton[data-variante="lateral"]:hover svg {
   color: var(--accent);
 }
+/* The sidebar starts below the demo strip, so its own foot sits under the fold until the page
+   scrolls. Pinned to the window's bottom left instead, the row is in view on every screen. */
+@media (min-width: 901px) {
+  .boton[data-variante="lateral"] {
+    position: fixed;
+    left: var(--space-4);
+    bottom: var(--space-4);
+    z-index: 1;
+    width: calc(var(--sidebar) - 2 * var(--space-4) - 1px);
+    background: var(--surface);
+  }
+}
 .boton[data-variante="pagina"] {
   border: 1px solid var(--line-strong);
   background: var(--surface);
