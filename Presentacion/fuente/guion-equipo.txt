@@ -39,7 +39,7 @@ No es una idea en una diapositiva: está funcionando. Lo probamos con tres empre
 Les adelanto algo. Una de esas semanas, Sofía, técnica de mantenimiento, llega a setenta y dos puntos sobre cien. [pausa] Y el sistema no avisa. [pausa] Les vamos a mostrar por qué, y por qué creemos que es lo más importante que diseñamos.
 
 @L ruta|«…lo más importante que diseñamos.»
-En lo que sigue, {P2n} les va a mostrar cuánto le cuesta a una empresa no ver a Diego a tiempo, y quién pagaría por verlo. {P3n}, cómo decide el índice y por qué cada punto se puede explicar. {P4n}, el sistema funcionando, en vivo. Y {P5n}, a quién le sirve, por qué ahora y qué falta.
+En lo que sigue, {P2n} les va a mostrar cuánto le cuesta a una empresa no ver a Diego a tiempo, y qué hacen hoy las empresas. {P3n}, cómo decide el índice y por qué cada punto se puede explicar. {P4n}, el sistema funcionando, en vivo. Y {P5n}, a quién le sirve, por qué ahora y qué falta.
 
 @L cierre1|«…por qué ahora y qué falta.»
 Empezamos este proyecto con una idea. [pausa] Nadie debería llegar al límite por algo que se podía ver a tiempo. [pausa] {P2n}. *[Mirar a quien sigue y dar un paso al costado.]*
