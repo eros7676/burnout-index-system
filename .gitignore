@@ -3,3 +3,5 @@
 !.env.example
 node_modules/
 /.t16-clean/
+Presentacion/preguntas-defensa.pdf
+Presentacion/fuente/preguntas-defensa.html
