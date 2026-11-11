@@ -21,8 +21,6 @@
   "p2",
   "costo",
   "actuan",
-  "rubros",
-  "usuarios",
   "hoy",
   "p3",
   "teoria",
@@ -36,13 +34,12 @@
   "envivo",
   "respuesta",
   "p5",
-  "mercado",
-  "modelo",
+  "sirve",
   "ahora",
-  "equipo",
+  "construimos",
   "riesgos",
   "sigue",
-  "pedido",
+  "logramos",
   "final",
   "anexo"
  ],
@@ -52,7 +49,7 @@
    "start": "cover"
   },
   "s2": {
-   "description": "El problema en plata, Santiago: cuánto cuesta, quién paga y qué se usa hoy.",
+   "description": "El problema en plata, Santiago: cuánto cuesta, qué hacen hoy las empresas y qué se usa.",
    "start": "p2"
   },
   "s3": {
@@ -64,7 +61,7 @@
    "start": "p4"
   },
   "s5": {
-   "description": "Mercado, modelo, riesgos y pedido, Alfonso; cierre con Diego.",
+   "description": "A quién le sirve, por qué ahora, qué construimos y qué falta, Alfonso; cierre con Diego.",
    "start": "p5"
   },
   "s6": {

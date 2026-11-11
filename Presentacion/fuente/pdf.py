@@ -18,9 +18,13 @@ TITLES["cierre1"] = "Nadie debería llegar al límite…"
 TITLES["diego"] = "26 días seguidos sin un franco"
 TITLES["sofia"] = "72 puntos, y el sistema no avisa"
 TITLES["final"] = "Los datos ya estaban. Falta mirarlos."
+TITLES["logramos"] = "Lo que logramos"
 for i, sid in enumerate(["p2", "p3", "p4", "p5"], start=2):
     TITLES[sid] = f"Parte {i}: portada"
 e = lambda s: html.escape(s, quote=False)
+SLIDE_NO = {sid: i + 1 for i, sid in enumerate(ORDER)}
+# "{#sid}" in a recommendation is that slide's number, so a reordered deck never leaves a stale one.
+num = lambda s: re.sub(r"\{#(\w+)\}", lambda m: str(SLIDE_NO[m.group(1)]), s)
 
 
 def speech(line):
@@ -43,7 +47,7 @@ ADVICE = {
          "los inversores descuentan al que «aprendió el pitch de memoria» (Elsbach y Kramer 2003)."),
         ("Dejar la duda abierta", "«Llega a 72 y el sistema no avisa» no se explica en tu parte. La curiosidad fue máxima cuando "
          "la persona no sabía la respuesta, y con más curiosidad se recordó mejor una o dos semanas después (Kang y otros 2009)."),
-        ("El nombre trae una pregunta", "«Índice de Burnout» invita a preguntar si diagnostica. Tu frase de la lámina 6 "
+        ("El nombre trae una pregunta", "«Índice de Burnout» invita a preguntar si diagnostica. Tu frase de la lámina {#nexo} "
          "(«se llama así por lo que queremos evitar») la contesta antes de que la hagan."),
         ("En las preguntas, moderás vos", "Repetís la pregunta en una frase y nombrás a quien responde (ver «Preguntas»)."),
     ],
@@ -86,14 +90,16 @@ ADVICE = {
          "en unos 54 segundos, medido en una computadora (hubo una medición de 60,92 s que falló antes de una corrección)."),
     ],
     5: [
-        ("Toda la parte, más lenta", "Es la parte para inversores: más lenta y más grave que el producto (Niebuhr y otros 2020)."),
-        ("El mercado, de abajo hacia arriba", "Empresas reales en un segmento concreto. «Prefiero el método de abajo hacia arriba» "
-         "(Michael Seibel, Y Combinator). Nunca «miles de millones»."),
-        ("El precio es una hipótesis", "Decirlo con esa palabra. Si antes de la defensa hablaron con jefes de RR. HH., contar cuántos y qué dijeron."),
-        ("El pedido, sin rodeos", "«No hace falta dar vueltas con el pedido: pedilo» (Seibel). Después de «preséntennos», silencio "
-         "largo mirando al jurado, y recién ahí Diego."),
-        ("El equipo pesa", "El 47 % de 681 fondos nombra al equipo como lo más importante (Gompers y otros). Se prueba con lo "
-         "construido: una línea por persona. Completá la tuya y la duración del proyecto."),
+        ("Las cifras, en tres tiempos", "Pausa, la cifra, un segundo de silencio y lo que significa. Sobre todo las setecientas "
+         "cuarenta y cinco mil muertes de la lámina {#ahora}: más lento y más grave."),
+        ("Lo que no está probado, se dice así", "Datos de demostración y piloto pendiente. Nunca «validado» ni «probado con "
+         "empresas». Es el mismo criterio de Gonzalo."),
+        ("Cada lámina engancha con otra parte", "Diego, Gonzalo («como les contó»), los tres pasos de Francisco, el ejemplo de "
+         "Sofía y la demostración de Eros. Así tu parte suena a cierre y no a repaso."),
+        ("Tus cifras, de memoria", "50 a 200 personas, 3 rubros, 745.000 muertes (mundo, 2016), 55 horas semanales, 2019 y 2022, "
+         "3 riesgos, 3 pasos, 8 semanas."),
+        ("El cierre, palabra por palabra", "La lámina {#final} es la última frase de toda la defensa: de memoria, mirando al jurado, "
+         "después de la pausa larga."),
     ],
 }
 
@@ -143,12 +149,13 @@ QUESTIONS = [
 ]
 
 CUTS = {
-    1: "Si te pasás: el bloque «Cómo funciona» (lámina 7) se dice en dos frases. Si sobra: nada; tu parte es la más ensayada.",
-    2: "Si te pasás: «Quién paga y quién lo usa» (lámina 16) se reduce a su última frase. Si sobra: nada.",
-    3: "Si te pasás: «Por qué medimos carga» (lámina 19) se reduce a la cita. Si sobra: nada.",
-    4: "Si te pasás: saltear el cambio de perfiles (el último tramo de la lámina 27). Si falla la demo: video, sin comentarlo. "
+    1: "Si te pasás: el bloque «Cómo funciona» (lámina {#como}) se dice en dos frases. Si sobra: nada; tu parte es la más ensayada.",
+    2: "Si te pasás: en la lámina {#hoy}, la lista de lo que se usa hoy se dice en una frase. Si sobra: nada.",
+    3: "Si te pasás: «Por qué medimos carga» (lámina {#teoria}) se reduce a la cita. Si sobra: nada.",
+    4: "Si te pasás: saltear el cambio de perfiles (el último tramo de la lámina {#envivo}). Si falla la demo: video, sin comentarlo. "
        "Pantalla al 150 % o más, sin otras pestañas ni notificaciones, probada en el proyector del día.",
-    5: "Si te pasás: «Lo que puede salir mal» (lámina 34) pasa a las preguntas. Nunca se corta el pedido ni el cierre.",
+    5: "Si te pasás: en la lámina {#ahora}, sacá «Según la OMS, es el resultado de estrés crónico… se puede gestionar». "
+       "Nunca se corta el cierre.",
 }
 
 
@@ -158,7 +165,7 @@ def main():
     for p in parts:
         p["plan_start"], plan = plan, plan + p["budget"]
         p["plan_end"] = plan
-    slide_no = {sid: i + 1 for i, sid in enumerate(ORDER)}
+    slide_no = SLIDE_NO
     total = sum(p["secs"] for p in parts)
     who = lambda p: N[p["who"] + "n"]
 
@@ -185,7 +192,7 @@ def main():
                'no se dice. <span class="pause">pausa</span> es un segundo y medio; <span class="pause">pausa larga</span>, '
                'tres. Los segundos en gris son el tiempo de caminar o de esperar a la pantalla. Cada bloque empieza con la lámina que va en pantalla, el minuto en que entra y la frase que la cambia.</p>'
                f'<p class="meta">Reparto propuesto según lo que cada uno construyó en el repositorio. Láminas: la presentación del '
-               f'equipo ({len(ORDER)} láminas). Versión del 9/11/2026.</p></section>')
+               f'equipo ({len(ORDER)} láminas). Versión del 11/11/2026.</p></section>')
 
     # Common rules
     out.append('<section class="page"><h2>Para los cinco</h2><p class="lead">Lo que vale para cualquier parte. Cada punto dice de dónde sale.</p><div class="adv">')
@@ -215,9 +222,9 @@ def main():
                    f'<p class="lead">Responde: {e(p["q"])} Guion: {build.mmss(p["secs"])} de {build.mmss(p["budget"])} '
                    f'({p["words"]} palabras).</p><h3>Recomendaciones para {e(who(p))}</h3><div class="adv">')
         for h, b in ADVICE[p["n"]]:
-            b = re.sub(r"`([^`]+)`", r"<code>\1</code>", e(b))
+            b = re.sub(r"`([^`]+)`", r"<code>\1</code>", e(num(b)))
             out.append(f'<div class="item"><h4>{e(h)}</h4><p>{b}</p></div>')
-        out.append(f'</div><p class="cut">{e(CUTS[p["n"]])}</p><h3>Guion</h3>')
+        out.append(f'</div><p class="cut">{e(num(CUTS[p["n"]]))}</p><h3>Guion</h3>')
         for b in p["blocks"]:
             out.append(f'<div class="block"><div class="bh"><span class="no">Lámina {slide_no[b["slide"]]}</span>'
                        f'<span class="st">{e(TITLES[b["slide"]])}</span><span class="clk">{build.mmss(b["start"])} · '
