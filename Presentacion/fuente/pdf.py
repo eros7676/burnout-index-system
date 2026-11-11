@@ -21,6 +21,9 @@ TITLES["final"] = "Los datos ya estaban. Falta mirarlos."
 for i, sid in enumerate(["p2", "p3", "p4", "p5"], start=2):
     TITLES[sid] = f"Parte {i}: portada"
 e = lambda s: html.escape(s, quote=False)
+SLIDE_NO = {sid: i + 1 for i, sid in enumerate(ORDER)}
+# "{#sid}" in a recommendation is that slide's number, so a reordered deck never leaves a stale one.
+num = lambda s: re.sub(r"\{#(\w+)\}", lambda m: str(SLIDE_NO[m.group(1)]), s)
 
 
 def speech(line):
@@ -43,7 +46,7 @@ ADVICE = {
          "los inversores descuentan al que «aprendió el pitch de memoria» (Elsbach y Kramer 2003)."),
         ("Dejar la duda abierta", "«Llega a 72 y el sistema no avisa» no se explica en tu parte. La curiosidad fue máxima cuando "
          "la persona no sabía la respuesta, y con más curiosidad se recordó mejor una o dos semanas después (Kang y otros 2009)."),
-        ("El nombre trae una pregunta", "«Índice de Burnout» invita a preguntar si diagnostica. Tu frase de la lámina 6 "
+        ("El nombre trae una pregunta", "«Índice de Burnout» invita a preguntar si diagnostica. Tu frase de la lámina {#nexo} "
          "(«se llama así por lo que queremos evitar») la contesta antes de que la hagan."),
         ("En las preguntas, moderás vos", "Repetís la pregunta en una frase y nombrás a quien responde (ver «Preguntas»)."),
     ],
@@ -143,12 +146,12 @@ QUESTIONS = [
 ]
 
 CUTS = {
-    1: "Si te pasás: el bloque «Cómo funciona» (lámina 7) se dice en dos frases. Si sobra: nada; tu parte es la más ensayada.",
-    2: "Si te pasás: «Quién paga y quién lo usa» (lámina 16) se reduce a su última frase. Si sobra: nada.",
-    3: "Si te pasás: «Por qué medimos carga» (lámina 19) se reduce a la cita. Si sobra: nada.",
-    4: "Si te pasás: saltear el cambio de perfiles (el último tramo de la lámina 27). Si falla la demo: video, sin comentarlo. "
+    1: "Si te pasás: el bloque «Cómo funciona» (lámina {#como}) se dice en dos frases. Si sobra: nada; tu parte es la más ensayada.",
+    2: "Si te pasás: «Quién paga y quién lo usa» (lámina {#usuarios}) se reduce a su última frase. Si sobra: nada.",
+    3: "Si te pasás: «Por qué medimos carga» (lámina {#teoria}) se reduce a la cita. Si sobra: nada.",
+    4: "Si te pasás: saltear el cambio de perfiles (el último tramo de la lámina {#envivo}). Si falla la demo: video, sin comentarlo. "
        "Pantalla al 150 % o más, sin otras pestañas ni notificaciones, probada en el proyector del día.",
-    5: "Si te pasás: «Lo que puede salir mal» (lámina 34) pasa a las preguntas. Nunca se corta el pedido ni el cierre.",
+    5: "Si te pasás: «Lo que puede salir mal» (lámina {#riesgos}) pasa a las preguntas. Nunca se corta el pedido ni el cierre.",
 }
 
 
@@ -158,7 +161,7 @@ def main():
     for p in parts:
         p["plan_start"], plan = plan, plan + p["budget"]
         p["plan_end"] = plan
-    slide_no = {sid: i + 1 for i, sid in enumerate(ORDER)}
+    slide_no = SLIDE_NO
     total = sum(p["secs"] for p in parts)
     who = lambda p: N[p["who"] + "n"]
 
@@ -215,9 +218,9 @@ def main():
                    f'<p class="lead">Responde: {e(p["q"])} Guion: {build.mmss(p["secs"])} de {build.mmss(p["budget"])} '
                    f'({p["words"]} palabras).</p><h3>Recomendaciones para {e(who(p))}</h3><div class="adv">')
         for h, b in ADVICE[p["n"]]:
-            b = re.sub(r"`([^`]+)`", r"<code>\1</code>", e(b))
+            b = re.sub(r"`([^`]+)`", r"<code>\1</code>", e(num(b)))
             out.append(f'<div class="item"><h4>{e(h)}</h4><p>{b}</p></div>')
-        out.append(f'</div><p class="cut">{e(CUTS[p["n"]])}</p><h3>Guion</h3>')
+        out.append(f'</div><p class="cut">{e(num(CUTS[p["n"]]))}</p><h3>Guion</h3>')
         for b in p["blocks"]:
             out.append(f'<div class="block"><div class="bh"><span class="no">Lámina {slide_no[b["slide"]]}</span>'
                        f'<span class="st">{e(TITLES[b["slide"]])}</span><span class="clk">{build.mmss(b["start"])} · '
