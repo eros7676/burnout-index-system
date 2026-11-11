@@ -11,7 +11,7 @@ export type ConfigCorreo = {
   port: number;
   usuario: string;
   clave: string;
-  /** The From address, e.g. `Nexo Laboral <nexo@example.com>`. */
+  /** The From address, e.g. `Sistema de Índice de Burnout <alertas@example.com>`. */
   remitente: string;
   /** The only address any notice is delivered to. */
   destinoDemo: string;

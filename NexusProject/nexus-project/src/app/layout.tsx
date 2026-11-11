@@ -13,7 +13,7 @@ const plex = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Nexo Laboral", template: "%s · Nexo Laboral" },
+  title: { default: "Sistema de Índice de Burnout", template: "%s · Sistema de Índice de Burnout" },
   description:
     "Seguimiento semanal de la carga de trabajo para RR. HH., gerencia y líderes de equipo.",
 };
