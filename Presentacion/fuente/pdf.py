@@ -192,7 +192,7 @@ def main():
                'no se dice. <span class="pause">pausa</span> es un segundo y medio; <span class="pause">pausa larga</span>, '
                'tres. Los segundos en gris son el tiempo de caminar o de esperar a la pantalla. Cada bloque empieza con la lámina que va en pantalla, el minuto en que entra y la frase que la cambia.</p>'
                f'<p class="meta">Reparto propuesto según lo que cada uno construyó en el repositorio. Láminas: la presentación del '
-               f'equipo ({len(ORDER)} láminas). Versión del 9/11/2026.</p></section>')
+               f'equipo ({len(ORDER)} láminas). Versión del 11/11/2026.</p></section>')
 
     # Common rules
     out.append('<section class="page"><h2>Para los cinco</h2><p class="lead">Lo que vale para cualquier parte. Cada punto dice de dónde sale.</p><div class="adv">')
