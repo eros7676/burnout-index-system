@@ -6,6 +6,8 @@ Instalación completa, requisitos y alcance en el [README principal](../../READM
 
 Copiar `.env.example` a `.env`, configurar `DATABASE_URL`, ejecutar `npm ci`, `npm run db:generate`, `npm run db:deploy` y `npm run db:seed`. Hay tres migraciones: persistencia T02, intentos de notificación T12 y auditoría T15b. El seed conserva el catálogo ficticio y las reglas v1 sin precargar resultados. No subir archivos `.env`.
 
+Si `/api/demo/sesion` falla con Prisma `P2021` indicando que no existe `Equipo`, la base configurada no tiene las migraciones aplicadas. Verificar que `DATABASE_URL` apunte a la base correcta y ejecutar `npm run db:deploy` desde esta carpeta antes de iniciar la app. Para cargar las empresas de demo, `npm run demo:cargar` aplica las migraciones a cada base configurada antes de cargar su seed.
+
 Iniciar con `npm run dev`, abrir `/` y entrar como **RRHH** para importar `templates/ejemplo-dos-semanas.csv` desde **Importar datos**. Cada perfil ve solo las secciones que puede abrir; pantallas, roles, tokens y reglas de diseño están en [DESIGN.md](DESIGN.md).
 
 ## Permisos y trazabilidad

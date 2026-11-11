@@ -13,6 +13,7 @@
 import "dotenv/config";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 /** The same ids and variables as src/server/empresas.ts. */
 const VARIABLES = {
@@ -39,6 +40,8 @@ const DATOS = {
     jornadas: "jornadas-demo-ocho-semanas.csv",
   },
 };
+const prismaCli = fileURLToPath(new URL("../node_modules/prisma/build/index.js", import.meta.url));
+const seedScript = fileURLToPath(new URL("./seed.mjs", import.meta.url));
 
 const args = process.argv.slice(2);
 const i = args.indexOf("--url");
@@ -52,9 +55,12 @@ for (const id of pedidas)
     process.exit(2);
   }
 
-function ejecutar(comando, argumentos, env) {
-  const r = spawnSync(comando, argumentos, { stdio: "inherit", env: { ...process.env, ...env } });
-  if (r.status !== 0) throw new Error(`${comando} ${argumentos.join(" ")} terminó con ${r.status}.`);
+function ejecutar(argumentos, env) {
+  const r = spawnSync(process.execPath, argumentos, { stdio: "inherit", env: { ...process.env, ...env } });
+  if (r.error)
+    throw new Error(`No se pudo iniciar ${argumentos.join(" ")}: ${r.error.message}`, { cause: r.error });
+  if (r.status !== 0)
+    throw new Error(`${argumentos.join(" ")} terminó con ${r.status ?? `la señal ${r.signal}`}.`);
 }
 
 async function api(cookie, ruta, init = {}) {
@@ -120,11 +126,11 @@ for (const empresa of pedidas) {
   const env = { DATABASE_URL: process.env[variable], DEMO_EMPRESA: DATOS[empresa].semilla };
   if (reiniciar) {
     console.log(`${empresa}: vaciando la base.`);
-    ejecutar("npx", ["prisma", "migrate", "reset", "--force", "--skip-seed"], env);
+    ejecutar([prismaCli, "migrate", "reset", "--force", "--skip-seed"], env);
   }
   console.log(`${empresa}: migraciones y seed.`);
-  ejecutar("npx", ["prisma", "migrate", "deploy"], env);
-  ejecutar("npm", ["run", "-s", "db:seed"], env);
+  ejecutar([prismaCli, "migrate", "deploy"], env);
+  ejecutar([seedScript], env);
 
   const sesion = await api(null, "/api/demo/sesion", {
     method: "POST",
